@@ -1,0 +1,117 @@
+{
+  "method": "Templates only, compiled with locally available Vue 3.5.13 runtime compiler in an in-memory Chromium page. Does not compile script setup or run the Vite application.",
+  "checked": 22,
+  "errors": [],
+  "results": [
+    {
+      "file": "src/pages/MenuPage.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/pages/CreditsPage.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/pages/OptionsPage.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/pages/PuzzlePage.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/pages/NotFoundPage.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/GenerationLoading.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/GroundDetail.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/HintPanel.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/HomeView.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/OverlayDialog.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/OptionsView.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/FlagIcon.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/PlaneIcon.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/GameBoard.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/FlightTransition.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/ChallengePicker.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/TerrainArt.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/PlayView.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/GlobeIcon.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/App.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/CreditsView.vue",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "src/ui/ControlIcon.vue",
+      "errors": [],
+      "warnings": []
+    }
+  ]
+}

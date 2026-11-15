@@ -1,0 +1,98 @@
+{
+  "PER": [
+    "west",
+    "BRA"
+  ],
+  "BOL": [
+    "south",
+    "PER"
+  ],
+  "COL": [
+    "north",
+    "PER"
+  ],
+  "USA": [
+    "south",
+    "CAN"
+  ],
+  "CAN": [
+    "north",
+    "USA"
+  ],
+  "MEX": [
+    "south",
+    "USA"
+  ],
+  "CUB": [
+    "north",
+    "JAM"
+  ],
+  "HTI": [
+    "west",
+    "DOM"
+  ],
+  "DOM": [
+    "east",
+    "HTI"
+  ],
+  "POL": [
+    "west",
+    "UKR"
+  ],
+  "ROU": [
+    "south",
+    "UKR"
+  ],
+  "UKR": [
+    "east",
+    "POL"
+  ],
+  "FRA": [
+    "west",
+    "DEU"
+  ],
+  "DEU": [
+    "north",
+    "AUT"
+  ],
+  "ESP": [
+    "east",
+    "PRT"
+  ],
+  "EGY": [
+    "north",
+    "SDN"
+  ],
+  "NGA": [
+    "west",
+    "CMR"
+  ],
+  "ZAF": [
+    "south",
+    "BWA"
+  ],
+  "IND": [
+    "south",
+    "CHN"
+  ],
+  "CHN": [
+    "south",
+    "MNG"
+  ],
+  "MNG": [
+    "north",
+    "CHN"
+  ],
+  "AUS": [
+    "south",
+    "PNG"
+  ],
+  "NZL": [
+    "southeast",
+    "AUS"
+  ],
+  "PNG": [
+    "north",
+    "AUS"
+  ]
+}

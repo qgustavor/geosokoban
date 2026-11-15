@@ -1,0 +1,2 @@
+21 SFC template bodies compiled with the archived Vue 3.5.13 runtime compiler; script bodies passed node --check.
+This checks syntax only. It is not the official Vite/SFC build or an application browser test.

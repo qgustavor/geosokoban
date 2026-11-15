@@ -1,0 +1,616 @@
+TAP version 13
+# Subtest: neighbors never wrap across board edges
+ok 1 - neighbors never wrap across board edges
+  ---
+  duration_ms: 1.341017
+  type: 'test'
+  ...
+# Subtest: walking, pushing, invalid actions and immutable states
+ok 2 - walking, pushing, invalid actions and immutable states
+  ---
+  duration_ms: 0.506617
+  type: 'test'
+  ...
+# Subtest: chain pushing is forbidden
+ok 3 - chain pushing is forbidden
+  ---
+  duration_ms: 0.156381
+  type: 'test'
+  ...
+# Subtest: a flag may cross the wrong destination but cannot complete it
+ok 4 - a flag may cross the wrong destination but cannot complete it
+  ---
+  duration_ms: 0.219123
+  type: 'test'
+  ...
+# Subtest: starting targets cannot be covered or overlap
+ok 5 - starting targets cannot be covered or overlap
+  ---
+  duration_ms: 5.663722
+  type: 'test'
+  ...
+# Subtest: walking flood fill respects boxes
+ok 6 - walking flood fill respects boxes
+  ---
+  duration_ms: 0.419699
+  type: 'test'
+  ...
+# Subtest: restart resets counts and undo restores the complete pre-restart state
+ok 7 - restart resets counts and undo restores the complete pre-restart state
+  ---
+  duration_ms: 0.442382
+  type: 'test'
+  ...
+# Subtest: blocked movement and a no-op restart do not consume undo entries
+ok 8 - blocked movement and a no-op restart do not consume undo entries
+  ---
+  duration_ms: 0.149571
+  type: 'test'
+  ...
+# Subtest: 50,000 successful walks can all be undone without an artificial cap
+ok 9 - 50,000 successful walks can all be undone without an artificial cap
+  ---
+  duration_ms: 41.425323
+  type: 'test'
+  ...
+# Subtest: daily codes agree at a UTC boundary in every time zone
+ok 10 - daily codes agree at a UTC boundary in every time zone
+  ---
+  duration_ms: 0.917693
+  type: 'test'
+  ...
+# Subtest: invalid dates, versions, regions and ambiguous codes are rejected
+ok 11 - invalid dates, versions, regions and ambiguous codes are rejected
+  ---
+  duration_ms: 4.653973
+  type: 'test'
+  ...
+# Subtest: daily rotation includes all seven regions in a 90-day sample
+ok 12 - daily rotation includes all seven regions in a 90-day sample
+  ---
+  duration_ms: 0.58972
+  type: 'test'
+  ...
+# Subtest: seeded randomness is reproducible
+ok 13 - seeded randomness is reproducible
+  ---
+  duration_ms: 0.311118
+  type: 'test'
+  ...
+# Subtest: all translations have matching keys and interpolation parameters
+ok 14 - all translations have matching keys and interpolation parameters
+  ---
+  duration_ms: 1.992358
+  type: 'test'
+  ...
+# Subtest: world data and translated country records cover the same features
+ok 15 - world data and translated country records cover the same features
+  ---
+  duration_ms: 0.652502
+  type: 'test'
+  ...
+# Subtest: all 42 fixed story boards have visible destinations and certified solutions
+ok 16 - all 42 fixed story boards have visible destinations and certified solutions
+  ---
+  duration_ms: 1182.397321
+  type: 'test'
+  ...
+# Subtest: the independent solver solves every story board
+ok 17 - the independent solver solves every story board
+  ---
+  duration_ms: 97.88392
+  type: 'test'
+  ...
+# Subtest: 21 generated easy puzzles are certified, geographically placed and exceed the obstacle-free optimum
+ok 18 - 21 generated easy puzzles are certified, geographically placed and exceed the obstacle-free optimum
+  ---
+  duration_ms: 60393.798736
+  type: 'test'
+  ...
+# Subtest: the same seed produces the same full level
+ok 19 - the same seed produces the same full level
+  ---
+  duration_ms: 35711.645556
+  type: 'test'
+  ...
+# Subtest: search budget exhaustion is not reported as a proven deadlock
+ok 20 - search budget exhaustion is not reported as a proven deadlock
+  ---
+  duration_ms: 0.415165
+  type: 'test'
+  ...
+# Subtest: a deadlock involving two flags is detected without a false static proof
+ok 21 - a deadlock involving two flags is detected without a false static proof
+  ---
+  duration_ms: 0.147448
+  type: 'test'
+  ...
+# Subtest: first hint names a box, not the first walking direction
+ok 22 - first hint names a box, not the first walking direction
+  ---
+  duration_ms: 0.32414
+  type: 'test'
+  ...
+# Subtest: hint routes advance without requiring another click
+ok 23 - hint routes advance without requiring another click
+  ---
+  duration_ms: 0.233926
+  type: 'test'
+  ...
+# Subtest: all story hint checkpoints replay legally and reach a newly delivered flag
+ok 24 - all story hint checkpoints replay legally and reach a newly delivered flag
+  ---
+  duration_ms: 24.120553
+  type: 'test'
+  ...
+# Subtest: invalid hint paths are rejected
+ok 25 - invalid hint paths are rejected
+  ---
+  duration_ms: 0.981594
+  type: 'test'
+  ...
+# Subtest: every Vue component uses script setup and there is no position-check button
+ok 26 - every Vue component uses script setup and there is no position-check button
+  ---
+  duration_ms: 2.784977
+  type: 'test'
+  ...
+# Subtest: the production entry point has no standalone build or gameplay timer
+ok 27 - the production entry point has no standalone build or gameplay timer
+  ---
+  duration_ms: 0.373894
+  type: 'test'
+  ...
+# Subtest: three difficulty choices match the approved visibility and puzzle settings
+ok 28 - three difficulty choices match the approved visibility and puzzle settings
+  ---
+  duration_ms: 0.167989
+  type: 'test'
+  ...
+# Subtest: puzzle codes preserve the layout challenge and remain unambiguous
+ok 29 - puzzle codes preserve the layout challenge and remain unambiguous
+  ---
+  duration_ms: 0.172826
+  type: 'test'
+  ...
+# Subtest: every harder story board contains a necessary gate and a ten-push lower bound
+ok 30 - every harder story board contains a necessary gate and a ten-push lower bound
+  ---
+  duration_ms: 10.218363
+  type: 'test'
+  ...
+# Subtest: 21 generated hard puzzles require parking and pass the move-gap minimum
+ok 31 - 21 generated hard puzzles require parking and pass the move-gap minimum
+  ---
+  duration_ms: 58337.014915
+  type: 'test'
+  ...
+# Subtest: harder daily and random puzzles are deterministic
+ok 32 - harder daily and random puzzles are deterministic
+  ---
+  duration_ms: 30475.167398
+  type: 'test'
+  ...
+# Subtest: move-optimal A* agrees with independent unit-step BFS on 300 small labelled-box boards
+ok 33 - move-optimal A* agrees with independent unit-step BFS on 300 small labelled-box boards
+  ---
+  duration_ms: 107.14701
+  type: 'test'
+  ...
+# Subtest: the move-gap comparison retains coastlines and actors, removes only obstacle objects and rejects trivial boards
+ok 34 - the move-gap comparison retains coastlines and actors, removes only obstacle objects and rejects trivial boards
+  ---
+  duration_ms: 1.211677
+  type: 'test'
+  ...
+# Subtest: move-optimal search does not collapse player positions to a reachable region
+ok 35 - move-optimal search does not collapse player positions to a reachable region
+  ---
+  duration_ms: 0.322225
+  type: 'test'
+  ...
+# Subtest: five extra total moves are required even when a legal longer solution is already available
+ok 36 - five extra total moves are required even when a legal longer solution is already available
+  ---
+  duration_ms: 1.087764
+  type: 'test'
+  ...
+# Subtest: all 42 story boards round-trip through the Tiled format
+ok 37 - all 42 story boards round-trip through the Tiled format
+  ---
+  duration_ms: 20.658614
+  type: 'test'
+  ...
+# Subtest: edited boards require a valid player, visible targets and grid-aligned objects
+ok 38 - edited boards require a valid player, visible targets and grid-aligned objects
+  ---
+  duration_ms: 1.141594
+  type: 'test'
+  ...
+# Subtest: an imported story layout is independently solvable
+ok 39 - an imported story layout is independently solvable
+  ---
+  duration_ms: 7.698222
+  type: 'test'
+  ...
+# Subtest: all 48 frozen fallbacks reproduce their exact move-optimal gap and structural certificate
+ok 40 - all 48 frozen fallbacks reproduce their exact move-optimal gap and structural certificate
+  ---
+  duration_ms: 36464.798514
+  type: 'test'
+  ...
+# Subtest: completion keeps the delivered country readable, then announces clear, then opens results
+ok 41 - completion keeps the delivered country readable, then announces clear, then opens results
+  ---
+  duration_ms: 1.632928
+  type: 'test'
+  ...
+# Subtest: portrait, landscape and ultrawide viewports preserve the entire playable grid with a margin
+ok 42 - portrait, landscape and ultrawide viewports preserve the entire playable grid with a margin
+  ---
+  duration_ms: 0.726471
+  type: 'test'
+  ...
+# Subtest: coast outlines omit internal joins and do not wrap at board edges
+ok 43 - coast outlines omit internal joins and do not wrap at board edges
+  ---
+  duration_ms: 0.507579
+  type: 'test'
+  ...
+# Subtest: daily is the default, options are in-place panels and hints have no reveal timer
+ok 44 - daily is the default, options are in-place panels and hints have no reveal timer
+  ---
+  duration_ms: 1.676302
+  type: 'test'
+  ...
+# Subtest: the shipped geography is valid gzip and GeoJSON
+ok 45 - the shipped geography is valid gzip and GeoJSON
+  ---
+  duration_ms: 0.963351
+  type: 'test'
+  ...
+# Subtest: raw gzip without a Content-Encoding header loads
+ok 46 - raw gzip without a Content-Encoding header loads
+  ---
+  duration_ms: 39.800242
+  type: 'test'
+  ...
+# Subtest: already-decoded JSON is never decompressed a second time
+ok 47 - already-decoded JSON is never decompressed a second time
+  ---
+  duration_ms: 17.95667
+  type: 'test'
+  ...
+# Subtest: plain JSON without an encoding header also loads
+ok 48 - plain JSON without an encoding header also loads
+  ---
+  duration_ms: 14.929776
+  type: 'test'
+  ...
+# Subtest: invalid data, truncated gzip and unsuccessful responses are rejected
+ok 49 - invalid data, truncated gzip and unsuccessful responses are rejected
+  ---
+  duration_ms: 4.408681
+  type: 'test'
+  ...
+# Subtest: a failed map load can be retried and successful data is cached
+ok 50 - a failed map load can be retried and successful data is cached
+  ---
+  duration_ms: 25.24618
+  type: 'test'
+  ...
+# Subtest: cancelled map loads are not cached and do not poison a retry
+ok 51 - cancelled map loads are not cached and do not poison a retry
+  ---
+  duration_ms: 21.278769
+  type: 'test'
+  ...
+# Subtest: HTTP-level gzip reproduces the former bug and loads with the corrected decoder
+ok 52 - HTTP-level gzip reproduces the former bug and loads with the corrected decoder
+  ---
+  duration_ms: 54.543843
+  type: 'test'
+  ...
+# Subtest: fast generated levels never show a loader or wait for a finish animation
+ok 53 - fast generated levels never show a loader or wait for a finish animation
+  ---
+  duration_ms: 3.08741
+  type: 'test'
+  ...
+# Subtest: only an unanswered request at 500 ms reveals the loader
+ok 54 - only an unanswered request at 500 ms reveals the loader
+  ---
+  duration_ms: 0.376475
+  type: 'test'
+  ...
+# Subtest: visible completion runs for 400 ms, not the estimated search duration
+ok 55 - visible completion runs for 400 ms, not the estimated search duration
+  ---
+  duration_ms: 0.35941
+  type: 'test'
+  ...
+# Subtest: reduced motion has no completion hold
+ok 56 - reduced motion has no completion hold
+  ---
+  duration_ms: 0.179374
+  type: 'test'
+  ...
+# Subtest: long generation stays cancellable and becomes indeterminate without failing
+ok 57 - long generation stays cancellable and becomes indeterminate without failing
+  ---
+  duration_ms: 0.487679
+  type: 'test'
+  ...
+# Subtest: retries never move the displayed stage or fraction backward
+ok 58 - retries never move the displayed stage or fraction backward
+  ---
+  duration_ms: 0.176079
+  type: 'test'
+  ...
+# Subtest: cancelling before display prevents a ghost loader on the next request
+ok 59 - cancelling before display prevents a ghost loader on the next request
+  ---
+  duration_ms: 0.218592
+  type: 'test'
+  ...
+# Subtest: cancelling the completion animation resolves the pending request as cancelled
+ok 60 - cancelling the completion animation resolves the pending request as cancelled
+  ---
+  duration_ms: 0.227195
+  type: 'test'
+  ...
+# Subtest: worker progress does not terminate the worker or complete its request
+ok 61 - worker progress does not terminate the worker or complete its request
+  ---
+  duration_ms: 1.256352
+  type: 'test'
+  ...
+# Subtest: cancelled workers cannot deliver a stale board
+ok 62 - cancelled workers cannot deliver a stale board
+  ---
+  duration_ms: 0.702185
+  type: 'test'
+  ...
+# Subtest: worker failures are errors rather than invented successful boards
+ok 63 - worker failures are errors rather than invented successful boards
+  ---
+  duration_ms: 0.979634
+  type: 'test'
+  ...
+# Subtest: all internal regions have deterministic, replay-verified fallback boards in both difficulties
+ok 64 - all internal regions have deterministic, replay-verified fallback boards in both difficulties
+  ---
+  duration_ms: 54.075592
+  type: 'test'
+  ...
+# Subtest: search exhaustion selects a verified fallback; arbitrary exceptions do not
+ok 65 - search exhaustion selects a verified fallback; arbitrary exceptions do not
+  ---
+  duration_ms: 1.52715
+  type: 'test'
+  ...
+# Subtest: fallback callers cannot mutate the frozen pool
+ok 66 - fallback callers cannot mutate the frozen pool
+  ---
+  duration_ms: 1.044188
+  type: 'test'
+  ...
+# Subtest: progress observers do not alter seeded generation
+ok 67 - progress observers do not alter seeded generation
+  ---
+  duration_ms: 7170.659458
+  type: 'test'
+  ...
+# Subtest: benchmark failures cannot make the under-threshold percentage look better
+ok 68 - benchmark failures cannot make the under-threshold percentage look better
+  ---
+  duration_ms: 0.572884
+  type: 'test'
+  ...
+# Subtest: story loading bypasses feedback and random setup has no region dropdown
+ok 69 - story loading bypasses feedback and random setup has no region dropdown
+  ---
+  duration_ms: 0.526275
+  type: 'test'
+  ...
+# Subtest: menu preview and all fixed boards have country paths before geography loads
+ok 70 - menu preview and all fixed boards have country paths before geography loads
+  ---
+  duration_ms: 5.92406
+  type: 'test'
+  ...
+# Subtest: threshold changes reuse outlines without changing floors or puzzle state
+ok 71 - threshold changes reuse outlines without changing floors or puzzle state
+  ---
+  duration_ms: 1.046803
+  type: 'test'
+  ...
+# Subtest: unknown map versions, regions or dimensions do not display misaligned country paths
+ok 72 - unknown map versions, regions or dimensions do not display misaligned country paths
+  ---
+  duration_ms: 0.220435
+  type: 'test'
+  ...
+# Subtest: the atlas covers the eight existing projections and contains only rendering data
+ok 73 - the atlas covers the eight existing projections and contains only rendering data
+  ---
+  duration_ms: 0.477905
+  type: 'test'
+  ...
+# Subtest: the committed atlas is reproducible from the bundled world and projection code
+ok 74 - the committed atlas is reproducible from the bundled world and projection code
+  ---
+  duration_ms: 1193.261634
+  type: 'test'
+  ...
+# Subtest: board rendering cannot import the world loader or rasterizer through local dependencies
+ok 75 - board rendering cannot import the world loader or rasterizer through local dependencies
+  ---
+  duration_ms: 1.435032
+  type: 'test'
+  ...
+# Subtest: the original failure is reproduced with an unloaded rasterizer in a fresh process
+ok 76 - the original failure is reproduced with an unloaded rasterizer in a fresh process
+  ---
+  duration_ms: 65.42626
+  type: 'test'
+  ...
+# Subtest: generated maps retain exactly the same projected paths at all thresholds
+ok 77 - generated maps retain exactly the same projected paths at all thresholds
+  ---
+  duration_ms: 5017.230163
+  type: 'test'
+  ...
+# Subtest: swipes ignore taps and other pointers, then move in the dominant direction
+ok 78 - swipes ignore taps and other pointers, then move in the dominant direction
+  ---
+  duration_ms: 1.272516
+  type: 'test'
+  ...
+# Subtest: long drags are bounded and cancellation cannot leave a movement repeat running
+ok 79 - long drags are bounded and cancellation cannot leave a movement repeat running
+  ---
+  duration_ms: 0.388543
+  type: 'test'
+  ...
+# Subtest: share uses a visible-dialog fallback on unsupported or rejected native sharing
+ok 80 - share uses a visible-dialog fallback on unsupported or rejected native sharing
+  ---
+  duration_ms: 0.640304
+  type: 'test'
+  ...
+# Subtest: play is an ocean overlay interface, without explanatory captions, sidebar or direction buttons
+ok 81 - play is an ocean overlay interface, without explanatory captions, sidebar or direction buttons
+  ---
+  duration_ms: 0.684449
+  type: 'test'
+  ...
+# Subtest: the globe has directional views, no legs and no step-spin animation
+ok 82 - the globe has directional views, no legs and no step-spin animation
+  ---
+  duration_ms: 0.647024
+  type: 'test'
+  ...
+# Subtest: named puzzle locations preserve the seed and both challenge settings
+ok 83 - named puzzle locations preserve the seed and both challenge settings
+  ---
+  duration_ms: 3.858318
+  type: 'test'
+  ...
+# Subtest: invalid puzzle codes cannot become share locations
+ok 84 - invalid puzzle codes cannot become share locations
+  ---
+  duration_ms: 0.706432
+  type: 'test'
+  ...
+# Subtest: hard puzzle routes always hide targets and do not carry a legacy redirect
+ok 85 - hard puzzle routes always hide targets and do not carry a legacy redirect
+  ---
+  duration_ms: 0.516361
+  type: 'test'
+  ...
+# Subtest: the application mounts without awaiting or requesting geography
+ok 86 - the application mounts without awaiting or requesting geography
+  ---
+  duration_ms: 0.240455
+  type: 'test'
+  ...
+# Subtest: the official hash router owns views and share navigation
+ok 87 - the official hash router owns views and share navigation
+  ---
+  duration_ms: 0.67822
+  type: 'test'
+  ...
+# Subtest: map loading is inside generated requests and tied to cancellation
+ok 88 - map loading is inside generated requests and tied to cancellation
+  ---
+  duration_ms: 0.452878
+  type: 'test'
+  ...
+# Subtest: biome lookup respects holes and disjoint polygons
+ok 89 - biome lookup respects holes and disjoint polygons
+  ---
+  duration_ms: 2.000639
+  type: 'test'
+  ...
+# Subtest: antimeridian polygons do not cover the opposite hemisphere
+ok 90 - antimeridian polygons do not cover the opposite hemisphere
+  ---
+  duration_ms: 0.434821
+  type: 'test'
+  ...
+# Subtest: invalid source and missing attributes fail rather than manufacturing biomes
+ok 91 - invalid source and missing attributes fail rather than manufacturing biomes
+  ---
+  duration_ms: 0.343005
+  type: 'test'
+  ...
+# Subtest: the inverse projection round-trips all eight boards including the Pacific
+ok 92 - the inverse projection round-trips all eight boards including the Pacific
+  ---
+  duration_ms: 4.610436
+  type: 'test'
+  ...
+# Subtest: grid sampling masks water and records actual classified coverage
+ok 93 - grid sampling masks water and records actual classified coverage
+  ---
+  duration_ms: 4.69398
+  type: 'test'
+  ...
+# Subtest: Caatinga gets its specific art rule, while unrelated dry regions do not get cacti
+ok 94 - Caatinga gets its specific art rule, while unrelated dry regions do not get cacti
+  ---
+  duration_ms: 0.367492
+  type: 'test'
+  ...
+# Subtest: unknown or stale biome grids stay neutral
+ok 95 - unknown or stale biome grids stay neutral
+  ---
+  duration_ms: 2.048249
+  type: 'test'
+  ...
+# Subtest: decoration is deterministic, never occupies targets, and never changes any fixed solution
+ok 96 - decoration is deterministic, never occupies targets, and never changes any fixed solution
+  ---
+  duration_ms: 37.371188
+  type: 'test'
+  ...
+# Subtest: boat puzzles use reefs rather than placing trees or cacti on water
+ok 97 - boat puzzles use reefs rather than placing trees or cacti on water
+  ---
+  duration_ms: 0.604691
+  type: 'test'
+  ...
+# Subtest: the Western Europe context includes neighboring land outside its country list
+ok 98 - the Western Europe context includes neighboring land outside its country list
+  ---
+  duration_ms: 0.415672
+  type: 'test'
+  ...
+# Subtest: the exact hint-worker source solves current states in Node worker threads
+ok 99 - the exact hint-worker source solves current states in Node worker threads
+  ---
+  duration_ms: 172.929302
+  type: 'test'
+  ...
+# Subtest: the exact generation-worker source returns verified geography and puzzle challenges
+ok 100 - the exact generation-worker source returns verified geography and puzzle challenges
+  ---
+  duration_ms: 6089.931451
+  type: 'test'
+  ...
+# Subtest: malformed worker requests fail without inventing a deadlock
+ok 101 - malformed worker requests fail without inventing a deadlock
+  ---
+  duration_ms: 125.48544
+  type: 'test'
+  ...
+1..101
+# tests 101
+# suites 0
+# pass 101
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 186446.273002

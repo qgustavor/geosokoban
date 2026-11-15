@@ -1,0 +1,4 @@
+Errors []
+Board count 1
+Bounds {'x': 0, 'y': 48, 'width': 1440, 'height': 772}
+Component inspection passed; reconstructed setup, Vue 3.5.13 and fixture flag assets, not a production build.

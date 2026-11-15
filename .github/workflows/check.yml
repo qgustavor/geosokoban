@@ -1,0 +1,29 @@
+name: Check source
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+      - run: npm run check
+        env:
+          BASE_PATH: /geosokoban-test/
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+        env:
+          BASE_PATH: /geosokoban-test/
+      - run: npm run test:e2e -- tests/e2e/startup-routing.spec.js
+        env:
+          BASE_PATH: /geosokoban-test/
+          E2E_SERVER: dev

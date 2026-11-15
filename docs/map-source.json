@@ -1,0 +1,16 @@
+{
+  "version": "world-fixture-v2",
+  "source": "Natural Earth low-resolution snapshot bundled with pyogrio test fixtures",
+  "sourceRelease": "Not identified by the fixture; do not represent as a current boundary dataset",
+  "sha256Shapefile": "08e341606e8391e458c3f08deb312de664b56bfae376064c5aa0aee6681a5f55",
+  "sha256GeoJSON": "ef2629c17aa0b01e82488f7427a724981a76b6d41145b9fe5067442fe1bc7cf6",
+  "features": 177,
+  "transforms": [
+    "Retain country identity and continent",
+    "Round coordinates to four decimal places",
+    "Gzip with deterministic mtime=0"
+  ],
+  "license": "Public domain",
+  "terms": "https://www.naturalearthdata.com/about/terms-of-use/",
+  "review": "Review boundaries and omitted small islands before public educational release. Region grouping is a curriculum choice, not a sovereignty claim."
+}

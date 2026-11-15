@@ -1,0 +1,12 @@
+node_modules/
+dist/
+playwright-report/
+test-results/
+.DS_Store
+public/licenses/
+
+# Keep the derived scenery atlas in Git; the large source is reproducible.
+data-sources/*.geojson
+data-sources/*.gz
+src/content/*.tmp
+data-sources/*-source.json

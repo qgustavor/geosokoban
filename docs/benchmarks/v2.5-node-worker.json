@@ -1,0 +1,3320 @@
+{
+  "schema": 1,
+  "corpus": "generation-benchmark-v1",
+  "environment": {
+    "generatorVersion": 4,
+    "minimumExtraMoves": 5,
+    "runtime": "Node v22.16.0",
+    "platform": "linux",
+    "architecture": "x64",
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "availableParallelism": 4,
+    "samplesPerRegionAndDifficulty": 2,
+    "method": "Sequential fresh Node workers running the exact generation-worker source through a parentPort adapter. Includes worker startup, imports, geography structured cloning and the reply. Excludes application startup, network transfer and board rendering. No warmup samples discarded.",
+    "scope": "Development-machine measurements only, not player-device or browser percentiles."
+  },
+  "summary": {
+    "attempted": 28,
+    "completed": 28,
+    "failed": 0,
+    "fallbacks": 19,
+    "medianMs": 3151.7946379999994,
+    "p75Ms": 4292.58623500001,
+    "p80Ms": 4636.139776,
+    "p95Ms": 6616.820593,
+    "maxMs": 7966.355685999995,
+    "completedUnder500msPercent": 0,
+    "completedUnder1000msPercent": 3.5714285714285716
+  },
+  "byDifficulty": {
+    "gentle": {
+      "attempted": 14,
+      "completed": 14,
+      "failed": 0,
+      "fallbacks": 9,
+      "medianMs": 3550.4458019999993,
+      "p75Ms": 4292.58623500001,
+      "p80Ms": 4636.139776,
+      "p95Ms": 5221.697410999999,
+      "maxMs": 5221.697410999999,
+      "completedUnder500msPercent": 0,
+      "completedUnder1000msPercent": 0
+    },
+    "puzzle": {
+      "attempted": 14,
+      "completed": 14,
+      "failed": 0,
+      "fallbacks": 10,
+      "medianMs": 3071.719934000008,
+      "p75Ms": 4334.553273999991,
+      "p80Ms": 5182.236211000001,
+      "p95Ms": 7966.355685999995,
+      "maxMs": 7966.355685999995,
+      "completedUnder500msPercent": 0,
+      "completedUnder1000msPercent": 7.142857142857143
+    }
+  },
+  "byRegionAndDifficulty": {
+    "SA/gentle": {
+      "attempted": 2,
+      "completed": 2,
+      "failed": 0,
+      "fallbacks": 0,
+      "medianMs": 1890.0618230000036,
+      "p75Ms": 2344.8822750000036,
+      "p80Ms": 2344.8822750000036,
+      "p95Ms": 2344.8822750000036,
+      "maxMs": 2344.8822750000036,
+      "completedUnder500msPercent": 0,
+      "completedUnder1000msPercent": 0
+    },
+    "SA/puzzle": {
+      "attempted": 2,
+      "completed": 2,
+      "failed": 0,
+      "fallbacks": 1,
+      "medianMs": 1563.0011079999967,
+      "p75Ms": 5182.236211000001,
+      "p80Ms": 5182.236211000001,
+      "p95Ms": 5182.236211000001,
+      "maxMs": 5182.236211000001,
+      "completedUnder500msPercent": 0,
+      "completedUnder1000msPercent": 0
+    },
+    "NA/gentle": {
+      "attempted": 2,
+      "completed": 2,
+      "failed": 0,
+      "fallbacks": 2,
+      "medianMs": 4095.342743000001,
+      "p75Ms": 4292.58623500001,
+      "p80Ms": 4292.58623500001,
+      "p95Ms": 4292.58623500001,
+      "maxMs": 4292.58623500001,
+      "completedUnder500msPercent": 0,
+      "completedUnder1000msPercent": 0
+    },
+    "NA/puzzle": {
+      "attempted": 2,
+      "completed": 2,
+      "failed": 0,
+      "fallbacks": 2,
+      "medianMs": 3587.144631000003,
+      "p75Ms": 6616.820593,
+      "p80Ms": 6616.820593,
+      "p95Ms": 6616.820593,
+      "maxMs": 6616.820593,
+      "completedUnder500msPercent": 0,
+      "completedUnder1000msPercent": 0
+    },
+    "EE/gentle": {
+      "attempted": 2,
+      "completed": 2,
+      "failed": 0,
+      "fallbacks": 1,
+      "medianMs": 1654.6840099999972,
+      "p75Ms": 3550.4458019999993,
+      "p80Ms": 3550.4458019999993,
+      "p95Ms": 3550.4458019999993,
+      "maxMs": 3550.4458019999993,
+      "completedUnder500msPercent": 0,
+      "completedUnder1000msPercent": 0
+    },
+    "EE/puzzle": {
+      "attempted": 2,
+      "completed": 2,
+      "failed": 0,
+      "fallbacks": 2,
+      "medianMs": 1713.0029349999968,
+      "p75Ms": 3151.7946379999994,
+      "p80Ms": 3151.7946379999994,
+      "p95Ms": 3151.7946379999994,
+      "maxMs": 3151.7946379999994,
+      "completedUnder500msPercent": 0,
+      "completedUnder1000msPercent": 0
+    },
+    "WE/gentle": {
+      "attempted": 2,
+      "completed": 2,
+      "failed": 0,
+      "fallbacks": 1,
+      "medianMs": 2628.2216929999995,
+      "p75Ms": 3607.125476000001,
+      "p80Ms": 3607.125476000001,
+      "p95Ms": 3607.125476000001,
+      "maxMs": 3607.125476000001,
+      "completedUnder500msPercent": 0,
+      "completedUnder1000msPercent": 0
+    },
+    "WE/puzzle": {
+      "attempted": 2,
+      "completed": 2,
+      "failed": 0,
+      "fallbacks": 2,
+      "medianMs": 878.8337949999986,
+      "p75Ms": 2496.7371029999995,
+      "p80Ms": 2496.7371029999995,
+      "p95Ms": 2496.7371029999995,
+      "maxMs": 2496.7371029999995,
+      "completedUnder500msPercent": 0,
+      "completedUnder1000msPercent": 50
+    },
+    "AF/gentle": {
+      "attempted": 2,
+      "completed": 2,
+      "failed": 0,
+      "fallbacks": 2,
+      "medianMs": 4279.803865,
+      "p75Ms": 4636.139776,
+      "p80Ms": 4636.139776,
+      "p95Ms": 4636.139776,
+      "maxMs": 4636.139776,
+      "completedUnder500msPercent": 0,
+      "completedUnder1000msPercent": 0
+    },
+    "AF/puzzle": {
+      "attempted": 2,
+      "completed": 2,
+      "failed": 0,
+      "fallbacks": 1,
+      "medianMs": 4236.810390999999,
+      "p75Ms": 4334.553273999991,
+      "p80Ms": 4334.553273999991,
+      "p95Ms": 4334.553273999991,
+      "maxMs": 4334.553273999991,
+      "completedUnder500msPercent": 0,
+      "completedUnder1000msPercent": 0
+    },
+    "AS/gentle": {
+      "attempted": 2,
+      "completed": 2,
+      "failed": 0,
+      "fallbacks": 2,
+      "medianMs": 5211.778311000002,
+      "p75Ms": 5221.697410999999,
+      "p80Ms": 5221.697410999999,
+      "p95Ms": 5221.697410999999,
+      "maxMs": 5221.697410999999,
+      "completedUnder500msPercent": 0,
+      "completedUnder1000msPercent": 0
+    },
+    "AS/puzzle": {
+      "attempted": 2,
+      "completed": 2,
+      "failed": 0,
+      "fallbacks": 1,
+      "medianMs": 3028.818040000002,
+      "p75Ms": 3071.719934000008,
+      "p80Ms": 3071.719934000008,
+      "p95Ms": 3071.719934000008,
+      "maxMs": 3071.719934000008,
+      "completedUnder500msPercent": 0,
+      "completedUnder1000msPercent": 0
+    },
+    "OC/gentle": {
+      "attempted": 2,
+      "completed": 2,
+      "failed": 0,
+      "fallbacks": 1,
+      "medianMs": 2285.7055580000015,
+      "p75Ms": 3098.780061000012,
+      "p80Ms": 3098.780061000012,
+      "p95Ms": 3098.780061000012,
+      "maxMs": 3098.780061000012,
+      "completedUnder500msPercent": 0,
+      "completedUnder1000msPercent": 0
+    },
+    "OC/puzzle": {
+      "attempted": 2,
+      "completed": 2,
+      "failed": 0,
+      "fallbacks": 1,
+      "medianMs": 2878.3204630000037,
+      "p75Ms": 7966.355685999995,
+      "p80Ms": 7966.355685999995,
+      "p95Ms": 7966.355685999995,
+      "maxMs": 7966.355685999995,
+      "completedUnder500msPercent": 0,
+      "completedUnder1000msPercent": 0
+    }
+  },
+  "rows": [
+    {
+      "code": "G2-AS-XVCAF8FGSY",
+      "difficulty": "gentle",
+      "ms": 5221.697410999999,
+      "ok": true,
+      "fallback": true,
+      "region": "AS",
+      "optimalMoves": 32,
+      "obstacleFreeMoves": 26,
+      "extraMoves": 6,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 80.685295
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 80.70277100000001
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 48,
+          "ms": 507.365609
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 48,
+          "ms": 582.158673
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 48,
+          "ms": 758.077441
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 48,
+          "ms": 1827.646428
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 48,
+          "ms": 1931.614783
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 48,
+          "ms": 3569.349107
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 48,
+          "ms": 4123.731489999999
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 48,
+          "ms": 4142.063045
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 48,
+          "ms": 4447.126104999999
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 48,
+          "ms": 5009.188345
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 48,
+          "ms": 5143.548045
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 5221.324371
+        }
+      ]
+    },
+    {
+      "code": "G2-EE-9P1EYTP3CT",
+      "difficulty": "gentle",
+      "ms": 3550.4458019999993,
+      "ok": true,
+      "fallback": true,
+      "region": "EE",
+      "optimalMoves": 38,
+      "obstacleFreeMoves": 23,
+      "extraMoves": 15,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 74.05598699999973
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 74.06752400000005
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 48,
+          "ms": 221.2475800000002
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 48,
+          "ms": 291.92882199999985
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 48,
+          "ms": 1057.0058950000002
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 48,
+          "ms": 2881.45443
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 48,
+          "ms": 3024.658913
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 48,
+          "ms": 3095.7567370000006
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 48,
+          "ms": 3259.953219
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 48,
+          "ms": 3348.132173000001
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 48,
+          "ms": 3386.925392
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 3550.3145090000007
+        }
+      ]
+    },
+    {
+      "code": "G2-SA-XVCAF8FGSY-P",
+      "difficulty": "puzzle",
+      "ms": 5182.236211000001,
+      "ok": true,
+      "fallback": true,
+      "region": "SA",
+      "optimalMoves": 49,
+      "obstacleFreeMoves": 25,
+      "extraMoves": 24,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 57.405972000000475
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 57.41574600000058
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 64,
+          "ms": 183.14202400000067
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 64,
+          "ms": 1295.7964520000005
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 64,
+          "ms": 2589.800212
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 64,
+          "ms": 2624.923737000001
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 64,
+          "ms": 3792.6706329999997
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 64,
+          "ms": 3822.274652
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 64,
+          "ms": 3878.3638819999996
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 64,
+          "ms": 3926.4772360000006
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 64,
+          "ms": 4055.4809400000013
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 64,
+          "ms": 4085.646136000001
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 64,
+          "ms": 4162.331067000001
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 48,
+          "limit": 64,
+          "ms": 4214.398059000001
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 52,
+          "limit": 64,
+          "ms": 5055.668426
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 56,
+          "limit": 64,
+          "ms": 5095.414026
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 60,
+          "limit": 64,
+          "ms": 5155.719208
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 5181.991160000001
+        }
+      ]
+    },
+    {
+      "code": "G2-AF-XVCAF8FGSY",
+      "difficulty": "gentle",
+      "ms": 4279.803865,
+      "ok": true,
+      "fallback": true,
+      "region": "AF",
+      "optimalMoves": 40,
+      "obstacleFreeMoves": 31,
+      "extraMoves": 9,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 59.56495200000063
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 59.57773100000122
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 48,
+          "ms": 340.5976950000004
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 48,
+          "ms": 374.9862549999998
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 48,
+          "ms": 1600.333364
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 48,
+          "ms": 2809.3782599999995
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 48,
+          "ms": 2973.896941000001
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 48,
+          "ms": 3033.346051999999
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 48,
+          "ms": 3371.7593020000004
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 48,
+          "ms": 3409.115125000002
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 48,
+          "ms": 3460.942663
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 48,
+          "ms": 3875.032981999999
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 48,
+          "ms": 4186.124007
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 4279.650770000002
+        }
+      ]
+    },
+    {
+      "code": "G2-NA-9P1EYTP3CT-P",
+      "difficulty": "puzzle",
+      "ms": 6616.820593,
+      "ok": true,
+      "fallback": true,
+      "region": "NA",
+      "optimalMoves": 57,
+      "obstacleFreeMoves": 23,
+      "extraMoves": 34,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 65.41257500000211
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 65.42263000000094
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 64,
+          "ms": 2725.132651
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 64,
+          "ms": 2802.9214740000025
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 64,
+          "ms": 3955.9788240000016
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 64,
+          "ms": 4056.7463210000024
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 64,
+          "ms": 4312.707515000002
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 64,
+          "ms": 4462.436380000003
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 64,
+          "ms": 4586.776002000002
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 64,
+          "ms": 4743.610171
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 64,
+          "ms": 5551.812716
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 64,
+          "ms": 5795.692029000002
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 64,
+          "ms": 5853.2015820000015
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 48,
+          "limit": 64,
+          "ms": 6251.715351000003
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 52,
+          "limit": 64,
+          "ms": 6582.380506000001
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 6616.730991
+        }
+      ]
+    },
+    {
+      "code": "G2-AF-9P1EYTP3CT",
+      "difficulty": "gentle",
+      "ms": 4636.139776,
+      "ok": true,
+      "fallback": true,
+      "region": "AF",
+      "optimalMoves": 41,
+      "obstacleFreeMoves": 33,
+      "extraMoves": 8,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 62.99191500000234
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 63.00699700000041
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 48,
+          "ms": 355.44714699999895
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 48,
+          "ms": 1135.4964590000018
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 48,
+          "ms": 1983.0076860000008
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 48,
+          "ms": 2809.0422240000007
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 48,
+          "ms": 3383.325817000001
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 48,
+          "ms": 3415.747349000001
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 48,
+          "ms": 3816.5636730000006
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 48,
+          "ms": 3895.467273000002
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 48,
+          "ms": 3901.9378910000014
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 48,
+          "ms": 4350.545787999999
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 48,
+          "ms": 4501.428531000001
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 4636.032256999999
+        }
+      ]
+    },
+    {
+      "code": "G2-AS-9P1EYTP3CT-P",
+      "difficulty": "puzzle",
+      "ms": 3028.818040000002,
+      "ok": true,
+      "fallback": true,
+      "region": "AS",
+      "optimalMoves": 55,
+      "obstacleFreeMoves": 33,
+      "extraMoves": 22,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 65.29866000000038
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 65.31024700000125
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 64,
+          "ms": 394.1179770000017
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 64,
+          "ms": 580.4985280000001
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 64,
+          "ms": 826.461889000002
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 64,
+          "ms": 834.7494420000003
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 64,
+          "ms": 1290.9115590000001
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 64,
+          "ms": 1447.7897540000013
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 64,
+          "ms": 1512.8041330000015
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 64,
+          "ms": 1581.2311960000006
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 64,
+          "ms": 1900.541781
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 64,
+          "ms": 1928.4815890000027
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 64,
+          "ms": 2016.6149729999997
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 48,
+          "limit": 64,
+          "ms": 2078.5069299999996
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 52,
+          "limit": 64,
+          "ms": 2499.4823350000006
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 56,
+          "limit": 64,
+          "ms": 2546.638807000003
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 60,
+          "limit": 64,
+          "ms": 2674.1466199999995
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 3028.6980430000003
+        }
+      ]
+    },
+    {
+      "code": "G2-WE-9P1EYTP3CT",
+      "difficulty": "gentle",
+      "ms": 2628.2216929999995,
+      "ok": true,
+      "fallback": false,
+      "region": "WE",
+      "optimalMoves": 48,
+      "obstacleFreeMoves": 41,
+      "extraMoves": 7,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 45.56745099999898
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 45.59476200000063
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 48,
+          "ms": 418.9963859999989
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 48,
+          "ms": 460.19880900000135
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 48,
+          "ms": 527.5738219999985
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 48,
+          "ms": 1008.8081620000012
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 48,
+          "ms": 1056.599006999997
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 48,
+          "ms": 1123.8833860000013
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 48,
+          "ms": 1210.0596430000005
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 48,
+          "ms": 1252.2214900000035
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 48,
+          "ms": 1998.0872549999985
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 48,
+          "ms": 2079.3030300000028
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 48,
+          "ms": 2143.9853930000027
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "attempt": 45,
+          "limit": 48,
+          "ms": 2628.0780920000034
+        }
+      ]
+    },
+    {
+      "code": "G2-AF-9P1EYTP3CT-P",
+      "difficulty": "puzzle",
+      "ms": 4236.810390999999,
+      "ok": true,
+      "fallback": true,
+      "region": "AF",
+      "optimalMoves": 43,
+      "obstacleFreeMoves": 21,
+      "extraMoves": 22,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 52.45960699999705
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 52.47062300000107
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 64,
+          "ms": 380.93545099999756
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 64,
+          "ms": 528.8425609999977
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 64,
+          "ms": 608.9996539999993
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 64,
+          "ms": 789.0523279999979
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 64,
+          "ms": 1105.6905419999966
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 64,
+          "ms": 1192.2737689999994
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 64,
+          "ms": 1336.3988739999986
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 64,
+          "ms": 1507.4834469999987
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 64,
+          "ms": 3192.1618759999983
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 64,
+          "ms": 3335.7635079999964
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 64,
+          "ms": 3470.158298999995
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 48,
+          "limit": 64,
+          "ms": 3537.0617559999955
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 52,
+          "limit": 64,
+          "ms": 3965.1408239999946
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 56,
+          "limit": 64,
+          "ms": 3972.0877340000006
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 60,
+          "limit": 64,
+          "ms": 4113.335586999994
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 4236.042899
+        }
+      ]
+    },
+    {
+      "code": "G2-SA-9P1EYTP3CT-P",
+      "difficulty": "puzzle",
+      "ms": 1563.0011079999967,
+      "ok": true,
+      "fallback": false,
+      "region": "SA",
+      "optimalMoves": 57,
+      "obstacleFreeMoves": 37,
+      "extraMoves": 20,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 66.06330400000297
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 66.07612299999892
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 64,
+          "ms": 249.0609009999971
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 64,
+          "ms": 318.0068089999986
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 64,
+          "ms": 373.7885529999985
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 64,
+          "ms": 423.51655200000096
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 64,
+          "ms": 495.853869999999
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 64,
+          "ms": 559.6262809999971
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 64,
+          "ms": 575.7770380000002
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 64,
+          "ms": 588.9162260000012
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 64,
+          "ms": 805.0823689999961
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 64,
+          "ms": 842.4241919999986
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 64,
+          "ms": 886.5536890000003
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 48,
+          "limit": 64,
+          "ms": 932.8997499999969
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 52,
+          "limit": 64,
+          "ms": 1030.3363529999988
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 56,
+          "limit": 64,
+          "ms": 1047.794922000001
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "attempt": 57,
+          "limit": 64,
+          "ms": 1562.9382350000014
+        }
+      ]
+    },
+    {
+      "code": "G2-NA-9P1EYTP3CT",
+      "difficulty": "gentle",
+      "ms": 4095.342743000001,
+      "ok": true,
+      "fallback": true,
+      "region": "CAR",
+      "optimalMoves": 43,
+      "obstacleFreeMoves": 36,
+      "extraMoves": 7,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 52.03863500000443
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 52.05114400000457
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 48,
+          "ms": 266.2396930000032
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 48,
+          "ms": 1361.1710850000018
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 48,
+          "ms": 2168.8328760000004
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 48,
+          "ms": 2332.069951000005
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 48,
+          "ms": 2883.109405000003
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 48,
+          "ms": 2909.176569000003
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 48,
+          "ms": 3227.0575920000047
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 48,
+          "ms": 3549.475553000004
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 48,
+          "ms": 3684.3023500000054
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 48,
+          "ms": 3841.6578260000024
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 48,
+          "ms": 3973.421939
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 4095.2177990000055
+        }
+      ]
+    },
+    {
+      "code": "G2-SA-XVCAF8FGSY",
+      "difficulty": "gentle",
+      "ms": 2344.8822750000036,
+      "ok": true,
+      "fallback": false,
+      "region": "SA",
+      "optimalMoves": 34,
+      "obstacleFreeMoves": 28,
+      "extraMoves": 6,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 54.630285999999614
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 54.63901800000167
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 48,
+          "ms": 626.4288589999996
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 48,
+          "ms": 677.6209569999992
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 48,
+          "ms": 1753.5970390000002
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 48,
+          "ms": 1887.427518000004
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 48,
+          "ms": 1903.3986549999972
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "attempt": 21,
+          "limit": 48,
+          "ms": 2344.8099680000014
+        }
+      ]
+    },
+    {
+      "code": "G2-WE-XVCAF8FGSY-P",
+      "difficulty": "puzzle",
+      "ms": 2496.7371029999995,
+      "ok": true,
+      "fallback": true,
+      "region": "WE",
+      "optimalMoves": 59,
+      "obstacleFreeMoves": 39,
+      "extraMoves": 20,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 73.03571999999986
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 73.04547500000626
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 64,
+          "ms": 206.57757400000264
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 64,
+          "ms": 315.42506400000275
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 64,
+          "ms": 360.01388399999996
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 64,
+          "ms": 422.8433570000052
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 64,
+          "ms": 535.4309210000065
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 64,
+          "ms": 553.0190930000026
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 64,
+          "ms": 586.6012250000058
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 64,
+          "ms": 696.9642340000064
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 64,
+          "ms": 762.8109560000012
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 64,
+          "ms": 793.8841590000011
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 64,
+          "ms": 816.4824970000045
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 48,
+          "limit": 64,
+          "ms": 830.0359400000016
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 52,
+          "limit": 64,
+          "ms": 998.2441180000023
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 56,
+          "limit": 64,
+          "ms": 1046.2505070000043
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 60,
+          "limit": 64,
+          "ms": 1065.5201970000053
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 2496.666849000001
+        }
+      ]
+    },
+    {
+      "code": "G2-WE-9P1EYTP3CT-P",
+      "difficulty": "puzzle",
+      "ms": 878.8337949999986,
+      "ok": true,
+      "fallback": true,
+      "region": "WE",
+      "optimalMoves": 39,
+      "obstacleFreeMoves": 23,
+      "extraMoves": 16,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 51.94271699999808
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 51.95106899999519
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 64,
+          "ms": 215.9918089999992
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 64,
+          "ms": 290.60764899999776
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 64,
+          "ms": 342.10765399999946
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 64,
+          "ms": 373.40808199999447
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 64,
+          "ms": 455.4824079999962
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 64,
+          "ms": 488.37089800000103
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 64,
+          "ms": 531.1220889999968
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 64,
+          "ms": 586.4580439999991
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 64,
+          "ms": 651.2915609999982
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 64,
+          "ms": 654.5852469999954
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 64,
+          "ms": 677.9443969999993
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 48,
+          "limit": 64,
+          "ms": 678.7164159999957
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 52,
+          "limit": 64,
+          "ms": 778.8814039999997
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 56,
+          "limit": 64,
+          "ms": 817.9581570000009
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 60,
+          "limit": 64,
+          "ms": 875.0847569999969
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 878.7602960000004
+        }
+      ]
+    },
+    {
+      "code": "G2-OC-XVCAF8FGSY-P",
+      "difficulty": "puzzle",
+      "ms": 2878.3204630000037,
+      "ok": true,
+      "fallback": false,
+      "region": "OC",
+      "optimalMoves": 54,
+      "obstacleFreeMoves": 36,
+      "extraMoves": 18,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 43.03354699999909
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 43.04231000000436
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "attempt": 4,
+          "limit": 64,
+          "ms": 2878.195910000002
+        }
+      ]
+    },
+    {
+      "code": "G2-WE-XVCAF8FGSY",
+      "difficulty": "gentle",
+      "ms": 3607.125476000001,
+      "ok": true,
+      "fallback": true,
+      "region": "WE",
+      "optimalMoves": 33,
+      "obstacleFreeMoves": 25,
+      "extraMoves": 8,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 65.1202040000062
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 65.12891700000182
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 48,
+          "ms": 1070.4653730000064
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 48,
+          "ms": 1134.1403370000044
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 48,
+          "ms": 1192.9366560000053
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 48,
+          "ms": 2442.2332340000066
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 48,
+          "ms": 2495.2897070000035
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 48,
+          "ms": 2524.0837960000063
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 48,
+          "ms": 2973.4910050000035
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 48,
+          "ms": 2987.4008310000063
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 48,
+          "ms": 3237.8845680000013
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 48,
+          "ms": 3360.743368000003
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 48,
+          "ms": 3413.109142000001
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 3606.995584000004
+        }
+      ]
+    },
+    {
+      "code": "G2-SA-9P1EYTP3CT",
+      "difficulty": "gentle",
+      "ms": 1890.0618230000036,
+      "ok": true,
+      "fallback": false,
+      "region": "SA",
+      "optimalMoves": 40,
+      "obstacleFreeMoves": 26,
+      "extraMoves": 14,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 52.702240000005986
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 52.7106930000009
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 48,
+          "ms": 149.723582000006
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 48,
+          "ms": 1020.4431280000063
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 48,
+          "ms": 1055.6163510000042
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "attempt": 13,
+          "limit": 48,
+          "ms": 1890.010457000004
+        }
+      ]
+    },
+    {
+      "code": "G2-EE-9P1EYTP3CT-P",
+      "difficulty": "puzzle",
+      "ms": 3151.7946379999994,
+      "ok": true,
+      "fallback": true,
+      "region": "EE",
+      "optimalMoves": 43,
+      "obstacleFreeMoves": 25,
+      "extraMoves": 18,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 59.77262899999914
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 59.78298399999767
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 64,
+          "ms": 257.1858839999986
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 64,
+          "ms": 333.61509600000136
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 64,
+          "ms": 510.4309429999994
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 64,
+          "ms": 516.179833000002
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 64,
+          "ms": 640.9633620000022
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 64,
+          "ms": 763.5830070000011
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 64,
+          "ms": 782.0444550000029
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 64,
+          "ms": 2419.8034840000037
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 64,
+          "ms": 2627.0745810000008
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 64,
+          "ms": 2669.2517819999994
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 64,
+          "ms": 2674.728686000002
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 48,
+          "limit": 64,
+          "ms": 2776.6059410000016
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 52,
+          "limit": 64,
+          "ms": 2894.5292190000036
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 56,
+          "limit": 64,
+          "ms": 2906.539987999997
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 60,
+          "limit": 64,
+          "ms": 3081.170414
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 3151.7231119999997
+        }
+      ]
+    },
+    {
+      "code": "G2-NA-XVCAF8FGSY-P",
+      "difficulty": "puzzle",
+      "ms": 3587.144631000003,
+      "ok": true,
+      "fallback": true,
+      "region": "CAR",
+      "optimalMoves": 43,
+      "obstacleFreeMoves": 25,
+      "extraMoves": 18,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 67.799082000005
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 67.80794500000047
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 64,
+          "ms": 438.9900190000044
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 64,
+          "ms": 554.7192340000038
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 64,
+          "ms": 726.8663460000025
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 64,
+          "ms": 985.875466000005
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 64,
+          "ms": 1277.2910699999993
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 64,
+          "ms": 1377.0004770000014
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 64,
+          "ms": 1530.5230220000012
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 64,
+          "ms": 1630.6897989999998
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 64,
+          "ms": 1927.1227140000046
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 64,
+          "ms": 2177.700772000004
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 64,
+          "ms": 2539.1253110000034
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 48,
+          "limit": 64,
+          "ms": 2914.1977810000026
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 52,
+          "limit": 64,
+          "ms": 3157.0407659999983
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 56,
+          "limit": 64,
+          "ms": 3285.912706000003
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 60,
+          "limit": 64,
+          "ms": 3413.4895150000084
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 3587.0263459999987
+        }
+      ]
+    },
+    {
+      "code": "G2-OC-XVCAF8FGSY",
+      "difficulty": "gentle",
+      "ms": 2285.7055580000015,
+      "ok": true,
+      "fallback": false,
+      "region": "OC",
+      "optimalMoves": 46,
+      "obstacleFreeMoves": 36,
+      "extraMoves": 10,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 48.78845599999477
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 48.80072400000063
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 48,
+          "ms": 233.20031899999594
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 48,
+          "ms": 782.7835279999999
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "attempt": 9,
+          "limit": 48,
+          "ms": 2285.5183319999924
+        }
+      ]
+    },
+    {
+      "code": "G2-EE-XVCAF8FGSY-P",
+      "difficulty": "puzzle",
+      "ms": 1713.0029349999968,
+      "ok": true,
+      "fallback": true,
+      "region": "EE",
+      "optimalMoves": 43,
+      "obstacleFreeMoves": 25,
+      "extraMoves": 18,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 64.92070899999817
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 64.92975300000398
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 64,
+          "ms": 238.62221000000136
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 64,
+          "ms": 323.2405219999928
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 64,
+          "ms": 381.3612520000024
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 64,
+          "ms": 517.3434429999907
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 64,
+          "ms": 676.4589009999909
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 64,
+          "ms": 685.4486739999993
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 64,
+          "ms": 699.0652169999958
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 64,
+          "ms": 741.5532209999947
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 64,
+          "ms": 938.9379599999957
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 64,
+          "ms": 1047.7347149999987
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 64,
+          "ms": 1147.3425140000036
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 48,
+          "limit": 64,
+          "ms": 1168.3623110000044
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 52,
+          "limit": 64,
+          "ms": 1354.9290570000012
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 56,
+          "limit": 64,
+          "ms": 1477.5549289999908
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 60,
+          "limit": 64,
+          "ms": 1594.2424559999927
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 1712.8916610000015
+        }
+      ]
+    },
+    {
+      "code": "G2-AS-XVCAF8FGSY-P",
+      "difficulty": "puzzle",
+      "ms": 3071.719934000008,
+      "ok": true,
+      "fallback": false,
+      "region": "AS",
+      "optimalMoves": 48,
+      "obstacleFreeMoves": 30,
+      "extraMoves": 18,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 53.20509099999617
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 53.2182199999952
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 64,
+          "ms": 472.4384759999957
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 64,
+          "ms": 547.2227379999968
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 64,
+          "ms": 617.0635400000028
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 64,
+          "ms": 620.4679190000024
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 64,
+          "ms": 1023.6615770000062
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 64,
+          "ms": 1124.7761100000062
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 64,
+          "ms": 1252.8550329999998
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 64,
+          "ms": 1432.3835490000056
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 64,
+          "ms": 1839.5403749999969
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 64,
+          "ms": 1980.825536000004
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "attempt": 42,
+          "limit": 64,
+          "ms": 3071.6403370000044
+        }
+      ]
+    },
+    {
+      "code": "G2-OC-9P1EYTP3CT",
+      "difficulty": "gentle",
+      "ms": 3098.780061000012,
+      "ok": true,
+      "fallback": true,
+      "region": "OC",
+      "optimalMoves": 43,
+      "obstacleFreeMoves": 24,
+      "extraMoves": 19,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 51.58777500000724
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 51.59586700001091
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 48,
+          "ms": 313.4064800000051
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 48,
+          "ms": 831.3640910000104
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 48,
+          "ms": 927.100363000005
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 48,
+          "ms": 1954.1374820000055
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 48,
+          "ms": 2048.4629640000057
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 48,
+          "ms": 2102.527105000001
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 48,
+          "ms": 2347.5828400000028
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 48,
+          "ms": 2451.2067620000016
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 48,
+          "ms": 2683.41337200001
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 48,
+          "ms": 2835.3480620000046
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 48,
+          "ms": 2957.6716830000078
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 3098.610621
+        }
+      ]
+    },
+    {
+      "code": "G2-OC-9P1EYTP3CT-P",
+      "difficulty": "puzzle",
+      "ms": 7966.355685999995,
+      "ok": true,
+      "fallback": true,
+      "region": "OC",
+      "optimalMoves": 51,
+      "obstacleFreeMoves": 38,
+      "extraMoves": 13,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 57.410284999990836
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 57.422492999990936
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 64,
+          "ms": 2841.278338999997
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 64,
+          "ms": 5035.414722999994
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 64,
+          "ms": 5380.742861999999
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 64,
+          "ms": 5562.833620000005
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 64,
+          "ms": 6239.568058000004
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 64,
+          "ms": 6382.601332999999
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 64,
+          "ms": 6441.881599999993
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 64,
+          "ms": 6517.735761999997
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 64,
+          "ms": 6762.118632999991
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 64,
+          "ms": 6833.386207999996
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 64,
+          "ms": 7086.964779999995
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 48,
+          "limit": 64,
+          "ms": 7246.174058000004
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 52,
+          "limit": 64,
+          "ms": 7428.2944299999945
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 56,
+          "limit": 64,
+          "ms": 7586.873082999999
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 60,
+          "limit": 64,
+          "ms": 7729.973266999994
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 7966.2785129999975
+        }
+      ]
+    },
+    {
+      "code": "G2-EE-XVCAF8FGSY",
+      "difficulty": "gentle",
+      "ms": 1654.6840099999972,
+      "ok": true,
+      "fallback": false,
+      "region": "EE",
+      "optimalMoves": 33,
+      "obstacleFreeMoves": 25,
+      "extraMoves": 8,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 55.70090999999957
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 55.70990299999539
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 48,
+          "ms": 204.024654000008
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 48,
+          "ms": 247.82466900000873
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "attempt": 12,
+          "limit": 48,
+          "ms": 1654.634407000005
+        }
+      ]
+    },
+    {
+      "code": "G2-AF-XVCAF8FGSY-P",
+      "difficulty": "puzzle",
+      "ms": 4334.553273999991,
+      "ok": true,
+      "fallback": false,
+      "region": "AF",
+      "optimalMoves": 51,
+      "obstacleFreeMoves": 27,
+      "extraMoves": 24,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 57.53767799999332
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 64,
+          "ms": 57.55928000000131
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 64,
+          "ms": 506.4243279999937
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 64,
+          "ms": 585.4660460000014
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 64,
+          "ms": 621.3165210000006
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 64,
+          "ms": 694.5411289999902
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 64,
+          "ms": 969.95980099999
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 64,
+          "ms": 2488.532515999992
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 64,
+          "ms": 2709.388068
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 64,
+          "ms": 2883.195221999995
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 64,
+          "ms": 3180.973681000003
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 64,
+          "ms": 3324.3041939999966
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 64,
+          "ms": 3331.768751999989
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 48,
+          "limit": 64,
+          "ms": 3446.9913169999927
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 52,
+          "limit": 64,
+          "ms": 3747.6609309999913
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "attempt": 54,
+          "limit": 64,
+          "ms": 4334.496010000003
+        }
+      ]
+    },
+    {
+      "code": "G2-NA-XVCAF8FGSY",
+      "difficulty": "gentle",
+      "ms": 4292.58623500001,
+      "ok": true,
+      "fallback": true,
+      "region": "CAR",
+      "optimalMoves": 57,
+      "obstacleFreeMoves": 37,
+      "extraMoves": 20,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 135.09435200000007
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 135.12372600000526
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 48,
+          "ms": 2327.843251000013
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 48,
+          "ms": 2502.6272989999998
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 48,
+          "ms": 2703.427137000006
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 48,
+          "ms": 3153.7695810000005
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 48,
+          "ms": 3231.9284620000108
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 48,
+          "ms": 3262.369642000005
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 48,
+          "ms": 3481.031700000007
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 48,
+          "ms": 3795.0267290000047
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 48,
+          "ms": 3956.8071550000022
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 48,
+          "ms": 4086.7663900000043
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 48,
+          "ms": 4162.942922000002
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 4292.470164000013
+        }
+      ]
+    },
+    {
+      "code": "G2-AS-9P1EYTP3CT",
+      "difficulty": "gentle",
+      "ms": 5211.778311000002,
+      "ok": true,
+      "fallback": true,
+      "region": "AS",
+      "optimalMoves": 33,
+      "obstacleFreeMoves": 28,
+      "extraMoves": 5,
+      "error": null,
+      "updates": [
+        {
+          "type": "progress",
+          "stage": "map",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 56.027281999995466
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 0,
+          "limit": 48,
+          "ms": 56.035693999991054
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 4,
+          "limit": 48,
+          "ms": 428.4754229999962
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 8,
+          "limit": 48,
+          "ms": 562.5390609999886
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 12,
+          "limit": 48,
+          "ms": 1586.8923799999902
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 16,
+          "limit": 48,
+          "ms": 3213.3336129999952
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 20,
+          "limit": 48,
+          "ms": 3337.298238000003
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 24,
+          "limit": 48,
+          "ms": 3730.99534899999
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 28,
+          "limit": 48,
+          "ms": 4312.655384999991
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 32,
+          "limit": 48,
+          "ms": 4350.945259999993
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 36,
+          "limit": 48,
+          "ms": 4453.450968999998
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 40,
+          "limit": 48,
+          "ms": 4931.09444999999
+        },
+        {
+          "type": "progress",
+          "stage": "search",
+          "attempt": 44,
+          "limit": 48,
+          "ms": 5075.168816999998
+        },
+        {
+          "type": "progress",
+          "stage": "ready",
+          "ms": 5211.683210999996
+        }
+      ]
+    }
+  ]
+}
