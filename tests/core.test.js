@@ -23,8 +23,15 @@ const stories = JSON.parse(source('../src/content/story-levels.json'))
 const countries = JSON.parse(source('../src/data/countries.json'))
 
 function tiny () {
-  return { width: 7, height: 3, floors: [8, 9, 10, 11, 12], obstacles: [], player: 8,
-    boxes: [{ id: 'PER', country: 'PER', position: 10 }], goals: [{ country: 'PER', position: 12 }] }
+  return {
+    width: 7,
+    height: 3,
+    floors: [8, 9, 10, 11, 12],
+    obstacles: [],
+    player: 8,
+    boxes: [{ id: 'PER', country: 'PER', position: 10 }],
+    goals: [{ country: 'PER', position: 12 }]
+  }
 }
 
 function assertCertified (level) {
@@ -229,9 +236,15 @@ test('search budget exhaustion is not reported as a proven deadlock', () => {
 })
 
 test('a deadlock involving two flags is detected without a false static proof', () => {
-  const level = { width: 8, height: 3, floors: [9, 10, 11, 12, 13, 14], obstacles: [], player: 9,
+  const level = {
+    width: 8,
+    height: 3,
+    floors: [9, 10, 11, 12, 13, 14],
+    obstacles: [],
+    player: 9,
     boxes: [{ id: 'PER', country: 'PER', position: 11 }, { id: 'BOL', country: 'BOL', position: 12 }],
-    goals: [{ country: 'PER', position: 13 }, { country: 'BOL', position: 14 }] }
+    goals: [{ country: 'PER', position: 13 }, { country: 'BOL', position: 14 }]
+  }
   assert.equal(isDefinitelyStuck(level, initialState(level)), false)
   assert.equal(solve(level, initialState(level)).status, 'unsolvable')
 })
@@ -291,7 +304,6 @@ test('the production entry point has no standalone build or gameplay timer', () 
   assert.doesNotMatch(source('../src/core/session.js'), /Date|performance|setInterval|elapsed|timer/i)
   assert.doesNotMatch(source('../src/ui/PlayView.vue'), /elapsed|checkPosition|gameplayTimer/)
 })
-
 
 test('three difficulty choices match the approved visibility and puzzle settings', () => {
   assert.deepEqual(CHALLENGES, ['easy', 'medium', 'hard'])

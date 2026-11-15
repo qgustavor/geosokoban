@@ -6,8 +6,11 @@ import { dailyCode, newCode } from '../core/seed.js'
 import ChallengePicker from './ChallengePicker.vue'
 
 const props = defineProps({
-  t: { type: Function, required: true }, completed: { type: Array, required: true },
-  resumeCode: { type: String, required: true }, challenge: { type: String, required: true }, notice: { type: String, default: '' }
+  t: { type: Function, required: true },
+  completed: { type: Array, required: true },
+  resumeCode: { type: String, required: true },
+  challenge: { type: String, required: true },
+  notice: { type: String, default: '' }
 })
 const emit = defineEmits(['start', 'challenge'])
 const mode = ref('daily')

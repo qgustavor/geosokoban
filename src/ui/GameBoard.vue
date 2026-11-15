@@ -182,5 +182,4 @@ const route = computed(() => props.overlay.route.map(position => `${x(position) 
 .push-marker text { font-size: 11px; fill: #572a15; font-weight: 800; paint-order: stroke; stroke: #fff7df; stroke-width: 3; }
 @keyframes arrive { 0% { opacity: 0; transform: translateY(16px) scale(.82); } 55% { opacity: 1; transform: translateY(-5px) scale(1.03); } 80% { transform: translateY(1px) scale(.99); } 100% { opacity: 1; transform: none; } }
 
-
 </style>

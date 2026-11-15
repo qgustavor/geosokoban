@@ -82,15 +82,17 @@ export function sampleRegion (definition, lookup, landAt, samples = 4) {
     const counts = new Map()
     let land = 0
     let classified = 0
-    for (let sy = 0; sy < samples; sy++) for (let sx = 0; sx < samples; sx++) {
-      const px = x + (sx + 0.5) / samples
-      const py = y + (sy + 0.5) / samples
-      if (!landAt(px, py)) continue
-      land++
-      const id = lookup.at(...unproject([px, py]))
-      if (id === null) continue
-      classified++
-      counts.set(id, (counts.get(id) ?? 0) + 1)
+    for (let sy = 0; sy < samples; sy++) {
+      for (let sx = 0; sx < samples; sx++) {
+        const px = x + (sx + 0.5) / samples
+        const py = y + (sy + 0.5) / samples
+        if (!landAt(px, py)) continue
+        land++
+        const id = lookup.at(...unproject([px, py]))
+        if (id === null) continue
+        classified++
+        counts.set(id, (counts.get(id) ?? 0) + 1)
+      }
     }
     const ranked = [...counts].sort((a, b) => b[1] - a[1] || a[0] - b[0])
     cells.push(ranked.length ? [ranked[0][0], ranked[1]?.[0] ?? null, Number((classified / land).toFixed(3)), Number((ranked[0][1] / classified).toFixed(3))] : null)

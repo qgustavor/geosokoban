@@ -1,8 +1,11 @@
 <script setup>
 import { computed } from 'vue'
 const props = defineProps({
-  help: { type: Object, required: true }, t: { type: Function, required: true },
-  name: { type: Function, required: true }, width: { type: Number, required: true }, solved: Boolean
+  help: { type: Object, required: true },
+  t: { type: Function, required: true },
+  name: { type: Function, required: true },
+  width: { type: Number, required: true },
+  solved: Boolean
 })
 defineEmits(['dismiss'])
 const directions = computed(() => {

@@ -53,7 +53,7 @@ test('portrait, landscape and ultrawide viewports preserve the entire playable g
     assert.ok(viewport.y <= -40)
     assert.ok(viewport.x + viewport.width >= level.width * 40 + 40)
     assert.ok(viewport.y + viewport.height >= level.height * 40 + 40)
-    assert.ok(Math.abs(viewport.width / viewport.height - size.width / size.height) < .0001)
+    assert.ok(Math.abs(viewport.width / viewport.height - size.width / size.height) < 0.0001)
     const label = labelPlacement(level, 0, viewport, size)
     assert.ok(parseFloat(label.left) >= 10)
     assert.ok(parseFloat(label.top) >= 48)

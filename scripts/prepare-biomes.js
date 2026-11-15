@@ -20,10 +20,16 @@ async function download () {
   for (let offset = 0; ; offset += downloadOptions.pageSize) {
     const url = new URL(endpoint)
     url.search = new URLSearchParams({
-      where: '1=1', outFields: 'ECO_ID,ECO_NAME,BIOME_NUM,BIOME_NAME,REALM,LICENSE',
-      returnGeometry: 'true', outSR: '4326', f: 'geojson', orderByFields: 'FID ASC',
-      maxAllowableOffset: String(downloadOptions.offset), geometryPrecision: String(downloadOptions.precision),
-      resultOffset: String(offset), resultRecordCount: String(downloadOptions.pageSize)
+      where: '1=1',
+      outFields: 'ECO_ID,ECO_NAME,BIOME_NUM,BIOME_NAME,REALM,LICENSE',
+      returnGeometry: 'true',
+      outSR: '4326',
+      f: 'geojson',
+      orderByFields: 'FID ASC',
+      maxAllowableOffset: String(downloadOptions.offset),
+      geometryPrecision: String(downloadOptions.precision),
+      resultOffset: String(offset),
+      resultRecordCount: String(downloadOptions.pageSize)
     }).toString()
     const response = await fetch(url, { signal: AbortSignal.timeout(120000) })
     if (!response.ok) throw new Error(`Ecoregion download failed (${response.status})`)
@@ -80,13 +86,21 @@ async function main () {
     if (!map.cells.some(cell => cell !== null)) throw new Error(`No classified land samples for ${region}; refusing an empty atlas`)
   }
   const result = {
-    version: 1, mapVersion: MAP_VERSION, status: 'prepared',
+    version: 1,
+    mapVersion: MAP_VERSION,
+    status: 'prepared',
     source: {
-      name: 'RESOLVE Ecoregions 2017', license: 'CC-BY-4.0', attribution: 'RESOLVE; Dinerstein et al. (2017)',
-      ...provenance, sha256, ecoregions: Object.keys(lookup.records).length,
-      samplesPerCell: 16, preparedAt: new Date().toISOString().slice(0, 10)
+      name: 'RESOLVE Ecoregions 2017',
+      license: 'CC-BY-4.0',
+      attribution: 'RESOLVE; Dinerstein et al. (2017)',
+      ...provenance,
+      sha256,
+      ecoregions: Object.keys(lookup.records).length,
+      samplesPerCell: 16,
+      preparedAt: new Date().toISOString().slice(0, 10)
     },
-    ecoregions: lookup.records, regions
+    ecoregions: lookup.records,
+    regions
   }
   const temporary = new URL(destination.href + '.tmp')
   await writeFile(temporary, JSON.stringify(result) + '\n')

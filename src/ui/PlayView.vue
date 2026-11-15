@@ -9,12 +9,19 @@ import FlagIcon from './FlagIcon.vue'
 import ControlIcon from './ControlIcon.vue'
 
 const props = defineProps({
-  game: { type: Object, required: true }, help: { type: Object, required: true },
-  t: { type: Function, required: true }, name: { type: Function, required: true },
-  guidance: { type: String, required: true }, revealed: { type: Array, required: true },
-  selected: { type: String, default: '' }, requested: { type: String, default: '' },
-  notice: { type: String, default: '' }, fact: { type: String, default: '' },
-  fallbackText: { type: String, default: '' }, assisted: Boolean, panelOpen: Boolean
+  game: { type: Object, required: true },
+  help: { type: Object, required: true },
+  t: { type: Function, required: true },
+  name: { type: Function, required: true },
+  guidance: { type: String, required: true },
+  revealed: { type: Array, required: true },
+  selected: { type: String, default: '' },
+  requested: { type: String, default: '' },
+  notice: { type: String, default: '' },
+  fact: { type: String, default: '' },
+  fallbackText: { type: String, default: '' },
+  assisted: Boolean,
+  panelOpen: Boolean
 })
 const emit = defineEmits(['home', 'key', 'step', 'undo', 'restart', 'inspect', 'destination', 'reveal', 'revealAll', 'guidance', 'next', 'share', 'copy', 'dismissShare', 'panel'])
 const visible = country => props.guidance === 'learn' || props.revealed.includes(country)
@@ -67,7 +74,8 @@ watch(() => props.game.state, (next, previous) => {
   else if (delivery.value && !next.boxes.some(box => box.country === delivery.value.country && box.position === delivery.value.position)) clearLabel()
 })
 const labels = computed(() => delivery.value && phase.value !== 'results'
-  ? [{ ...delivery.value, text: props.name(delivery.value.country) }] : [])
+  ? [{ ...delivery.value, text: props.name(delivery.value.country) }]
+  : [])
 const description = computed(() => {
   const { state, level } = props.game
   const at = position => ({ row: Math.floor(position / level.width) + 1, column: position % level.width + 1 })

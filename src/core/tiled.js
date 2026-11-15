@@ -7,21 +7,44 @@ const properties = object => Object.fromEntries((object.properties ?? []).map(it
 export function toTiled (level) {
   let id = 1
   const object = (name, position, values = {}) => ({
-    id: id++, name, type: name, x: position % level.width * TILE_SIZE, y: Math.floor(position / level.width) * TILE_SIZE,
-    width: TILE_SIZE, height: TILE_SIZE, rotation: 0, visible: true,
+    id: id++,
+    name,
+    type: name,
+    x: position % level.width * TILE_SIZE,
+    y: Math.floor(position / level.width) * TILE_SIZE,
+    width: TILE_SIZE,
+    height: TILE_SIZE,
+    rotation: 0,
+    visible: true,
     properties: Object.entries(values).map(([name, value]) => property(name, value))
   })
   const floor = new Set(level.floors)
   const obstacles = new Set(level.obstacles)
   const tileLayer = (name, occupied, tile) => ({
-    id: id++, name, type: 'tilelayer', width: level.width, height: level.height, x: 0, y: 0, opacity: 1, visible: true,
+    id: id++,
+    name,
+    type: 'tilelayer',
+    width: level.width,
+    height: level.height,
+    x: 0,
+    y: 0,
+    opacity: 1,
+    visible: true,
     data: Array.from({ length: level.width * level.height }, (_, position) => occupied.has(position) ? tile : 0)
   })
   const objectLayer = (name, objects) => ({ id: id++, name, type: 'objectgroup', x: 0, y: 0, opacity: 1, visible: true, draworder: 'topdown', objects })
   const metadata = ['id', 'region', 'mapVersion', 'generatorVersion', 'threshold', 'sea', 'motif', 'planning']
   return {
-    type: 'map', version: '1.10', tiledversion: '1.10.2', orientation: 'orthogonal', renderorder: 'right-down',
-    width: level.width, height: level.height, tilewidth: TILE_SIZE, tileheight: TILE_SIZE, infinite: false,
+    type: 'map',
+    version: '1.10',
+    tiledversion: '1.10.2',
+    orientation: 'orthogonal',
+    renderorder: 'right-down',
+    width: level.width,
+    height: level.height,
+    tilewidth: TILE_SIZE,
+    tileheight: TILE_SIZE,
+    infinite: false,
     properties: [...metadata.filter(name => level[name] !== undefined).map(name => property(name, level[name])), ...(level.cut ? [property('cutAxis', level.cut.axis), property('cutPosition', level.cut.position), property('gates', JSON.stringify(level.gates))] : [])],
     tilesets: [{ firstgid: 1, name: 'terrain', tilewidth: TILE_SIZE, tileheight: TILE_SIZE, tilecount: 2, columns: 2, image: 'terrain.svg', imagewidth: 80, imageheight: 40, spacing: 0, margin: 0 }],
     layers: [
@@ -31,7 +54,9 @@ export function toTiled (level) {
       }))),
       objectLayer('flags', level.boxes.map(box => object(box.country, box.position, { country: box.country, boxId: box.id }))),
       objectLayer('player', [object('globe', level.player)])
-    ], nextlayerid: 100, nextobjectid: 100
+    ],
+    nextlayerid: 100,
+    nextobjectid: 100
   }
 }
 
@@ -55,8 +80,12 @@ export function fromTiled (map) {
   const players = layer('player').objects
   if (players.length !== 1) throw new Error('Place exactly one player')
   const level = {
-    ...properties(map), width: map.width, height: map.height,
-    floors: occupied('floor'), obstacles: occupied('obstacles'), player: position(players[0]),
+    ...properties(map),
+    width: map.width,
+    height: map.height,
+    floors: occupied('floor'),
+    obstacles: occupied('obstacles'),
+    player: position(players[0]),
     boxes: layer('flags').objects.map(object => ({ id: properties(object).boxId, country: properties(object).country, position: position(object) })),
     goals: layer('targets').objects.map(object => {
       const data = properties(object)

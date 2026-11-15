@@ -17,9 +17,15 @@ export function summarize (rows) {
   const values = ok.map(row => row.ms).sort((a, b) => a - b)
   const percentile = p => values.length ? values[Math.max(0, Math.ceil(values.length * p) - 1)] : null
   return {
-    attempted: rows.length, completed: ok.length, failed: rows.length - ok.length,
+    attempted: rows.length,
+    completed: ok.length,
+    failed: rows.length - ok.length,
     fallbacks: ok.filter(row => row.fallback).length,
-    medianMs: percentile(0.5), p75Ms: percentile(0.75), p80Ms: percentile(0.8), p95Ms: percentile(0.95), maxMs: values.at(-1) ?? null,
+    medianMs: percentile(0.5),
+    p75Ms: percentile(0.75),
+    p80Ms: percentile(0.8),
+    p95Ms: percentile(0.95),
+    maxMs: values.at(-1) ?? null,
     completedUnder500msPercent: rows.length ? 100 * ok.filter(row => row.ms < 500).length / rows.length : null,
     completedUnder1000msPercent: rows.length ? 100 * ok.filter(row => row.ms < 1000).length / rows.length : null
   }
@@ -27,10 +33,14 @@ export function summarize (rows) {
 
 export function report (rows, environment) {
   return {
-    schema: 1, corpus: 'generation-benchmark-v1', environment, summary: summarize(rows),
+    schema: 1,
+    corpus: 'generation-benchmark-v1',
+    environment,
+    summary: summarize(rows),
     byDifficulty: Object.fromEntries(['gentle', 'puzzle'].map(difficulty => [difficulty, summarize(rows.filter(row => row.difficulty === difficulty))])),
     byRegionAndDifficulty: Object.fromEntries(REGIONS.flatMap(region => ['gentle', 'puzzle'].map(difficulty => [
       `${region.id}/${difficulty}`, summarize(rows.filter(row => row.code.split('-')[1] === region.id && row.difficulty === difficulty))
-    ]))), rows
+    ]))),
+    rows
   }
 }

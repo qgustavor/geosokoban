@@ -52,7 +52,9 @@ export function advanceHintPlan (level, plan, stage, previous, next) {
   const delivery = plan.delivery.slice(1)
   const upcoming = (stage === 4 ? delivery : segment).find(record => record.box)
   return {
-    ...plan, segment, delivery,
+    ...plan,
+    segment,
+    delivery,
     boxId: upcoming?.box ?? plan.boxId,
     country: upcoming?.country ?? plan.country,
     complete: (stage === 4 ? delivery : segment).length === 0

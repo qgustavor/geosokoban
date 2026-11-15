@@ -32,9 +32,15 @@ test('move-optimal A* agrees with independent unit-step BFS on 300 small labelle
   for (let index = 0; index < 300; index++) {
     const floors = rectangle(6, 6)
     const shuffled = floors.map(position => ({ position, order: rng() })).sort((a, b) => a.order - b.order).map(item => item.position)
-    const level = { width: 6, height: 6, floors, obstacles: index % 3 ? shuffled.slice(5, 7) : [], player: shuffled[0],
+    const level = {
+      width: 6,
+      height: 6,
+      floors,
+      obstacles: index % 3 ? shuffled.slice(5, 7) : [],
+      player: shuffled[0],
       boxes: [{ id: 'A', country: 'A', position: shuffled[1] }, { id: 'B', country: 'B', position: shuffled[2] }],
-      goals: [{ country: 'A', position: shuffled[3] }, { country: 'B', position: shuffled[4] }] }
+      goals: [{ country: 'A', position: shuffled[3] }, { country: 'B', position: shuffled[4] }]
+    }
     const expected = bruteForce(level)
     const actual = solve(level, initialState(level), 100000, { objective: 'moves' })
     assert.equal(actual.status, Number.isFinite(expected) ? 'solved' : 'unsolvable', `case ${index}`)
@@ -51,8 +57,15 @@ test('move-optimal A* agrees with independent unit-step BFS on 300 small labelle
 })
 
 test('the move-gap comparison retains coastlines and actors, removes only obstacle objects and rejects trivial boards', () => {
-  const level = { width: 7, height: 5, floors: rectangle(7, 5), obstacles: [], player: 15,
-    boxes: [{ id: 'A', country: 'A', position: 16 }], goals: [{ country: 'A', position: 18 }] }
+  const level = {
+    width: 7,
+    height: 5,
+    floors: rectangle(7, 5),
+    obstacles: [],
+    player: 15,
+    boxes: [{ id: 'A', country: 'A', position: 16 }],
+    goals: [{ country: 'A', position: 18 }]
+  }
   const before = structuredClone(level)
   const result = certifyMoveGap(level)
   assert.equal(MINIMUM_EXTRA_MOVES, 5)
@@ -67,8 +80,15 @@ test('the move-gap comparison retains coastlines and actors, removes only obstac
 })
 
 test('move-optimal search does not collapse player positions to a reachable region', () => {
-  const level = { width: 7, height: 5, floors: rectangle(7, 5), obstacles: [], player: 8,
-    boxes: [{ id: 'A', country: 'A', position: 16 }], goals: [{ country: 'A', position: 18 }] }
+  const level = {
+    width: 7,
+    height: 5,
+    floors: rectangle(7, 5),
+    obstacles: [],
+    player: 8,
+    boxes: [{ id: 'A', country: 'A', position: 16 }],
+    goals: [{ country: 'A', position: 18 }]
+  }
   const near = solve(level, { ...initialState(level), player: 15 }, 1000, { objective: 'moves' })
   const far = solve(level, initialState(level), 1000, { objective: 'moves' })
   assert.equal(near.cost, 2)
@@ -77,10 +97,16 @@ test('move-optimal search does not collapse player positions to a reachable regi
   assert.throws(() => solve(level, initialState(level), 1, { objective: 'seconds' }), RangeError)
 })
 
-
 test('five extra total moves are required even when a legal longer solution is already available', () => {
-  const level = { width: 9, height: 7, floors: rectangle(9, 7), obstacles: [31], player: 28,
-    boxes: [{ id: 'A', country: 'A', position: 29 }], goals: [{ country: 'A', position: 33 }] }
+  const level = {
+    width: 9,
+    height: 7,
+    floors: rectangle(9, 7),
+    obstacles: [31],
+    player: 28,
+    boxes: [{ id: 'A', country: 'A', position: 29 }],
+    goals: [{ country: 'A', position: 33 }]
+  }
   const result = certifyMoveGap(level)
   assert.equal(result.status, 'accepted')
   assert.equal(result.certificate.obstacleFreeMoves, 4)

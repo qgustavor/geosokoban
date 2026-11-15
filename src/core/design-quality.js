@@ -42,8 +42,17 @@ export function analyzeDesign (level, directions) {
     }
     state = next
   }
-  return { pushes: state.pushes, minimum, extraPushes: state.pushes - minimum, awayPushes, turns,
-    revisits: runs.length - new Set(runs).size, perFlag: counts, dependencies: goalDependencies(level), pushRuns: runs }
+  return {
+    pushes: state.pushes,
+    minimum,
+    extraPushes: state.pushes - minimum,
+    awayPushes,
+    turns,
+    revisits: runs.length - new Set(runs).size,
+    perFlag: counts,
+    dependencies: goalDependencies(level),
+    pushRuns: runs
+  }
 }
 
 export function meetsDesign (metrics, planning) {

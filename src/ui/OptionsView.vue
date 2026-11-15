@@ -1,7 +1,9 @@
 <script setup>
 defineProps({
-  t: { type: Function, required: true }, locale: { type: String, required: true },
-  reduced: Boolean, embedded: Boolean
+  t: { type: Function, required: true },
+  locale: { type: String, required: true },
+  reduced: Boolean,
+  embedded: Boolean
 })
 defineEmits(['back', 'locale', 'reduced'])
 </script>

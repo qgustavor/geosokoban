@@ -141,7 +141,14 @@ export function useAssistance (level, state, onAssisted) {
   })
 
   return {
-    stage, plan, busy, warning, unavailable, request, reveal, clearHint,
+    stage,
+    plan,
+    busy,
+    warning,
+    unavailable,
+    request,
+    reveal,
+    clearHint,
     overlay: computed(() => hintOverlay(plan.value, stage.value, state.value))
   }
 }

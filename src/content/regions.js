@@ -9,8 +9,15 @@ export const REGIONS = [
 ]
 
 export const CARIBBEAN = {
-  id: 'CAR', name: 'caribbean', bounds: [-90, 9, -59, 28], width: 26, height: 19,
-  continent: 'North America', sea: true, story: ['CUB', 'HTI', 'DOM'], pool: ['CUB', 'HTI', 'DOM', 'JAM', 'BHS', 'TTO']
+  id: 'CAR',
+  name: 'caribbean',
+  bounds: [-90, 9, -59, 28],
+  width: 26,
+  height: 19,
+  continent: 'North America',
+  sea: true,
+  story: ['CUB', 'HTI', 'DOM'],
+  pool: ['CUB', 'HTI', 'DOM', 'JAM', 'BHS', 'TTO']
 }
 
 export const regionById = id => REGIONS.find(region => region.id === id) ?? (id === 'CAR' ? CARIBBEAN : null)

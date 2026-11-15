@@ -26,8 +26,10 @@ const distance = (map, a, b) => Math.abs(a % map.width - b % map.width) + Math.a
 
 function candidateGoals (map, country, floor) {
   const degree = position => DIRECTIONS.filter(direction => floor.has(neighbor(map, position, direction))).length
-  if (!map.sea) return map.cells.filter(cell => cell.country === country && floor.has(cell.position) && degree(cell.position) >= 3)
-    .map(cell => ({ country, position: cell.position, anchor: null }))
+  if (!map.sea) {
+    return map.cells.filter(cell => cell.country === country && floor.has(cell.position) && degree(cell.position) >= 3)
+      .map(cell => ({ country, position: cell.position, anchor: null }))
+  }
   const outline = map.regions.find(region => region.id === country)?.polygons.flatMap(polygon => polygon[0]) ?? []
   return map.floors.filter(position => degree(position) === 4).map(position => {
     const x = position % map.width + 0.5
@@ -57,13 +59,23 @@ function createBase (definition, countries, rng, threshold, motif) {
   // These are puzzle obstacles, not claims about the location of real mountain ranges.
   const eligible = map.floors.filter(position => goals.every(goal => distance(map, position, goal.position) > 2) && DIRECTIONS.every(direction => floor.has(neighbor(map, position, direction))))
   const center = eligible[Math.floor(rng() * eligible.length)]
-  const pattern = motif === 'detour' ? [center, neighbor(map, center, 'right')]
-    : motif === 'gate' ? [neighbor(map, center, 'left'), neighbor(map, center, 'right')]
+  const pattern = motif === 'detour'
+    ? [center, neighbor(map, center, 'right')]
+    : motif === 'gate'
+      ? [neighbor(map, center, 'left'), neighbor(map, center, 'right')]
       : [center]
   const obstacles = [...new Set(pattern.filter(position => eligible.includes(position)))]
   return {
-    width: map.width, height: map.height, floors: map.floors, obstacles, goals,
-    region: definition.id, mapVersion: MAP_VERSION, threshold, sea: map.sea, motif
+    width: map.width,
+    height: map.height,
+    floors: map.floors,
+    obstacles,
+    goals,
+    region: definition.id,
+    mapVersion: MAP_VERSION,
+    threshold,
+    sea: map.sea,
+    motif
   }
 }
 

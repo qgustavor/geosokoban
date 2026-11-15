@@ -8,8 +8,10 @@ const props = defineProps({
 })
 defineEmits(['cancel'])
 const cancelButton = ref(null)
-const label = computed(() => props.t(props.feedback.indeterminate ? 'generationStill'
-  : props.feedback.stage === 'map' ? 'generationMap'
+const label = computed(() => props.t(props.feedback.indeterminate
+  ? 'generationStill'
+  : props.feedback.stage === 'map'
+    ? 'generationMap'
     : props.feedback.stage === 'ready' ? 'preparing' : 'generationDesign'))
 onMounted(() => cancelButton.value?.focus({ preventScroll: true }))
 </script>

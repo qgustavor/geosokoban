@@ -104,7 +104,7 @@ export function addGoalGatePattern (base, rng, planning) {
           if (open.has(next) && !area.has(next)) { area.add(next); queue.push(next) }
         }
       }
-      if (area.size >= open.size * .85 && base.goals.every(other => area.has(other.position))) candidates.push(level)
+      if (area.size >= open.size * 0.85 && base.goals.every(other => area.has(other.position))) candidates.push(level)
     }
   }
   if (!candidates.length) return null

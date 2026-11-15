@@ -28,9 +28,19 @@ function measure (code) {
       const level = data.level
       const checked = level ? replay(level, level.solution) : null
       const valid = !!level && !validateLevel(level).length && checked.valid && isSolved(level, checked.state)
-      resolve({ code, difficulty: code.endsWith('-P') ? 'puzzle' : 'gentle', ms, ok: valid, fallback: level?.generationSource === 'fallback', region: level?.region ?? null,
-        optimalMoves: level?.moveCertificate?.optimalMoves ?? null, obstacleFreeMoves: level?.moveCertificate?.obstacleFreeMoves ?? null, extraMoves: level?.moveCertificate?.extraMoves ?? null,
-        error: error?.message ?? (!valid ? 'Missing or invalid level' : null), updates })
+      resolve({
+        code,
+        difficulty: code.endsWith('-P') ? 'puzzle' : 'gentle',
+        ms,
+        ok: valid,
+        fallback: level?.generationSource === 'fallback',
+        region: level?.region ?? null,
+        optimalMoves: level?.moveCertificate?.optimalMoves ?? null,
+        obstacleFreeMoves: level?.moveCertificate?.obstacleFreeMoves ?? null,
+        extraMoves: level?.moveCertificate?.extraMoves ?? null,
+        error: error?.message ?? (!valid ? 'Missing or invalid level' : null),
+        updates
+      })
     }
     // Timeouts are retained as failed samples, never counted as fast successful runs.
     const watchdog = setTimeout(() => finish({}, new Error('Benchmark watchdog: 120 seconds')), 120000)
@@ -51,8 +61,14 @@ for (const code of codes) {
   if (rows.length % 14 === 0) console.error(`${rows.length}/${codes.length} measured`)
 }
 const result = report(rows, {
-  generatorVersion: 4, minimumExtraMoves: 5, runtime: `Node ${process.version}`, platform: platform(), architecture: arch(), cpu: cpus()[0]?.model,
-  availableParallelism: availableParallelism(), samplesPerRegionAndDifficulty: samples,
+  generatorVersion: 4,
+  minimumExtraMoves: 5,
+  runtime: `Node ${process.version}`,
+  platform: platform(),
+  architecture: arch(),
+  cpu: cpus()[0]?.model,
+  availableParallelism: availableParallelism(),
+  samplesPerRegionAndDifficulty: samples,
   method: 'Sequential fresh Node workers running the exact generation-worker source through a parentPort adapter. Includes worker startup, imports, geography structured cloning and the reply. Excludes application startup, network transfer and board rendering. No warmup samples discarded.',
   scope: 'Development-machine measurements only, not player-device or browser percentiles.'
 })

@@ -92,7 +92,11 @@ try {
     if (rows.length % 14 === 0) console.error(`${rows.length}/${codes.length} measured`)
   }
   const result = report(rows, {
-    runtime: await browser.version(), userAgent: await page.evaluate(() => navigator.userAgent), platform: platform(), architecture: arch(), cpu: cpus()[0]?.model,
+    runtime: await browser.version(),
+    userAgent: await page.evaluate(() => navigator.userAgent),
+    platform: platform(),
+    architecture: arch(),
+    cpu: cpus()[0]?.model,
     samplesPerRegionAndDifficulty: samples,
     method: 'Production Vite application served over loopback HTTP without custom isolation headers. Sequential fresh native workers; measured from construction to terminal message. The map is already loaded. Worker progress messages are not terminal. No warmup samples discarded.',
     scope: 'Local desktop-browser generation timings, excluding application bootstrap, wide-area network delay, finish animation and board rendering. Not a real-phone measurement.'
