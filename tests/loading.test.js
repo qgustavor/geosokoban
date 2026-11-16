@@ -16,7 +16,9 @@ function clock () {
   const jobs = new Map()
   return {
     now: () => time,
-    schedule (callback, delay) { const id = ++serial; jobs.set(id, { at: time + delay, callback }); return id },
+    schedule (callback, delay) {
+      const id = ++serial; jobs.set(id, { at: time + delay, callback }); return id
+    },
     unschedule: id => jobs.delete(id),
     advance (ms) {
       const end = time + ms
@@ -42,9 +44,17 @@ function fixture (options = {}) {
 
 class FakeWorker {
   terminated = 0
-  postMessage (message) { this.request = message }
-  terminate () { this.terminated++ }
-  emit (data) { this.onmessage?.({ data }) }
+  postMessage (message) {
+    this.request = message
+  }
+
+  terminate () {
+    this.terminated++
+  }
+
+  emit (data) {
+    this.onmessage?.({ data })
+  }
 }
 
 test('fast generated levels never show a loader or wait for a finish animation', async () => {
@@ -75,7 +85,9 @@ test('visible completion runs for 400 ms, not the estimated search duration', as
   feedback.start(true)
   timer.advance(500)
   let done = false
-  const finished = feedback.finish().then(value => { done = value })
+  const finished = feedback.finish().then(value => {
+    done = value
+  })
   assert.equal(state().fraction, 1)
   timer.advance(LOADER_FINISH_MS - 1)
   await Promise.resolve()
@@ -153,7 +165,9 @@ test('worker progress does not terminate the worker or complete its request', as
   const updates = []
   const task = generationTask(worker, { code: 'test' }, value => updates.push(value))
   let settled = false
-  task.promise.then(() => { settled = true })
+  task.promise.then(() => {
+    settled = true
+  })
   worker.emit({ type: 'progress', stage: 'search' })
   await Promise.resolve()
   assert.equal(worker.terminated, 0)
@@ -209,12 +223,18 @@ test('search exhaustion selects a verified fallback; arbitrary exceptions do not
   const code = 'G2-OC-0123456789-P'
   const updates = []
   const level = prepareLevel(code, {
-    generator: () => { throw new GenerationExhausted(code, 'OC', true) },
+    generator: () => {
+      throw new GenerationExhausted(code, 'OC', true)
+    },
     onProgress: value => updates.push(value)
   })
   assert.equal(level.generationSource, 'fallback')
   assert.equal(updates.at(-1).stage, 'ready')
-  assert.throws(() => prepareLevel(code, { generator: () => { throw new Error('broken asset') } }), /broken asset/)
+  assert.throws(() => prepareLevel(code, {
+    generator: () => {
+      throw new Error('broken asset')
+    }
+  }), /broken asset/)
 })
 
 test('fallback callers cannot mutate the frozen pool', () => {

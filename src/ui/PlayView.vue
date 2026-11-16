@@ -43,7 +43,9 @@ const hintOpen = ref(false)
 const victoryOpen = ref(true)
 const phase = ref(props.game.solved ? 'results' : 'playing')
 const delivery = ref(null)
-const sequence = createCompletionSequence(value => { phase.value = value })
+const sequence = createCompletionSequence(value => {
+  phase.value = value
+})
 let labelTimer = null
 let labelRevision = 0
 
@@ -56,7 +58,9 @@ function labelFlag (country) {
   if (!box) return
   clearLabel()
   delivery.value = { country, position: box.position, id: ++labelRevision }
-  labelTimer = setTimeout(() => { if (!props.game.solved) delivery.value = null }, 2800)
+  labelTimer = setTimeout(() => {
+    if (!props.game.solved) delivery.value = null
+  }, 2800)
 }
 function inspect (country) {
   labelFlag(country)
@@ -79,7 +83,9 @@ watch(() => props.game.solved, value => {
   }
 })
 watch(() => props.game.state, (next, previous) => {
-  if (!previous || next.moves <= previous.moves) { clearLabel(); return }
+  if (!previous || next.moves <= previous.moves) {
+    clearLabel(); return
+  }
   const arrived = props.game.level.goals.find(goal =>
     next.boxes.some(box => box.country === goal.country && box.position === goal.position) &&
     !previous.boxes.some(box => box.country === goal.country && box.position === goal.position))
@@ -95,29 +101,64 @@ const description = computed(() => {
   return [props.t('position', at(state.player)), ...state.boxes.map(box => props.t('flagPosition', { country: visible(box.country) ? props.name(box.country) : props.t('unknownFlag'), ...at(box.position) })),
     ...level.goals.map((goal, index) => props.t('goalPosition', { country: visible(goal.country) ? props.name(goal.country) : props.t('destination', { n: index + 1 }), ...at(goal.position) }))].join(' ')
 })
-function closeHint () { hintOpen.value = false; props.help.clearHint() }
+function closeHint () {
+  hintOpen.value = false; props.help.clearHint()
+}
 function toggleHint () {
   if (hintOpen.value) closeHint()
-  else { hintOpen.value = true; if (!props.help.stage) props.help.request() }
+  else {
+    hintOpen.value = true; if (!props.help.stage) props.help.request()
+  }
   nextTick(() => document.querySelector('.board-wrap')?.focus({ preventScroll: true }))
 }
 function boardKey (event) {
-  if (event.key === 'Escape') { event.preventDefault(); emit('panel', 'pause'); return }
+  if (event.key === 'Escape') {
+    event.preventDefault(); emit('panel', 'pause'); return
+  }
   emit('key', event)
 }
-onBeforeUnmount(() => { clearLabel(); sequence.reset(); finishTransition() })
+onBeforeUnmount(() => {
+  clearLabel(); sequence.reset(); finishTransition()
+})
 </script>
 
 <template>
-  <main class="play-page" :class="{ 'is-changing': transitioning }" :data-code="game.level.id" :data-completion="phase"
-    :aria-busy="transitioning" :inert="transitioning || undefined">
-    <Transition name="board-swap" mode="out-in" appear :css="!reducedMotion" :duration="transitionDuration"
-      @before-enter="beginTransition" @before-leave="beginTransition" @after-enter="finishTransition"
-      @enter-cancelled="finishTransition" @leave-cancelled="finishTransition">
-    <GameBoard :key="game.level.id" :level="game.level" :state="game.state" :facing="game.facing"
-      :label="t('board')" :description="description" :labels="labels"
-      :show-flags="guidance === 'learn'" :revealed="revealed" :overlay="help.overlay"
-      @key="boardKey" @step="$emit('step', $event)" @inspect="inspect" @destination="$emit('destination', $event)" />
+  <main
+    class="play-page"
+    :class="{ 'is-changing': transitioning }"
+    :data-code="game.level.id"
+    :data-completion="phase"
+    :aria-busy="transitioning"
+    :inert="transitioning || undefined"
+  >
+    <Transition
+      name="board-swap"
+      mode="out-in"
+      appear
+      :css="!reducedMotion"
+      :duration="transitionDuration"
+      @before-enter="beginTransition"
+      @before-leave="beginTransition"
+      @after-enter="finishTransition"
+      @enter-cancelled="finishTransition"
+      @leave-cancelled="finishTransition"
+    >
+      <GameBoard
+        :key="game.level.id"
+        :level="game.level"
+        :state="game.state"
+        :facing="game.facing"
+        :label="t('board')"
+        :description="description"
+        :labels="labels"
+        :show-flags="guidance === 'learn'"
+        :revealed="revealed"
+        :overlay="help.overlay"
+        @key="boardKey"
+        @step="$emit('step', $event)"
+        @inspect="inspect"
+        @destination="$emit('destination', $event)"
+      />
     </Transition>
     <header class="play-hud">
       <h1>{{ regionName }}</h1>
@@ -127,45 +168,121 @@ onBeforeUnmount(() => { clearLabel(); sequence.reset(); finishTransition() })
       <section v-if="help.warning && !game.solved" class="top-overlay deadlock-warning" role="status">
         <strong>{{ t('stuck') }}</strong>
         <div class="recovery-actions">
-          <button class="button primary" aria-keyshortcuts="z" @click="$emit('undo')"><ControlIcon name="undo" />{{ t('undo') }} <kbd aria-hidden="true">Z</kbd></button>
-          <button class="button secondary" aria-keyshortcuts="r" @click="$emit('restart')"><ControlIcon name="restart" />{{ t('restart') }} <kbd aria-hidden="true">R</kbd></button>
+          <button class="button primary" aria-keyshortcuts="z" @click="$emit('undo')">
+            <ControlIcon name="undo" />{{ t('undo') }} <kbd aria-hidden="true">Z</kbd>
+          </button>
+          <button class="button secondary" aria-keyshortcuts="r" @click="$emit('restart')">
+            <ControlIcon name="restart" />{{ t('restart') }} <kbd aria-hidden="true">R</kbd>
+          </button>
         </div>
       </section>
     </Transition>
-    <div v-if="notice" class="utility-notice" role="status">{{ notice }}</div>
+    <div v-if="notice" class="utility-notice" role="status">
+      {{ notice }}
+    </div>
     <div v-if="requested && !visible(requested)" class="geography-popover">
-      <button class="button secondary" @click="$emit('reveal', requested)">{{ t('revealCountry') }}</button>
+      <button class="button secondary" @click="$emit('reveal', requested)">
+        {{ t('revealCountry') }}
+      </button>
     </div>
     <Transition name="hint">
       <div v-if="hintOpen && !game.solved" class="hint-overlay">
-        <HintPanel :help="help" :t="t" :name="name" :width="game.level.width" :solved="game.solved" @dismiss="closeHint" />
+        <HintPanel
+          :help="help"
+          :t="t"
+          :name="name"
+          :width="game.level.width"
+          :solved="game.solved"
+          @dismiss="closeHint"
+        />
       </div>
     </Transition>
     <nav v-show="!game.solved || phase === 'results'" class="play-controls" :aria-label="t('controls')">
-      <button class="hud-button" :title="`${t('undo')} (Z)`" :aria-label="t('undo')" aria-keyshortcuts="z" :disabled="!game.historyCount" @click="$emit('undo')"><ControlIcon name="undo" /></button>
-      <button class="hud-button" :title="`${t('restart')} (R)`" :aria-label="t('restart')" aria-keyshortcuts="r" @click="$emit('restart')"><ControlIcon name="restart" /></button>
-      <button class="hud-button" :class="{ active: hintOpen }" :title="t('hint')" :aria-label="t('hint')" :aria-pressed="hintOpen" :disabled="game.solved" @click="toggleHint"><ControlIcon name="hint" /></button>
-      <button class="hud-button" :title="`${t('menu')} (Esc)`" :aria-label="t('menu')" aria-keyshortcuts="Escape" @click="$emit('panel', 'pause')"><ControlIcon name="menu" /></button>
+      <button
+        class="hud-button"
+        :title="`${t('undo')} (Z)`"
+        :aria-label="t('undo')"
+        aria-keyshortcuts="z"
+        :disabled="!game.historyCount"
+        @click="$emit('undo')"
+      >
+        <ControlIcon name="undo" />
+      </button>
+      <button
+        class="hud-button"
+        :title="`${t('restart')} (R)`"
+        :aria-label="t('restart')"
+        aria-keyshortcuts="r"
+        @click="$emit('restart')"
+      >
+        <ControlIcon name="restart" />
+      </button>
+      <button
+        class="hud-button"
+        :class="{ active: hintOpen }"
+        :title="t('hint')"
+        :aria-label="t('hint')"
+        :aria-pressed="hintOpen"
+        :disabled="game.solved"
+        @click="toggleHint"
+      >
+        <ControlIcon name="hint" />
+      </button>
+      <button
+        class="hud-button"
+        :title="`${t('menu')} (Esc)`"
+        :aria-label="t('menu')"
+        aria-keyshortcuts="Escape"
+        @click="$emit('panel', 'pause')"
+      >
+        <ControlIcon name="menu" />
+      </button>
     </nav>
     <span class="sr-only" aria-live="polite">{{ description }}</span>
     <LevelClear v-if="phase === 'clear'" :text="t('levelClear')" :reduced-motion="reducedMotion" />
     <OverlayDialog v-if="game.solved && phase === 'results' && victoryOpen && !fallbackText && !panelOpen && !transitioning" :label="t('done')" @dismiss="victoryOpen = false">
-      <div class="victory-flags"><FlagIcon v-for="goal in game.level.goals" :key="goal.country" :country="goal.country" /></div>
-      <h2 class="result-title">{{ t(game.chapter === STORY_COUNT ? 'finish' : 'done') }}</h2>
-      <p class="result-moves">{{ game.state.moves }} <small>{{ t('moves').toLowerCase() }}</small></p>
+      <div class="victory-flags">
+        <FlagIcon v-for="goal in game.level.goals" :key="goal.country" :country="goal.country" />
+      </div>
+      <h2 class="result-title">
+        {{ t(game.chapter === STORY_COUNT ? 'finish' : 'done') }}
+      </h2>
+      <p class="result-moves">
+        {{ game.state.moves }} <small>{{ t('moves').toLowerCase() }}</small>
+      </p>
       <div class="result-actions">
-        <button v-if="game.chapter !== STORY_COUNT" class="button primary" @click="$emit('next')">{{ t(game.chapter ? 'next' : 'another') }}</button>
-        <button class="button secondary" @click="$emit('share')">{{ t('share') }}</button>
-        <button class="button secondary" @click="$emit('home')">{{ t('returnMenu') }}</button>
+        <button v-if="game.chapter !== STORY_COUNT" class="button primary" @click="$emit('next')">
+          {{ t(game.chapter ? 'next' : 'another') }}
+        </button>
+        <button class="button secondary" @click="$emit('share')">
+          {{ t('share') }}
+        </button>
+        <button class="button secondary" @click="$emit('home')">
+          {{ t('returnMenu') }}
+        </button>
       </div>
     </OverlayDialog>
-    <button v-if="game.solved && phase === 'results' && !victoryOpen" class="result-reopen button secondary" @click="victoryOpen = true">{{ t('done') }}</button>
+    <button v-if="game.solved && phase === 'results' && !victoryOpen" class="result-reopen button secondary" @click="victoryOpen = true">
+      {{ t('done') }}
+    </button>
     <OverlayDialog v-if="fallbackText" :label="t('share')" @dismiss="$emit('dismissShare')">
-      <h2 class="result-title">{{ t('share') }}</h2>
-      <textarea class="share-text" :value="fallbackText" readonly :aria-label="t('copyFallback')" @focus="$event.target.select()" />
+      <h2 class="result-title">
+        {{ t('share') }}
+      </h2>
+      <textarea
+        class="share-text"
+        :value="fallbackText"
+        readonly
+        :aria-label="t('copyFallback')"
+        @focus="$event.target.select()"
+      />
       <div class="result-actions">
-        <button class="button primary" @click="$emit('copy', fallbackText)">{{ t('copy') }}</button>
-        <button class="button secondary" @click="$emit('dismissShare')">{{ t('close') }}</button>
+        <button class="button primary" @click="$emit('copy', fallbackText)">
+          {{ t('copy') }}
+        </button>
+        <button class="button secondary" @click="$emit('dismissShare')">
+          {{ t('close') }}
+        </button>
       </div>
     </OverlayDialog>
   </main>

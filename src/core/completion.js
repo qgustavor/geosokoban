@@ -8,25 +8,34 @@ export function createCompletionSequence (update, {
 } = {}) {
   let timer = null
   let revision = 0
+
   function reset () {
+    // Invalidate callbacks as well as clearing the timer: an older sequence must not open results.
     revision++
     clear(timer)
     timer = null
+
     update('playing')
   }
+
   function start () {
     reset()
     const token = revision
+
+    // Let the final delivery remain readable before replacing it with the clear banner.
     update('delivery')
     timer = schedule(() => {
       if (token !== revision) return
+
       update('clear')
       timer = schedule(() => {
         if (token !== revision) return
+
         timer = null
         update('results')
       }, CLEAR_BANNER_MS)
     }, DELIVERY_HOLD_MS)
   }
+
   return { start, reset }
 }

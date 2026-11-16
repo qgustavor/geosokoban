@@ -11,7 +11,9 @@ test('same-region and cross-region navigation dismantle the old board before bui
   await page.goto('./#/puzzle/G2-SA-S1')
   await expect(page.locator('.play-page')).toHaveAttribute('aria-busy', 'false')
   for (const [previous, next] of [['G2-SA-S1', 'G2-SA-S2'], ['G2-SA-S2', 'G2-NA-S1']]) {
-    await page.evaluate(code => { location.hash = `/puzzle/${code}` }, next)
+    await page.evaluate(code => {
+      location.hash = `/puzzle/${code}`
+    }, next)
     await expect(page.locator('.board-swap-leave-active')).toHaveAttribute('data-level', previous)
     await expect(page.locator('.play-page')).toHaveAttribute('aria-busy', 'true')
     await page.keyboard.press('ArrowRight')
@@ -27,7 +29,9 @@ test('same-region and cross-region navigation dismantle the old board before bui
 test('reduced motion swaps immediately and never leaves controls inert', async ({ page }) => {
   await preferences(page, true)
   await page.goto('./#/puzzle/G2-SA-S1')
-  await page.evaluate(() => { location.hash = '/puzzle/G2-SA-S2' })
+  await page.evaluate(() => {
+    location.hash = '/puzzle/G2-SA-S2'
+  })
   await expect(page.locator('.board-wrap')).toHaveAttribute('data-level', 'G2-SA-S2')
   await expect(page.locator('.play-page')).toHaveAttribute('aria-busy', 'false')
   await expect(page.locator('.board-swap-enter-active, .board-swap-leave-active')).toHaveCount(0)
@@ -41,9 +45,13 @@ test('rapid navigation during a transition settles on the newest route', async (
   await preferences(page)
   await page.goto('./#/puzzle/G2-SA-S1')
   await expect(page.locator('.play-page')).toHaveAttribute('aria-busy', 'false')
-  await page.evaluate(() => { location.hash = '/puzzle/G2-SA-S2' })
+  await page.evaluate(() => {
+    location.hash = '/puzzle/G2-SA-S2'
+  })
   await expect(page.locator('.board-swap-leave-active')).toBeVisible()
-  await page.evaluate(() => { location.hash = '/puzzle/G2-SA-S3' })
+  await page.evaluate(() => {
+    location.hash = '/puzzle/G2-SA-S3'
+  })
   await expect(page.locator('.board-wrap')).toHaveAttribute('data-level', 'G2-SA-S3')
   await expect(page.locator('.play-page')).toHaveAttribute('aria-busy', 'false')
 })
@@ -60,10 +68,12 @@ test('generated boards use memory and persistent caches; different codes share a
         if (!String(url).includes('generate')) return new NativeWorker(url, options)
         window.generationWorkers++
       }
+
       postMessage (message) {
         window.generationMessages.push({ code: message.code, geography: !!message.geography })
         queueMicrotask(() => this.onmessage?.({ data: { type: 'complete', level: { ...level, id: message.code } } }))
       }
+
       terminate () {}
     }
   }, fixture)
@@ -71,11 +81,15 @@ test('generated boards use memory and persistent caches; different codes share a
   const second = 'G2-SA-2222222222'
   await page.goto(`./#/puzzle/${first}`)
   await expect(page.locator('.play-page')).toHaveAttribute('data-code', first)
-  await page.evaluate(code => { location.hash = `/puzzle/${code}` }, second)
+  await page.evaluate(code => {
+    location.hash = `/puzzle/${code}`
+  }, second)
   await expect(page.locator('.play-page')).toHaveAttribute('data-code', second)
   expect(await page.evaluate(() => window.generationWorkers)).toBe(1)
   expect(await page.evaluate(() => window.generationMessages.map(message => message.geography))).toEqual([true, false])
-  await page.evaluate(code => { location.hash = `/puzzle/${code}` }, first)
+  await page.evaluate(code => {
+    location.hash = `/puzzle/${code}`
+  }, first)
   await expect(page.locator('.play-page')).toHaveAttribute('data-code', first)
   expect(await page.evaluate(() => window.generationMessages.length)).toBe(2)
   await page.reload()
@@ -88,7 +102,9 @@ for (const code of ['G2-SA-S1', 'G2-WE-S1', 'G2-OC-S1']) {
   test(`${code} renders quarter-cell pixel coastlines and borders without loading geography`, async ({ page }) => {
     await preferences(page, true)
     let requests = 0
-    await page.route(/world.*geojson/, route => { requests++; return route.abort() })
+    await page.route(/world.*geojson/, route => {
+      requests++; return route.abort()
+    })
     await page.goto(`./#/puzzle/${code}`)
     await expect(page.locator('.map-outline')).toHaveAttribute('data-pixels-per-cell', '4')
     const shapes = await page.locator('.map-outline path, .country-borders path').evaluateAll(paths => paths.map(path => ({

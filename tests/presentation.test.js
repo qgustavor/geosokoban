@@ -31,11 +31,24 @@ test('long drags are bounded and cancellation cannot leave a movement repeat run
 
 test('share uses a visible-dialog fallback on unsupported or rejected native sharing', async () => {
   const data = { title: 'GeoSokoban', text: 'A result', url: 'https://example.test/#/puzzle/test' }
-  for (const platform of [{}, { canShare: () => false, share: () => { throw new Error('Not allowed') } }, { share: async () => { throw new Error('Unavailable') } }]) {
+  for (const platform of [{}, {
+    canShare: () => false,
+    share: () => {
+      throw new Error('Not allowed')
+    }
+  }, {
+    share: async () => {
+      throw new Error('Unavailable')
+    }
+  }]) {
     assert.deepEqual(await shareResult(data, platform), { status: 'fallback', text: 'A result\nhttps://example.test/#/puzzle/test' })
   }
   assert.deepEqual(await shareResult(data, { share: async () => {} }), { status: 'shared' })
-  assert.deepEqual(await shareResult(data, { share: async () => { throw new DOMException('Cancelled', 'AbortError') } }), { status: 'cancelled' })
+  assert.deepEqual(await shareResult(data, {
+    share: async () => {
+      throw new DOMException('Cancelled', 'AbortError')
+    }
+  }), { status: 'cancelled' })
 })
 
 test('play is an ocean overlay interface, without explanatory captions, sidebar or direction buttons', () => {

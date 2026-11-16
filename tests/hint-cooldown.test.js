@@ -10,10 +10,18 @@ function clock () {
   const pending = new Map()
   return {
     now: () => time,
-    schedule (callback, delay) { pending.set(++id, { at: time + delay, callback }); return id },
-    clear (key) { pending.delete(key) },
-    get pending () { return pending.size },
-    jump (ms) { time += ms },
+    schedule (callback, delay) {
+      pending.set(++id, { at: time + delay, callback }); return id
+    },
+    clear (key) {
+      pending.delete(key)
+    },
+    get pending () {
+      return pending.size
+    },
+    jump (ms) {
+      time += ms
+    },
     advance (ms) {
       const target = time + ms
       for (;;) {

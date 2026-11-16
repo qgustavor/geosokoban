@@ -16,9 +16,13 @@ function feature (id, name, biome, coordinates, type = 'Polygon') {
 const ring = (west, south, east, north) => [[west, south], [east, south], [east, north], [west, north], [west, south]]
 const collection = features => ({ type: 'FeatureCollection', features })
 const fakeAtlas = (level, record, coverage = 1) => ({
-  mapVersion: level.mapVersion, ecoregions: { 1: record }, regions: { [level.region]: {
-    width: level.width, height: level.height, cells: Array.from({ length: level.width * level.height }, () => [1, null, coverage, 1])
-  } }
+  mapVersion: level.mapVersion,
+  ecoregions: { 1: record },
+  regions: {
+    [level.region]: {
+      width: level.width, height: level.height, cells: Array.from({ length: level.width * level.height }, () => [1, null, coverage, 1])
+    }
+  }
 })
 
 test('biome lookup respects holes and disjoint polygons', () => {

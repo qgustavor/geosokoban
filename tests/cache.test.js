@@ -22,7 +22,9 @@ test('generated levels survive a new cache instance without sharing mutable data
   restored.solution.length = 0
   assert.ok(cache.get(fixture().id).solution.length)
   assert.ok(cache.get(` ${fixture().id.toLowerCase()} `))
-  function newCache () { return createLevelCache({ storage: () => disk }) }
+  function newCache () {
+    return createLevelCache({ storage: () => disk })
+  }
 })
 
 test('LRU capacity evicts the least recently read level, not the newest', () => {
@@ -52,8 +54,20 @@ test('corrupt, obsolete and mismatched persisted entries are misses', () => {
 
 test('unavailable storage, quota failures and oversized persistence retain a working memory cache', () => {
   for (const options of [
-    { storage: () => { throw new Error('SecurityError') } },
-    { storage: () => ({ getItem: () => null, setItem: () => { throw new Error('QuotaExceededError') }, removeItem: () => {} }) },
+    {
+      storage: () => {
+        throw new Error('SecurityError')
+      }
+    },
+    {
+      storage: () => ({
+        getItem: () => null,
+        setItem: () => {
+          throw new Error('QuotaExceededError')
+        },
+        removeItem: () => {}
+      })
+    },
     { storage, maxCharacters: 1 }
   ]) {
     const cache = createLevelCache(options)

@@ -142,12 +142,11 @@ for (const locale of ['en', 'pt-BR', 'es']) {
   })
 }
 
-
 test('subtle continuous tiles retain coastlines, target contrast and a diagonal reveal', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('geosokoban.prototype.v2', JSON.stringify({ locale: 'en', reduced: false })))
   await open(page)
   const style = await page.locator('.tile-surface').first().evaluate(element => ({ opacity: getComputedStyle(element).strokeOpacity, width: element.getAttribute('width'), rx: element.getAttribute('rx') }))
-  expect(Number(style.opacity)).toBeLessThan(.2)
+  expect(Number(style.opacity)).toBeLessThan(0.2)
   expect(style.width).toBe('40')
   expect(style.rx).toBeNull()
   await expect(page.locator('.coast-edge[d^="M"]').first()).toHaveAttribute('d', /M/)

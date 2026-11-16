@@ -17,16 +17,29 @@ const directions = computed(() => {
 <template>
   <section class="hint-panel">
     <div aria-live="polite" aria-atomic="true">
-      <p v-if="help.stage">{{ t('hint' + help.stage, { country: name(help.plan.country) }) }}</p>
-      <p v-else>{{ t(help.busy ? 'thinking' : help.unavailable ? 'noHint' : 'hint') }}</p>
-      <p v-if="help.stage >= 3" class="sr-only">{{ t('route', { directions }) }}</p>
+      <p v-if="help.stage">
+        {{ t('hint' + help.stage, { country: name(help.plan.country) }) }}
+      </p>
+      <p v-else>
+        {{ t(help.busy ? 'thinking' : help.unavailable ? 'noHint' : 'hint') }}
+      </p>
+      <p v-if="help.stage >= 3" class="sr-only">
+        {{ t('route', { directions }) }}
+      </p>
     </div>
     <div class="hint-actions">
       <!-- Keep the ticking countdown out of the live announcement region. -->
-      <button v-if="help.stage < 4" class="button primary hint-request" :disabled="help.busy || solved || help.cooldownSeconds > 0" @click="help.request">
+      <button
+        v-if="help.stage < 4"
+        class="button primary hint-request"
+        :disabled="help.busy || solved || help.cooldownSeconds > 0"
+        @click="help.request"
+      >
         {{ help.cooldownSeconds > 0 ? t('hintCooldown', { seconds: help.cooldownSeconds }) : t(help.stage ? 'moreHelp' : 'hint') }}
       </button>
-      <button class="button secondary" @click="$emit('dismiss')">{{ t('hideHint') }}</button>
+      <button class="button secondary" @click="$emit('dismiss')">
+        {{ t('hideHint') }}
+      </button>
     </div>
   </section>
 </template>

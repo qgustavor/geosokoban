@@ -9,8 +9,12 @@ function clock () {
   let count = 0
   let now = 0
   return {
-    schedule (callback, ms) { pending.set(++count, { at: now + ms, callback }); return count },
-    clear (id) { pending.delete(id) },
+    schedule (callback, ms) {
+      pending.set(++count, { at: now + ms, callback }); return count
+    },
+    clear (id) {
+      pending.delete(id)
+    },
     advance (ms) {
       const end = now + ms
       while (true) {

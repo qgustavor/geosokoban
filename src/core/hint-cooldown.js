@@ -15,29 +15,43 @@ export function createHintCooldown (onChange, {
   let disposed = false
 
   function remainingMilliseconds () {
-    return disposed || deadline === null ? 0 : Math.max(0, deadline - now())
+    if (disposed || deadline === null) return 0
+
+    return Math.max(0, deadline - now())
   }
 
   function update () {
     if (timer !== null) clear(timer)
     timer = null
+
     if (disposed) return
+
     const remaining = remainingMilliseconds()
-    onChange(Math.ceil(remaining / 1000))
-    if (remaining > 0) timer = schedule(update, Math.min(1000, remaining))
+    // Round upward so the display cannot say zero while the request gate is still closed.
+    const remainingSeconds = Math.ceil(remaining / 1000)
+    onChange(remainingSeconds)
+
+    if (remaining > 0) {
+      // The final tick may be less than a second away after a delayed callback or a fractional clock tick.
+      const nextUpdateDelay = Math.min(1000, remaining)
+      timer = schedule(update, nextUpdateDelay)
+    }
   }
 
   function tryStart () {
     // Check the deadline directly: stale UI/timer callbacks never grant a hint.
     if (disposed || remainingMilliseconds() > 0) return false
+
     deadline = now() + HINT_COOLDOWN_MS
     update()
+
     return true
   }
 
   function dispose () {
     disposed = true
     if (timer !== null) clear(timer)
+
     timer = null
     deadline = null
   }

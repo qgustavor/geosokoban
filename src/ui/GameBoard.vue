@@ -28,7 +28,9 @@ const stage = ref(null)
 const size = ref({ width: 800, height: 800 })
 let resizeObserver
 onMounted(() => {
-  resizeObserver = new ResizeObserver(([entry]) => { size.value = { width: entry.contentRect.width, height: entry.contentRect.height } })
+  resizeObserver = new ResizeObserver(([entry]) => {
+    size.value = { width: entry.contentRect.width, height: entry.contentRect.height }
+  })
   resizeObserver.observe(stage.value)
 })
 onBeforeUnmount(() => resizeObserver?.disconnect())
@@ -86,63 +88,225 @@ const route = computed(() => props.overlay.route.map(position => `${x(position) 
 </script>
 
 <template>
-  <div ref="board" class="board-wrap" :data-level="level.id" :class="{ 'board-preview': preview }" :style="{ '--tile-enter-duration': `${TILE_ENTER_MS}ms`, '--tile-leave-duration': `${TILE_LEAVE_MS}ms` }" :tabindex="preview ? -1 : 0"
-    :role="preview ? undefined : 'group'" :aria-label="label" @keydown="$emit('key', $event)" @pointerdown="pointerDown" @pointermove="pointerMove"
-    @pointerup="pointerEnd" @pointercancel="pointerEnd" @lostpointercapture="pointerEnd" @click.capture="click">
+  <div
+    ref="board"
+    class="board-wrap"
+    :data-level="level.id"
+    :class="{ 'board-preview': preview }"
+    :style="{ '--tile-enter-duration': `${TILE_ENTER_MS}ms`, '--tile-leave-duration': `${TILE_LEAVE_MS}ms` }"
+    :tabindex="preview ? -1 : 0"
+    :role="preview ? undefined : 'group'"
+    :aria-label="label"
+    @keydown="$emit('key', $event)"
+    @pointerdown="pointerDown"
+    @pointermove="pointerMove"
+    @pointerup="pointerEnd"
+    @pointercancel="pointerEnd"
+    @lostpointercapture="pointerEnd"
+    @click.capture="click"
+  >
     <div ref="stage" class="board-stage">
-    <svg :viewBox="viewBox" preserveAspectRatio="xMidYMid meet" class="board-svg" role="img"
-      :aria-label="label" :aria-describedby="preview ? undefined : `${prefix}-description`">
-      <desc v-if="!preview" :id="`${prefix}-description`">{{ description }}</desc>
-        <g class="map-outline" :class="{ islands: level.sea }" :data-pixels-per-cell="UNDERLAY_PIXELS_PER_CELL" shape-rendering="crispEdges"><path v-for="region in context" :key="region.id" :d="region.path" fill-rule="evenodd" /></g>
-        <g v-for="position in level.floors" :key="position" class="land-tile"
-          :style="tileDelay(position)">
-          <rect :x="x(position)" :y="y(position) + 7" width="40" height="40"
-            :fill="scenery.tiles.get(position).edge" class="tile-underface" />
-          <rect :x="x(position)" :y="y(position)" width="40" height="40"
-            :fill="scenery.tiles.get(position).ground" class="tile-surface" :class="{ 'water-tile': level.sea }" />
-          <path v-if="!level.sea" :d="coastlines.get(position)" class="coast-edge" :stroke="scenery.tiles.get(position).edge" />
+      <svg
+        :viewBox="viewBox"
+        preserveAspectRatio="xMidYMid meet"
+        class="board-svg"
+        role="img"
+        :aria-label="label"
+        :aria-describedby="preview ? undefined : `${prefix}-description`"
+      >
+        <desc v-if="!preview" :id="`${prefix}-description`">{{ description }}</desc>
+        <g
+          class="map-outline"
+          :class="{ islands: level.sea }"
+          :data-pixels-per-cell="UNDERLAY_PIXELS_PER_CELL"
+          shape-rendering="crispEdges"
+        ><path
+          v-for="region in context"
+          :key="region.id"
+          :d="region.path"
+          fill-rule="evenodd"
+        /></g>
+        <g
+          v-for="position in level.floors"
+          :key="position"
+          class="land-tile"
+          :style="tileDelay(position)"
+        >
+          <rect
+            :x="x(position)"
+            :y="y(position) + 7"
+            width="40"
+            height="40"
+            :fill="scenery.tiles.get(position).edge"
+            class="tile-underface"
+          />
+          <rect
+            :x="x(position)"
+            :y="y(position)"
+            width="40"
+            height="40"
+            :fill="scenery.tiles.get(position).ground"
+            class="tile-surface"
+            :class="{ 'water-tile': level.sea }"
+          />
+          <path
+            v-if="!level.sea"
+            :d="coastlines.get(position)"
+            class="coast-edge"
+            :stroke="scenery.tiles.get(position).edge"
+          />
 
         </g>
-        <g class="country-borders" shape-rendering="crispEdges"><path v-for="region in regions" :key="region.id" :d="region.path" fill-rule="evenodd" /></g>
+        <g class="country-borders" shape-rendering="crispEdges"><path
+          v-for="region in regions"
+          :key="region.id"
+          :d="region.path"
+          fill-rule="evenodd"
+        /></g>
         <g v-for="detail in scenery.details" :key="`detail-${detail.position}`" :transform="`translate(${x(detail.position)},${y(detail.position)})`">
           <g class="tile-pop" :style="tileDelay(detail.position)"><GroundDetail :kind="detail.kind" :corner="detail.corner" :phase="detail.phase" /></g>
         </g>
         <g v-for="obstacle in scenery.obstacles" :key="`obstacle-${obstacle.position}`" :transform="`translate(${x(obstacle.position)},${y(obstacle.position)})`">
           <g class="tile-pop" :style="tileDelay(obstacle.position)"><TerrainArt :kind="obstacle.kind" :flip="obstacle.flip" /></g>
         </g>
-        <g v-for="goal in level.goals" :key="goal.country" class="target tile-pop" :style="tileDelay(goal.position)" @click="$emit('destination', goal.country)">
-          <line v-if="level.sea && goal.anchor" :x1="x(goal.position) + 20" :y1="y(goal.position) + 20"
-            :x2="goal.anchor[0] * 40" :y2="goal.anchor[1] * 40" stroke="#fcf0bc" stroke-width="2" stroke-dasharray="4 3" />
-          <rect :x="x(goal.position) + 4" :y="y(goal.position) + 5" width="32" height="30" rx="7" class="goal" :class="{ 'solved-goal': delivered(goal) }" />
-          <FlagIcon v-if="showFlags || revealed.includes(goal.country)" :country="goal.country" :x="x(goal.position) + 10" :y="y(goal.position) + 12" width="20" height="15" class="target-flag" />
-          <text v-else :x="x(goal.position) + 20" :y="y(goal.position) + 26" class="goal-number">?</text>
-          <text v-if="delivered(goal)" :x="x(goal.position) + 35" :y="y(goal.position) + 8" class="delivered-mark">✓</text>
+        <g
+          v-for="goal in level.goals"
+          :key="goal.country"
+          class="target tile-pop"
+          :style="tileDelay(goal.position)"
+          @click="$emit('destination', goal.country)"
+        >
+          <line
+            v-if="level.sea && goal.anchor"
+            :x1="x(goal.position) + 20"
+            :y1="y(goal.position) + 20"
+            :x2="goal.anchor[0] * 40"
+            :y2="goal.anchor[1] * 40"
+            stroke="#fcf0bc"
+            stroke-width="2"
+            stroke-dasharray="4 3"
+          />
+          <rect
+            :x="x(goal.position) + 4"
+            :y="y(goal.position) + 5"
+            width="32"
+            height="30"
+            rx="7"
+            class="goal"
+            :class="{ 'solved-goal': delivered(goal) }"
+          />
+          <FlagIcon
+            v-if="showFlags || revealed.includes(goal.country)"
+            :country="goal.country"
+            :x="x(goal.position) + 10"
+            :y="y(goal.position) + 12"
+            width="20"
+            height="15"
+            class="target-flag"
+          />
+          <text
+            v-else
+            :x="x(goal.position) + 20"
+            :y="y(goal.position) + 26"
+            class="goal-number"
+          >?</text>
+          <text
+            v-if="delivered(goal)"
+            :x="x(goal.position) + 35"
+            :y="y(goal.position) + 8"
+            class="delivered-mark"
+          >✓</text>
         </g>
         <polyline v-if="route" :points="route" class="hint-route" />
         <g v-for="(push, index) in overlay.pushes" :key="`push-${index}`" class="push-marker">
-          <rect :x="x(push.position) + 3" :y="y(push.position) + 3" width="34" height="34" rx="5" />
+          <rect
+            :x="x(push.position) + 3"
+            :y="y(push.position) + 3"
+            width="34"
+            height="34"
+            rx="5"
+          />
           <text :x="x(push.position) + 9" :y="y(push.position) + 13">{{ index + 1 }}</text>
         </g>
-        <g v-for="box in state.boxes" :key="box.id" class="box-actor" :data-country="box.country"
-          :style="{ transform: `translate(${x(box.position)}px,${y(box.position)}px)` }" @click="$emit('inspect', box.country)">
+        <g
+          v-for="box in state.boxes"
+          :key="box.id"
+          class="box-actor"
+          :data-country="box.country"
+          :style="{ transform: `translate(${x(box.position)}px,${y(box.position)}px)` }"
+          @click="$emit('inspect', box.country)"
+        >
           <g class="piece-reveal" :style="tileDelay(box.position)">
-          <rect v-if="overlay.boxId === box.id" x="-2" y="-2" width="44" height="43" rx="9" class="hint-box" />
-          <ellipse cx="20" cy="34" rx="16" ry="4" fill="#233d3955" />
-          <rect x="2" y="7" width="36" height="28" rx="4" fill="#9a794b" />
-          <rect x="2" y="4" width="36" height="28" rx="4" fill="#fffdf1" stroke="#405653" stroke-width="1.3" />
-          <FlagIcon :country="box.country" x="5" y="7" width="30" height="22" />
+            <rect
+              v-if="overlay.boxId === box.id"
+              x="-2"
+              y="-2"
+              width="44"
+              height="43"
+              rx="9"
+              class="hint-box"
+            />
+            <ellipse
+              cx="20"
+              cy="34"
+              rx="16"
+              ry="4"
+              fill="#233d3955"
+            />
+            <rect
+              x="2"
+              y="7"
+              width="36"
+              height="28"
+              rx="4"
+              fill="#9a794b"
+            />
+            <rect
+              x="2"
+              y="4"
+              width="36"
+              height="28"
+              rx="4"
+              fill="#fffdf1"
+              stroke="#405653"
+              stroke-width="1.3"
+            />
+            <FlagIcon
+              :country="box.country"
+              x="5"
+              y="7"
+              width="30"
+              height="22"
+            />
           </g>
         </g>
         <g class="player-actor" :style="{ transform: `translate(${x(state.player)}px,${y(state.player) - 4}px)` }">
           <g class="piece-reveal" :style="tileDelay(state.player)">
-          <path v-if="level.sea" d="M-2 32h44l-8 11H7Z" fill="#f8dfad" stroke="#294e52" stroke-width="1.5" />
-          <GlobeIcon width="40" height="44" :direction="facing" :uid="`${prefix}-globe`" />
+            <path
+              v-if="level.sea"
+              d="M-2 32h44l-8 11H7Z"
+              fill="#f8dfad"
+              stroke="#294e52"
+              stroke-width="1.5"
+            />
+            <GlobeIcon
+              width="40"
+              height="44"
+              :direction="facing"
+              :uid="`${prefix}-globe`"
+            />
           </g>
         </g>
-    </svg>
-    <div v-for="delivery in labels" :key="delivery.id" class="flag-label" :style="labelStyle(delivery)" role="status">
-      <span>{{ delivery.text }}</span>
-    </div>
+      </svg>
+      <div
+        v-for="delivery in labels"
+        :key="delivery.id"
+        class="flag-label"
+        :style="labelStyle(delivery)"
+        role="status"
+      >
+        <span>{{ delivery.text }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -223,6 +387,5 @@ const route = computed(() => props.overlay.route.map(position => `${x(position) 
   .tile-underface { display: none; }
 }
 :global(.reduced-motion) .tile-underface { display: none; }
-
 
 </style>

@@ -16,13 +16,24 @@ const timing = {
 </script>
 
 <template>
-  <div class="clear-announcement" :class="{ 'is-still': reducedMotion }" :style="timing" role="status" aria-live="polite" aria-atomic="true">
+  <div
+    class="clear-announcement"
+    :class="{ 'is-still': reducedMotion }"
+    :style="timing"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+  >
     <!-- Announce the complete translation once, never a series of single letters. -->
     <span class="sr-only">{{ text }}</span>
     <div class="clear-title" aria-hidden="true">
       <span v-for="(word, wordIndex) in words" :key="wordIndex" class="clear-word">
-        <span v-for="letter in word" :key="letter.index" class="clear-letter"
-          :style="{ '--letter-delay': `${letter.delay}ms`, '--letter-tilt': `${letter.tilt}deg` }">{{ letter.character }}</span>
+        <span
+          v-for="letter in word"
+          :key="letter.index"
+          class="clear-letter"
+          :style="{ '--letter-delay': `${letter.delay}ms`, '--letter-tilt': `${letter.tilt}deg` }"
+        >{{ letter.character }}</span>
       </span>
     </div>
   </div>

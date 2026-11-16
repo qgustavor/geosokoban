@@ -19,5 +19,7 @@ export function readPreferences () {
 }
 
 export function savePreferences (data) {
-  try { localStorage.setItem(KEY, JSON.stringify(data)) } catch {}
+  try {
+    localStorage.setItem(KEY, JSON.stringify(data))
+  } catch {}
 }

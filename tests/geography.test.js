@@ -78,7 +78,9 @@ test('HTTP-level gzip reproduces the former bug and loads with the corrected dec
   })
   server.listen(0, '127.0.0.1')
   await once(server, 'listening')
-  t.after(() => { server.closeAllConnections(); server.close() })
+  t.after(() => {
+    server.closeAllConnections(); server.close()
+  })
   const url = `http://127.0.0.1:${server.address().port}/world.geojson.gz`
   const oldResponse = await fetch(url)
   const oldStream = oldResponse.body.pipeThrough(new DecompressionStream('gzip'))

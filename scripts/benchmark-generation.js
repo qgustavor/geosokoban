@@ -49,7 +49,9 @@ function measure (code) {
       else finish(data)
     })
     worker.on('error', error => finish({}, error))
-    worker.on('exit', code => { if (!settled) finish({}, new Error(`Worker exited: ${code}`)) })
+    worker.on('exit', code => {
+      if (!settled) finish({}, new Error(`Worker exited: ${code}`))
+    })
     worker.postMessage({ code, geography })
   })
 }

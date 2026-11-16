@@ -17,7 +17,9 @@ test('menu, options, credits and story do not request the geography asset', asyn
   let requests = 0
   const errors = []
   page.on('pageerror', error => errors.push(error.message))
-  await page.route(mapRequest, route => { requests++; return route.abort() })
+  await page.route(mapRequest, route => {
+    requests++; return route.abort()
+  })
   await page.goto('./')
   await expect(page.locator('.level-selection')).toBeVisible()
   await page.getByRole('button', { name: 'Options', exact: true }).first().click()
@@ -41,7 +43,8 @@ for (const encoding of ['raw-file', 'http-gzip']) {
     const errors = []
     page.on('pageerror', error => errors.push(error.message))
     await page.route(mapRequest, route => route.fulfill({
-      status: 200, body: compressed,
+      status: 200,
+      body: compressed,
       headers: encoding === 'http-gzip'
         ? { 'Content-Type': 'application/json', 'Content-Encoding': 'gzip' }
         : { 'Content-Type': 'application/gzip' }
@@ -99,7 +102,9 @@ test('refresh uses a hash route and in-game options do not navigate or lose an u
 
 test('unknown routes and invalid puzzle codes do not request a map', async ({ page }) => {
   let requests = 0
-  await page.route(mapRequest, route => { requests++; return route.abort() })
+  await page.route(mapRequest, route => {
+    requests++; return route.abort()
+  })
   await page.goto('./#/missing')
   await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible()
   await page.goto('./#/puzzle/not-a-code')
@@ -113,7 +118,9 @@ for (const code of ['G2-SA-S1', 'G2-NA-S1', 'G2-NA-S3', 'G2-EE-S1', 'G2-WE-S1', 
       const errors = []
       let requests = 0
       page.on('pageerror', error => errors.push(error.message))
-      await page.route(mapRequest, route => { requests++; return route.abort() })
+      await page.route(mapRequest, route => {
+        requests++; return route.abort()
+      })
       await page.goto(`./#/puzzle/${code}${suffix}?g=learn`)
       await expect(page.locator('.play-page')).toHaveAttribute('data-code', code + suffix)
       await expect(page.locator('.board-wrap:not(.board-preview) .country-borders path').first()).toBeVisible()
@@ -134,12 +141,14 @@ for (const locale of ['en', 'pt-BR', 'es']) {
     await page.addInitScript(locale => {
       localStorage.setItem('geosokoban.prototype.v2', JSON.stringify({ locale, reduced: true }))
     }, locale)
-    await page.route(mapRequest, route => { requests++; return route.abort() })
+    await page.route(mapRequest, route => {
+      requests++; return route.abort()
+    })
     await page.goto('./')
     await expect(page.locator('.level-selection')).toBeVisible()
     await expect(page.locator('.challenge-card')).toHaveCount(3)
     await expect(page.locator('.mode-card')).toHaveCount(3)
-      await expect(page.locator('.generation-loading')).toHaveCount(0)
+    await expect(page.locator('.generation-loading')).toHaveCount(0)
     expect(requests).toBe(0)
     expect(errors).toEqual([])
   })

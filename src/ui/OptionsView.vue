@@ -15,7 +15,9 @@ defineEmits(['back', 'locale', 'reduced'])
       <select :value="locale" @change="$emit('locale', $event.target.value)"><option value="pt-BR">Português</option><option value="en">English</option><option value="es">Español</option></select>
     </label>
     <label class="option-row"><span>{{ t('reduceMotion') }}</span><input type="checkbox" :checked="reduced" @change="$emit('reduced', $event.target.checked)"></label>
-    <button class="button secondary back-button" @click="$emit('back')">{{ t('back') }}</button>
+    <button class="button secondary back-button" @click="$emit('back')">
+      {{ t('back') }}
+    </button>
   </section>
 </template>
 

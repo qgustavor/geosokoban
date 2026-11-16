@@ -19,10 +19,19 @@ onMounted(() => cancelButton.value?.focus({ preventScroll: true }))
 <template>
   <main class="generation-loading" aria-labelledby="generation-label">
     <GlobeIcon class="loading-globe" uid="loading-globe" aria-hidden="true" />
-    <h1 id="generation-label" role="status" aria-live="polite">{{ label }}</h1>
-    <progress class="generation-progress" max="1" :value="feedback.indeterminate ? undefined : feedback.fraction"
-      :aria-label="t('generationProgress')" :aria-valuetext="label" />
-    <button ref="cancelButton" class="button secondary" @click="$emit('cancel')">{{ t('cancel') }}</button>
+    <h1 id="generation-label" role="status" aria-live="polite">
+      {{ label }}
+    </h1>
+    <progress
+      class="generation-progress"
+      max="1"
+      :value="feedback.indeterminate ? undefined : feedback.fraction"
+      :aria-label="t('generationProgress')"
+      :aria-valuetext="label"
+    />
+    <button ref="cancelButton" class="button secondary" @click="$emit('cancel')">
+      {{ t('cancel') }}
+    </button>
   </main>
 </template>
 

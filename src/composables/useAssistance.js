@@ -13,7 +13,9 @@ export function useAssistance (level, state, onAssisted) {
   const warning = ref(false)
   const unavailable = ref(false)
   const cooldownSeconds = ref(0)
-  const cooldown = createHintCooldown(seconds => { cooldownSeconds.value = seconds })
+  const cooldown = createHintCooldown(seconds => {
+    cooldownSeconds.value = seconds
+  })
   let hintWorker = null
   let checkWorker = null
   let hintDeadline = null

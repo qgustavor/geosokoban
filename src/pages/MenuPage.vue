@@ -5,6 +5,13 @@ const app = useGameContext()
 </script>
 
 <template>
-  <HomeView :t="app.t" :completed="app.completed" :resume-code="app.resumeCode" :challenge="app.challenge" :notice="app.notice"
-    @start="app.open" @challenge="app.setChallenge" />
+  <HomeView
+    :t="app.t"
+    :completed="app.completed"
+    :resume-code="app.resumeCode"
+    :challenge="app.challenge"
+    :notice="app.notice"
+    @start="app.open"
+    @challenge="app.setChallenge"
+  />
 </template>

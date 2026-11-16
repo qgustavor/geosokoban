@@ -16,35 +16,76 @@ provide(gameContext, app)
 <template>
   <div class="app-shell" :class="{ 'reduced-motion': app.reduced }">
     <header v-if="app.view !== 'puzzle'" class="topbar">
-      <button class="brand" :aria-label="app.t('home')" @click="app.home"><GlobeIcon class="brand-globe" uid="brand-globe" />
+      <button class="brand" :aria-label="app.t('home')" @click="app.home">
+        <GlobeIcon class="brand-globe" uid="brand-globe" />
         <span class="brand-name">GeoSokoban</span>
       </button>
       <span class="prototype-badge">{{ app.t('prototype') }}</span>
       <div class="header-tools">
-        <button class="quiet" :disabled="app.session.loading" @click="app.showPanel('options')">{{ app.t('options') }}</button>
-        <button class="quiet credits-link" :disabled="app.session.loading" @click="app.showPanel('credits')">{{ app.t('credits') }}</button>
+        <button class="quiet" :disabled="app.session.loading" @click="app.showPanel('options')">
+          {{ app.t('options') }}
+        </button>
+        <button class="quiet credits-link" :disabled="app.session.loading" @click="app.showPanel('credits')">
+          {{ app.t('credits') }}
+        </button>
         <label class="language-picker"><span class="sr-only">{{ app.t('language') }}</span><select v-model="app.locale"><option value="en">English</option><option value="pt-BR">Português</option><option value="es">Español</option></select></label>
       </div>
     </header>
-    <GenerationLoading v-if="app.session.loadingDisplay.visible" :feedback="app.session.loadingDisplay" :t="app.t" @cancel="app.cancelGeneration" />
+    <GenerationLoading
+      v-if="app.session.loadingDisplay.visible"
+      :feedback="app.session.loadingDisplay"
+      :t="app.t"
+      @cancel="app.cancelGeneration"
+    />
     <div v-show="!app.session.loadingDisplay.visible" :inert="app.session.loading || undefined" :aria-busy="app.session.loading">
       <section v-if="app.failure" class="load-error" role="alert">
         <p>{{ app.t(app.failure.key) }}</p>
-        <button v-if="app.failure.code" class="button secondary" @click="app.retry">{{ app.t('retry') }}</button>
-        <button class="quiet" @click="app.home">{{ app.t('home') }}</button>
+        <button v-if="app.failure.code" class="button secondary" @click="app.retry">
+          {{ app.t('retry') }}
+        </button>
+        <button class="quiet" @click="app.home">
+          {{ app.t('home') }}
+        </button>
       </section>
       <RouterView />
     </div>
-    <OverlayDialog v-if="app.panel" :label="app.t(app.panel === 'pause' ? 'menu' : app.panel)" :wide="app.panel === 'credits'" @dismiss="app.closePanel">
+    <OverlayDialog
+      v-if="app.panel"
+      :label="app.t(app.panel === 'pause' ? 'menu' : app.panel)"
+      :wide="app.panel === 'credits'"
+      @dismiss="app.closePanel"
+    >
       <div v-if="app.panel === 'pause'" class="pause-actions">
-        <button class="button primary" @click="app.closePanel">{{ app.t('resume') }}</button>
-        <button class="button secondary" @click="app.showPanel('options')">{{ app.t('options') }}</button>
-        <button class="button secondary" @click="app.showPanel('credits')">{{ app.t('credits') }}</button>
-        <button class="button secondary" @click="app.home">{{ app.t('returnMenu') }}</button>
+        <button class="button primary" @click="app.closePanel">
+          {{ app.t('resume') }}
+        </button>
+        <button class="button secondary" @click="app.showPanel('options')">
+          {{ app.t('options') }}
+        </button>
+        <button class="button secondary" @click="app.showPanel('credits')">
+          {{ app.t('credits') }}
+        </button>
+        <button class="button secondary" @click="app.home">
+          {{ app.t('returnMenu') }}
+        </button>
       </div>
-      <OptionsView v-else-if="app.panel === 'options'" embedded :t="app.t" :locale="app.locale" :reduced="app.reduced" @back="app.closePanel"
-        @locale="app.locale = $event" @reduced="app.reduced = $event" />
-      <CreditsView v-else embedded :t="app.t" @back="app.closePanel" @clear-progress="app.completed = []" />
+      <OptionsView
+        v-else-if="app.panel === 'options'"
+        embedded
+        :t="app.t"
+        :locale="app.locale"
+        :reduced="app.reduced"
+        @back="app.closePanel"
+        @locale="app.locale = $event"
+        @reduced="app.reduced = $event"
+      />
+      <CreditsView
+        v-else
+        embedded
+        :t="app.t"
+        @back="app.closePanel"
+        @clear-progress="app.completed = []"
+      />
     </OverlayDialog>
   </div>
 </template>

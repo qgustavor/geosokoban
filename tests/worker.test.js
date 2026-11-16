@@ -30,7 +30,9 @@ function callWorker (file, message) {
       finish()
       resolve(data)
     })
-    worker.once('error', error => { finish(); reject(error) })
+    worker.once('error', error => {
+      finish(); reject(error)
+    })
     worker.postMessage(message)
   })
 }

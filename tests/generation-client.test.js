@@ -5,13 +5,23 @@ import { createGenerationClient } from '../src/core/generation-client.js'
 class FakeWorker {
   terminated = 0
   messages = []
-  postMessage (message) { this.messages.push(message) }
-  terminate () { this.terminated++ }
-  emit (data) { this.onmessage?.({ data }) }
+  postMessage (message) {
+    this.messages.push(message)
+  }
+
+  terminate () {
+    this.terminated++
+  }
+
+  emit (data) {
+    this.onmessage?.({ data })
+  }
 }
 function fixture () {
   const workers = []
-  const client = createGenerationClient(() => { const worker = new FakeWorker(); workers.push(worker); return worker })
+  const client = createGenerationClient(() => {
+    const worker = new FakeWorker(); workers.push(worker); return worker
+  })
   return { client, workers }
 }
 

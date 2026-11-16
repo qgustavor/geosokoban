@@ -11,7 +11,9 @@ const { values } = parseArgs({ options: { samples: { type: 'string', default: '2
 const samples = Number(values.samples)
 if (!Number.isInteger(samples) || samples < 1 || samples > 1000) throw new Error('Use --samples between 1 and 1000')
 const root = resolve('dist')
-await readFile(resolve(root, 'index.html')).catch(() => { throw new Error('Build the application first: npm run build') })
+await readFile(resolve(root, 'index.html')).catch(() => {
+  throw new Error('Build the application first: npm run build')
+})
 const base = process.env.BASE_PATH && process.env.BASE_PATH !== './' ? process.env.BASE_PATH : '/'
 const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.gz': 'application/gzip', '.svg': 'image/svg+xml' }
 const server = createServer(async (request, response) => {
@@ -28,7 +30,9 @@ const server = createServer(async (request, response) => {
     response.end('Not found')
   }
 })
-await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve) })
+await new Promise((resolve, reject) => {
+  server.once('error', reject); server.listen(0, '127.0.0.1', resolve)
+})
 let browser
 try {
   browser = await chromium.launch()
@@ -68,7 +72,9 @@ try {
   const rows = []
   const codes = benchmarkCodes(samples)
   for (const code of codes) {
-    await page.evaluate(code => { window.location.hash = `/puzzle/${encodeURIComponent(code)}?g=learn` }, code)
+    await page.evaluate(code => {
+      window.location.hash = `/puzzle/${encodeURIComponent(code)}?g=learn`
+    }, code)
     try {
       // This watchdog belongs to the measuring tool, not to the application.
       await page.waitForFunction(code => window.benchmarkReplies.some(row => row.code === code), code, { timeout: 120000 })
@@ -82,12 +88,20 @@ try {
           await page.waitForFunction(code => document.querySelector('.play-page')?.dataset.code === code, code)
         } catch (error) {
           rows.at(-1).renderError = error.message
-          await page.evaluate(() => { window.location.hash = '/' })
+          await page.evaluate(() => {
+            window.location.hash = '/'
+          })
         }
-      } else await page.evaluate(() => { window.location.hash = '/' })
+      } else {
+        await page.evaluate(() => {
+          window.location.hash = '/'
+        })
+      }
     } catch (error) {
       rows.push({ code, difficulty: code.endsWith('-P') ? 'puzzle' : 'gentle', ok: false, fallback: false, ms: 120000, error: error.message })
-      await page.evaluate(() => { window.location.hash = '/' })
+      await page.evaluate(() => {
+        window.location.hash = '/'
+      })
     }
     if (rows.length % 14 === 0) console.error(`${rows.length}/${codes.length} measured`)
   }

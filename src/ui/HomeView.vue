@@ -17,35 +17,75 @@ const mode = ref('daily')
 const code = ref('')
 const modes = ['story', 'daily', 'random']
 const symbols = ['↗', '◷', '⤨']
-function start (code) { emit('start', withPlanning(code, challengeSettings(props.challenge).planning)) }
-function play () { start(mode.value === 'story' ? props.resumeCode : mode.value === 'daily' ? dailyCode() : newCode()) }
+function start (code) {
+  emit('start', withPlanning(code, challengeSettings(props.challenge).planning))
+}
+function play () {
+  start(mode.value === 'story' ? props.resumeCode : mode.value === 'daily' ? dailyCode() : newCode())
+}
 </script>
 
 <template>
   <main class="level-selection">
-    <fieldset class="mode-grid"><legend>{{ t('gameMode') }}</legend>
-      <label v-for="(choice, index) in modes" :key="choice" class="mode-card" :class="{ active: mode === choice }">
-        <input v-model="mode" type="radio" name="game-mode" :value="choice" class="sr-only">
+    <fieldset class="mode-grid">
+      <legend>{{ t('gameMode') }}</legend>
+      <label
+        v-for="(choice, index) in modes"
+        :key="choice"
+        class="mode-card"
+        :class="{ active: mode === choice }"
+      >
+        <input
+          v-model="mode"
+          type="radio"
+          name="game-mode"
+          :value="choice"
+          class="sr-only"
+        >
         <span class="mode-symbol" aria-hidden="true">{{ symbols[index] }}</span><strong>{{ t(choice) }}</strong>
       </label>
     </fieldset>
     <ChallengePicker :value="challenge" :t="t" @change="$emit('challenge', $event)" />
-    <button class="button primary start-game" @click="play">{{ t('playNow') }}</button>
-    <details v-if="mode === 'story'" class="journey-picker"><summary>{{ t('chooseStop') }}</summary>
-      <div class="journey-grid"><section v-for="(region, regionIndex) in REGIONS" :key="region.id">
-        <h2>{{ t(region.name) }}</h2>
-        <div><button v-for="stop in 3" :key="stop" class="button secondary" @click="start(storyCode(regionIndex * 3 + stop))">
-          {{ t('stop', { n: stop }) }} <span v-if="completed.includes(storyCode(regionIndex * 3 + stop))">✓</span>
-        </button></div>
-      </section></div>
+    <button class="button primary start-game" @click="play">
+      {{ t('playNow') }}
+    </button>
+    <details v-if="mode === 'story'" class="journey-picker">
+      <summary>{{ t('chooseStop') }}</summary>
+      <div class="journey-grid">
+        <section v-for="(region, regionIndex) in REGIONS" :key="region.id">
+          <h2>{{ t(region.name) }}</h2>
+          <div>
+            <button
+              v-for="stop in 3"
+              :key="stop"
+              class="button secondary"
+              @click="start(storyCode(regionIndex * 3 + stop))"
+            >
+              {{ t('stop', { n: stop }) }} <span v-if="completed.includes(storyCode(regionIndex * 3 + stop))">✓</span>
+            </button>
+          </div>
+        </section>
+      </div>
     </details>
-    <details class="code-entry"><summary>{{ t('openCode') }}</summary>
+    <details class="code-entry">
+      <summary>{{ t('openCode') }}</summary>
       <form class="input-row" @submit.prevent="$emit('start', code)">
-        <input v-model="code" :aria-label="t('openCode')" :placeholder="t('codePlaceholder')" maxlength="32" autocomplete="off" spellcheck="false">
-        <button class="button secondary">{{ t('open') }}</button>
+        <input
+          v-model="code"
+          :aria-label="t('openCode')"
+          :placeholder="t('codePlaceholder')"
+          maxlength="32"
+          autocomplete="off"
+          spellcheck="false"
+        >
+        <button class="button secondary">
+          {{ t('open') }}
+        </button>
       </form>
     </details>
-    <p v-if="notice" class="notice" role="status">{{ notice }}</p>
+    <p v-if="notice" class="notice" role="status">
+      {{ notice }}
+    </p>
   </main>
 </template>
 

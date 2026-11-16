@@ -17,7 +17,9 @@ export function useSession ({ reducedMotion = () => false } = {}) {
   let facingHistory = []
   const loading = ref(false)
   const loadingDisplay = shallowRef(emptyFeedback())
-  const feedback = createLoadingFeedback(value => { loadingDisplay.value = value }, { reducedMotion })
+  const feedback = createLoadingFeedback(value => {
+    loadingDisplay.value = value
+  }, { reducedMotion })
   const solved = computed(() => isSolved(level.value, state.value))
   const chapter = computed(() => storyIndex(level.value.id))
   const cache = createLevelCache()
@@ -100,6 +102,8 @@ export function useSession ({ reducedMotion = () => false } = {}) {
     return true
   }
 
-  onUnmounted(() => { cancel(); generator.dispose() })
+  onUnmounted(() => {
+    cancel(); generator.dispose()
+  })
   return { level, state, historyCount, facing, solved, chapter, loading, loadingDisplay, start, cancel, step, undo, restart }
 }

@@ -22,7 +22,9 @@ async function setup (page) {
         this.onmessage?.({ data: { type: 'progress', stage: 'search' } })
       }
 
-      terminate () { this.terminated = true }
+      terminate () {
+        this.terminated = true
+      }
     }
   }, { level: fixture })
   await page.goto('./')

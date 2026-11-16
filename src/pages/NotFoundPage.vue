@@ -5,7 +5,8 @@ const app = useGameContext()
 </script>
 
 <template>
-  <main class="route-not-found"><h1>{{ app.t('pageNotFound') }}</h1>
+  <main class="route-not-found">
+    <h1>{{ app.t('pageNotFound') }}</h1>
     <RouterLink class="button secondary" :to="{ name: 'home' }">{{ app.t('home') }}</RouterLink>
   </main>
 </template>

@@ -1,7 +1,4 @@
-Help me developing a prototype for a game. Here's my design document:
-
-````
-# GeoSokoban
+# GeoSokoban Prototype Design Document
 
 A sokoban-like game that helps you learn geography.
 
@@ -118,4 +115,3 @@ Design questions:
 
 - Should flag targets show which flags are expected to go in the respective targets (like the original GeoSokoban game) or should just be generic targets to allow players to learn about country flags and where those countries go in a map? I guess we should have a default mode should the targets with the country flags and a hard mode where the targets are hidden.
 - Should the random seed be visible in random mode, so players can challenge others in the same level they played on? In this case, how should this seed look like? A random number (like Minecraft) or something else?
-````

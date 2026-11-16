@@ -37,19 +37,24 @@ export function useGameController () {
   const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
   const systemReducedMotion = ref(mediaQuery.matches)
   const reducedMotion = computed(() => reduced.value || systemReducedMotion.value)
-  const motionChanged = event => { systemReducedMotion.value = event.matches }
+  const motionChanged = event => {
+    systemReducedMotion.value = event.matches
+  }
   const panelReturn = '/'
   const game = useSession({ reducedMotion: () => reducedMotion.value })
   const { level, state, chapter, solved } = game
   const session = reactive(game)
-  const help = reactive(useAssistance(level, state, () => { assisted.value = true }))
+  const help = reactive(useAssistance(level, state, () => {
+    assisted.value = true
+  }))
   const t = (key, params) => translate(locale.value, key, params)
   const name = country => countryName(country, locale.value)
   const resumeCode = computed(() => Array.from({ length: STORY_COUNT }, (_, index) => storyCode(index + 1)).find(code => !completed.value.includes(code)) ?? storyCode(1))
   const fact = computed(() => {
     if (!factCountry.value) return ''
     const relation = relations[factCountry.value]
-    return relation ? t('relation', { country: name(factCountry.value), direction: t('geo' + relation[0][0].toUpperCase() + relation[0].slice(1)), other: name(relation[1]) })
+    return relation
+      ? t('relation', { country: name(factCountry.value), direction: t('geo' + relation[0][0].toUpperCase() + relation[0].slice(1)), other: name(relation[1]) })
       : t('findCountry', { country: name(factCountry.value) })
   })
 
@@ -242,7 +247,7 @@ export function useGameController () {
   }
 
   async function share () {
-    const text = t('shareResult', { code: level.value.id, moves: state.value.moves, challenge: t('challenge' + challengeName(guidance.value, level.value.planning === true)), help: t(assisted.value ? 'assisted' : 'unassisted') })
+    const text = t('shareResult', { moves: state.value.moves, challenge: t('challenge' + challengeName(guidance.value, level.value.planning === true)), help: t(assisted.value ? 'assisted' : 'unassisted') })
     const result = await shareResult({ title: 'GeoSokoban', text, url: puzzleURL() })
     if (result.status === 'fallback') fallbackText.value = result.text
   }
@@ -288,7 +293,9 @@ export function useGameController () {
     savePreferences({ locale: locale.value, completed: completed.value, reduced: reduced.value, guidance: guidance.value, planning: planning.value })
     document.documentElement.lang = locale.value
   })
-  watch(locale, () => { notice.value = '' })
+  watch(locale, () => {
+    notice.value = ''
+  })
   onMounted(() => {
     document.documentElement.lang = locale.value
     mediaQuery.addEventListener('change', motionChanged)
@@ -297,16 +304,63 @@ export function useGameController () {
   let noticeTimer
   watch(notice, value => {
     clearTimeout(noticeTimer)
-    if (value && view.value === 'puzzle') noticeTimer = setTimeout(() => { notice.value = '' }, 2800)
+    if (value && view.value === 'puzzle') {
+      noticeTimer = setTimeout(() => {
+        notice.value = ''
+      }, 2800)
+    }
   })
-  onUnmounted(() => { clearTimeout(noticeTimer); mediaQuery.removeEventListener('change', motionChanged) })
+  onUnmounted(() => {
+    clearTimeout(noticeTimer); mediaQuery.removeEventListener('change', motionChanged)
+  })
 
   return {
-    view, locale, completed, reduced, panel, guidance, challenge, notice, fallbackText,
-    assisted, selected, requested, revealed, fact, reducedMotion, boardTransitioning, activeCode, failure,
-    session, help, resumeCode, t, name, open, home, showPanel, closePanel,
-    cancelGeneration, retry, step, key, undo, restart, inspect, selectDestination,
-    reveal, revealAll, setGuidance, setChallenge, nextPuzzle, share, copyText,
-    puzzleURL, setBoardTransitioning, dismissShare: () => { fallbackText.value = '' }
+    view,
+    locale,
+    completed,
+    reduced,
+    panel,
+    guidance,
+    challenge,
+    notice,
+    fallbackText,
+    assisted,
+    selected,
+    requested,
+    revealed,
+    fact,
+    reducedMotion,
+    boardTransitioning,
+    activeCode,
+    failure,
+    session,
+    help,
+    resumeCode,
+    t,
+    name,
+    open,
+    home,
+    showPanel,
+    closePanel,
+    cancelGeneration,
+    retry,
+    step,
+    key,
+    undo,
+    restart,
+    inspect,
+    selectDestination,
+    reveal,
+    revealAll,
+    setGuidance,
+    setChallenge,
+    nextPuzzle,
+    share,
+    copyText,
+    puzzleURL,
+    setBoardTransitioning,
+    dismissShare: () => {
+      fallbackText.value = ''
+    }
   }
 }

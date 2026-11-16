@@ -18,7 +18,9 @@ function bruteForce (level) {
     for (const direction of DIRECTIONS) {
       const next = move(level, state, direction, floor)
       const signature = key(next)
-      if (next !== state && !seen.has(signature)) { seen.add(signature); queue.push(next) }
+      if (next !== state && !seen.has(signature)) {
+        seen.add(signature); queue.push(next)
+      }
     }
   }
   return Infinity

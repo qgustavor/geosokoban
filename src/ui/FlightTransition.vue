@@ -22,7 +22,12 @@ onBeforeUnmount(() => clearTimeout(fallback))
 
 <template>
   <div class="flight-overlay" role="status" :aria-label="label">
-    <div :key="phase" class="flight-path" :class="phase" @animationend.self="complete">
+    <div
+      :key="phase"
+      class="flight-path"
+      :class="phase"
+      @animationend.self="complete"
+    >
       <PlaneIcon class="flight-plane" />
     </div>
   </div>

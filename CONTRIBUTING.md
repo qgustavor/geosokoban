@@ -9,3 +9,21 @@ Use Vue `.vue` single-file components with `<script setup>` for interface elemen
 Keep the default gentle and challenge presets optional. Do not add a gameplay timer to the prototype. Do not cap undo, charge for hints, penalize resetting, or call a budget-limited search a proven deadlock. Preserve country identity in every solver and generator check. Keep geography geometry distinct from the schematic puzzle terrain.
 
 Run `npm test`, `npm run lint` and `npm run build` before a release. Add a regression test for a rules bug. Preserve existing puzzle codes; version intentional generator/content changes. Commit a reviewed lockfile after installing dependencies. Keep third-party notices and map provenance current. No telemetry or new external requests without an explicit design decision.
+
+## Coding Standards & Architecture Guidelines
+
+### No Dense One-Liners or Code Packing
+- NEVER pack multiple statements on a single line using semicolons.
+- NEVER write single-line function declarations or block bodies (e.g. `if (cond) { doA(); return }`). Always expand braces across multiple lines.
+- Break down dense functional pipelines: avoid chaining `.map()`, `.filter()`, and nested ternaries inside a single expression. Use intermediate, descriptively named variables.
+
+### Meaningful Comments are Required
+- Explain the **WHY**, not the **WHAT**: Do not explain standard framework syntax. Explain domain rules, game state transitions, race-condition guards, mathematical formulas, and magic numbers (e.g., why a timeout is 2800ms).
+- Every non-trivial reactive watcher or computed property must have a 1–2 line comment explaining the scenario it reacts to.
+- Complex helper functions and coordinate transformations must have JSDoc or descriptive header comments.
+
+### Vue SFC Guidelines
+- **Template Line Wrapping**: Never place more than 3 attributes on a single line. When a tag wraps, place each attribute on its own line.
+- **Component Decomposition**: If a component contains modal dialogs, HUD controls, or screen overlays, extract them into dedicated subcomponents instead of embedding their markup in the parent page.
+- **Composable Extraction**: State machines, delivery timers, and complex accessibility aggregations must be extracted into composables (`use...()`).
+- **CSS Hygiene**: NEVER write minified, single-line CSS rule sets. Every declaration belongs on its own line with 2-space indentation. Separate selectors with an empty line.

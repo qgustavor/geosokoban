@@ -20,7 +20,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <dialog ref="dialog" class="game-dialog" :class="{ wide }" :aria-label="label" @cancel.prevent="emit('dismiss')">
+  <dialog
+    ref="dialog"
+    class="game-dialog"
+    :class="{ wide }"
+    :aria-label="label"
+    @cancel.prevent="emit('dismiss')"
+  >
     <slot />
   </dialog>
 </template>

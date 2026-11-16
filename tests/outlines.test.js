@@ -110,16 +110,22 @@ test('pixelated outlines use the same projection as generated maps at every thre
       }
       parentPort.postMessage(actual)
     })().catch(error => { throw error })
-  `, { eval: true, workerData: {
-    world, regions: atlas.regions,
-    worldModule: new URL('../src/geo/world.js', import.meta.url).href,
-    rasterModule: new URL('../src/geo/rasterize.js', import.meta.url).href
-  } })
+  `, {
+    eval: true,
+    workerData: {
+      world,
+      regions: atlas.regions,
+      worldModule: new URL('../src/geo/world.js', import.meta.url).href,
+      rasterModule: new URL('../src/geo/rasterize.js', import.meta.url).href
+    }
+  })
   try {
     const results = await new Promise((resolve, reject) => {
       worker.once('message', resolve)
       worker.once('error', reject)
-      worker.once('exit', code => { if (code !== 0) reject(new Error(`Worker exited with ${code}`)) })
+      worker.once('exit', code => {
+        if (code !== 0) reject(new Error(`Worker exited with ${code}`))
+      })
     })
     assert.equal(results.length, 32)
     for (const result of results) {

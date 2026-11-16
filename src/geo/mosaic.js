@@ -108,8 +108,10 @@ export function mosaicPath (path, bounds = [-Infinity, -Infinity, Infinity, Infi
     do {
       const choices = edges.get(vertex)
       if (!choices?.length) throw new Error('Open mosaic contour')
-      const choice = direction === null ? 0 : choices.reduce((best, candidate, index) =>
-        turnPriority[(candidate.direction - direction + 4) % 4] < turnPriority[(choices[best].direction - direction + 4) % 4] ? index : best, 0)
+      const choice = direction === null
+        ? 0
+        : choices.reduce((best, candidate, index) =>
+          turnPriority[(candidate.direction - direction + 4) % 4] < turnPriority[(choices[best].direction - direction + 4) % 4] ? index : best, 0)
       const next = choices.splice(choice, 1)[0]
       if (!choices.length) edges.delete(vertex)
       if (next.direction !== direction) {

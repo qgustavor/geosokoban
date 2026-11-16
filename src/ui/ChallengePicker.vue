@@ -5,11 +5,26 @@ defineEmits(['change'])
 </script>
 
 <template>
-  <fieldset class="challenge-picker"><legend>{{ t('difficulty') }}</legend>
-    <div class="challenge-grid"><label v-for="(choice, index) in CHALLENGES" :key="choice" class="challenge-card" :class="{ active: value === choice }">
-      <input type="radio" name="challenge" :value="choice" :checked="value === choice" class="sr-only" @change="$emit('change', choice)">
-      <span class="difficulty-dots" aria-hidden="true">{{ '●'.repeat(index + 1) }}</span><strong>{{ t('challenge' + choice) }}</strong>
-    </label></div>
+  <fieldset class="challenge-picker">
+    <legend>{{ t('difficulty') }}</legend>
+    <div class="challenge-grid">
+      <label
+        v-for="(choice, index) in CHALLENGES"
+        :key="choice"
+        class="challenge-card"
+        :class="{ active: value === choice }"
+      >
+        <input
+          type="radio"
+          name="challenge"
+          :value="choice"
+          :checked="value === choice"
+          class="sr-only"
+          @change="$emit('change', choice)"
+        >
+        <span class="difficulty-dots" aria-hidden="true">{{ '●'.repeat(index + 1) }}</span><strong>{{ t('challenge' + choice) }}</strong>
+      </label>
+    </div>
   </fieldset>
 </template>
 
