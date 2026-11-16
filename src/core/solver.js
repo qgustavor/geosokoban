@@ -76,7 +76,7 @@ export function solve (level, start, maxStates = 12000, { objective = 'pushes' }
     return pushes + walk
   }
   if (!Number.isFinite(estimate(start))) return { status: 'unsolvable', expanded: 0, objective }
-  const search = createWalkingSearch(level, floor)
+  const search = createWalkingSearch(level, floor, { reuseBuffers: true })
   const key = state => state.boxes.map(box => box.position).join(',') + '@' + (byMoves ? state.player : search(state, false).minimum)
   const first = { state: start, parent: null, cost: 0, signature: key(start) }
   const best = new Map([[first.signature, 0]])

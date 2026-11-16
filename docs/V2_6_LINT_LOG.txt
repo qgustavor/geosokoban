@@ -1,0 +1,5 @@
+
+> geosokoban-prototype@0.2.6 lint
+> eslint .
+
+sh: 1: eslint: not found

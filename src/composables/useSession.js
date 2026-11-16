@@ -4,7 +4,8 @@ import { isSolved } from '../core/engine.js'
 import { loadGeography } from '../geo/world.js'
 import storyLevels from '../content/story-levels.json' with { type: 'json' }
 import { storyIndex } from '../content/regions.js'
-import { generationTask } from '../core/generation-task.js'
+import { createGenerationClient } from '../core/generation-client.js'
+import { createLevelCache } from '../core/level-cache.js'
 import { createLoadingFeedback, emptyFeedback } from '../core/loading-feedback.js'
 
 export function useSession ({ reducedMotion = () => false } = {}) {
@@ -19,6 +20,8 @@ export function useSession ({ reducedMotion = () => false } = {}) {
   const feedback = createLoadingFeedback(value => { loadingDisplay.value = value }, { reducedMotion })
   const solved = computed(() => isSolved(level.value, state.value))
   const chapter = computed(() => storyIndex(level.value.id))
+  const cache = createLevelCache()
+  const generator = createGenerationClient(() => new Worker(new URL('../core/generate.worker.js', import.meta.url), { type: 'module' }))
   let revision = 0
   let cancelRequest = null
 
@@ -38,7 +41,7 @@ export function useSession ({ reducedMotion = () => false } = {}) {
   async function start (code) {
     cancel()
     const current = revision
-    const cached = storyLevels[code]
+    const cached = storyLevels[code] ?? cache.get(code)
     try {
       let next = cached
       if (!cached) {
@@ -48,11 +51,10 @@ export function useSession ({ reducedMotion = () => false } = {}) {
         cancelRequest = () => controller.abort()
         const geography = await loadGeography({ signal: controller.signal })
         if (current !== revision) return false
-        const worker = new Worker(new URL('../core/generate.worker.js', import.meta.url), { type: 'module' })
-        const task = generationTask(worker, { code, geography }, feedback.progress)
-        cancelRequest = task.cancel
-        next = await task.promise
+        cancelRequest = generator.cancel
+        next = await generator.generate(code, geography, feedback.progress)
         if (current !== revision || !next) return false
+        cache.set(next)
         cancelRequest = null
         if (!await feedback.finish()) return false
       }
@@ -98,6 +100,6 @@ export function useSession ({ reducedMotion = () => false } = {}) {
     return true
   }
 
-  onUnmounted(cancel)
+  onUnmounted(() => { cancel(); generator.dispose() })
   return { level, state, historyCount, facing, solved, chapter, loading, loadingDisplay, start, cancel, step, undo, restart }
 }

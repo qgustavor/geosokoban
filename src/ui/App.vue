@@ -4,7 +4,6 @@ import { RouterView } from 'vue-router'
 import { useGameController } from '../composables/useGameController.js'
 import { gameContext } from './game-context.js'
 import GlobeIcon from './GlobeIcon.vue'
-import FlightTransition from './FlightTransition.vue'
 import GenerationLoading from './GenerationLoading.vue'
 import OverlayDialog from './OverlayDialog.vue'
 import OptionsView from './OptionsView.vue'
@@ -47,7 +46,6 @@ provide(gameContext, app)
         @locale="app.locale = $event" @reduced="app.reduced = $event" />
       <CreditsView v-else embedded :t="app.t" @back="app.closePanel" @clear-progress="app.completed = []" />
     </OverlayDialog>
-    <FlightTransition v-if="app.flight" :phase="app.flight" :label="app.t('flying')" @complete="app.flightComplete" />
   </div>
 </template>
 

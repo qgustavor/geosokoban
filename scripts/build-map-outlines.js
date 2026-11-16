@@ -2,6 +2,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { gunzipSync } from 'node:zlib'
 import { REGIONS, CARIBBEAN } from '../src/content/regions.js'
 import { contextPaths } from '../src/geo/projection.js'
+import { mosaicPath, MAP_PIXELS_PER_CELL, MAP_TILE_SIZE } from '../src/geo/mosaic.js'
 import { setGeography } from '../src/geo/world.js'
 import { rasterize, MAP_VERSION } from '../src/geo/rasterize.js'
 
@@ -10,17 +11,20 @@ const world = new URL('../src/data/world.geojson.gz', import.meta.url)
 const geography = JSON.parse(gunzipSync(await readFile(world)))
 setGeography(geography)
 
-// Country outlines depend on the projection, not the land-coverage threshold.
+// Pixel coasts and borders share the gameplay origin, independent of floor thresholds.
 const regions = Object.fromEntries([...REGIONS, CARIBBEAN].map(definition => {
   const map = rasterize(definition.id)
+  const margin = Math.max(map.width, map.height) * 3
+  const bounds = [-margin, -margin, map.width + margin, map.height + margin].map(value => value * MAP_TILE_SIZE)
+  const pixels = regions => regions.map(({ id, path }) => ({ id, path: mosaicPath(path, bounds) })).filter(region => region.path)
   return [definition.id, {
     width: map.width,
     height: map.height,
-    context: contextPaths(geography, definition),
-    regions: map.regions.map(({ id, path }) => ({ id, path }))
+    context: pixels(contextPaths(geography, definition)),
+    regions: pixels(map.regions)
   }]
 }))
-const serialized = JSON.stringify({ mapVersion: MAP_VERSION, tileSize: 40, regions }) + '\n'
+const serialized = JSON.stringify({ mapVersion: MAP_VERSION, tileSize: MAP_TILE_SIZE, pixelsPerCell: MAP_PIXELS_PER_CELL, regions }) + '\n'
 
 if (process.argv.includes('--check')) {
   const existing = await readFile(output, 'utf8').catch(() => '')

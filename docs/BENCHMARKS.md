@@ -1,36 +1,47 @@
-# Generation benchmark — 0.2.5
+# Generation benchmark — 0.2.6
 
-## Current measurements
+## Paired measurements on this machine
 
-Raw record: `benchmarks/v2.5-node-worker.json`. Generator version 4; minimum obstacle contribution five moves. There were **28 sequential fresh Node workers**, two reproducible codes per seven top-level regions and mechanical family. Each worker runs the actual generation-worker source through a Node parentPort adapter. Time includes worker startup, imports, transfer of already-loaded geography and terminal reply; progress messages do not finish a measurement. Each returned solution was replayed outside the timed interval.
+The original uploaded source and updated source ran the **same 14 seeded codes, in the same order**, sequentially in fresh Node workers. Each run contains one code per seven top-level regions and two mechanical difficulties; North America may internally select the Caribbean. There are no cache hits or warm-worker reuse in this measurement. All 28 returned solutions were replayed successfully outside the timed interval.
 
-| Family | Runs | Median | p75 | p95 | Maximum | Fallbacks |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Easy/Medium layout | 14 | 3,550 ms | 4,293 ms | 5,222 ms | 5,222 ms | 9 |
-| Hard layout | 14 | 3,072 ms | 4,335 ms | 7,966 ms | 7,966 ms | 10 |
-| Balanced sample | 28 | 3,152 ms | 4,293 ms | 6,617 ms | 7,966 ms | 19 |
+| Measurement | Original source (generator 4) | Updated source (generator 5) |
+| --- | ---: | ---: |
+| Requests completed / attempted | 14 / 14 | 14 / 14 |
+| Median | 5,225.9 ms | 567.6 ms |
+| p75 | 5,799.3 ms | 806.5 ms |
+| p95 / maximum | 8,073.2 ms | 1,031.2 ms |
+| Completed under 500 ms | 0 / 14 | 5 / 14 |
+| Completed under 1,000 ms | 0 / 14 | 12 / 14 |
+| Certified-template fallbacks | 8 / 14 | 12 / 14 |
 
-All 28 completed with valid replayed solutions; no failed requests. **None completed under 500 ms**; one finished under one second. The high fallback rate means the current strict generator does not supply enough distinct fresh puzzles reliably. It must not be described as a performance or variety problem solved.
+The observed median is approximately **9.2× faster**. This is not purely a micro-optimization comparison: live search budgets are smaller and new templates are used more frequently. Generator version 5 also changes seed output and topology. The move-gap and design requirements are still enforced. Template variations preserve certificates, but do not guarantee a completely new solution for every code.
 
-Environment: Node v22.16.0, Linux x64, AMD EPYC 9V74, four available logical CPUs. Jobs are sequential. Percentiles use nearest rank. These are measurements of a small fixed corpus, not estimates of all players' experience or proof that Hard is faster/easier than Easy. With 14 samples per family, tail estimates are especially coarse. Regions are equally weighted rather than weighted by actual use.
+Raw records:
 
-The stricter design filters and two move-optimal searches make this a different workload from 0.2.1. That release's 280-worker record in `benchmarks/node-worker.json` remains historical; its 88.2%-under-500-ms figure **does not describe this generator**.
+- `benchmarks/v2.5-same-machine-baseline.json`
+- `benchmarks/v2.6-node-worker.json`
 
-## Loading estimates
+The separate `benchmarks/v2.5-node-worker.json` is the prior release's 28-request record on a different CPU; do not mix its median with this paired comparison.
 
-Keep the 500 ms loader delay and 400 ms visible-only completion transition. New provisional search estimates are 4,300 ms for gentle and 4,400 ms for Hard, rounded from these p75 values. They affect presentation only. Neither a loader estimate nor a wall-clock deadline determines acceptance or fallback. Story mode never uses the generator.
+## Method and limitations
 
-These measurements exclude first map download, application startup, Vue rendering, flag rendering and board animation. They are not browser measurements and not physical-phone measurements. Measure click-to-play separately on representative devices before tuning the delay or making latency promises.
+Environment: Node v22.16.0, Linux x64, Intel Xeon Platinum 8573C, four available logical CPUs. Workers execute the actual generation-worker source through a Node parentPort adapter. Timing includes worker startup/imports, transfer of already-loaded geography and the terminal reply. Progress messages do not finish a measurement. No warmup samples are discarded.
+
+Network download, application startup, DOM/SVG rendering, loading feedback and board transitions are excluded. These are development-machine measurements, **not browser or physical-phone latency guarantees**. Fourteen runs provide only a small fixed sample and coarse tail estimates. Codes are equally weighted across regions/difficulties, not weighted by player traffic.
+
+A cache hit bypasses the worker entirely, and warm workers reuse geographic samples for later codes; neither improvement is included in the fresh-worker table. Cache and lifetime behavior have unit coverage, but no browser performance numbers are claimed.
+
+Provisional loader estimates are 1,000 ms for gentle and 900 ms for Hard, rounded from the respective small-sample p75 values. They affect presentation only. The 500 ms delayed-loader threshold and 400 ms visible-only finishing period are unchanged. The default tile sequence is separate from generation and deliberately takes visible time; reduced motion disables it.
 
 ## Repeat
 
 ```sh
-npm run benchmark -- --samples 2 --output docs/benchmarks/my-worker-run.json
+npm run benchmark -- --samples 1 --output docs/benchmarks/local-worker-run.json
 ```
 
-Two samples gives 28 requests. Twenty gives 280 and is materially more expensive with the new certification. The benchmark requires only Node; each result records optimum costs, the obstacle-free baseline, gap, fallback use and progress timings.
+One sample gives 14 requests; two gives 28. This script only needs Node and bundled assets. It records solution/optimum metadata, template use and progress timings. A developer watchdog counts failures rather than substituting successful timings.
 
-The included production-browser benchmark requires installed dependencies and a successful build:
+For the production-browser benchmark, install dependencies and build first:
 
 ```sh
 npm install
@@ -39,4 +50,4 @@ npm run build
 npm run benchmark:browser -- --samples 2
 ```
 
-That script serves the actual dist app and measures native workers, not reconstructed components. It remains unexecuted here because registry DNS and browser navigation are blocked. No browser timing is inferred from Node results. A 120-second watchdog exists in developer benchmark scripts only; watchdog failures are counted, not replaced with convenient successful timings.
+The production-browser benchmark remains unexecuted here because dependency installation was unavailable. No browser results are inferred from the Node data.

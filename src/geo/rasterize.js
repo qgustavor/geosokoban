@@ -5,6 +5,8 @@ import { DIRECTIONS, neighbor } from '../core/engine.js'
 
 export const MAP_VERSION = 'world-fixture-v2'
 const cache = new Map()
+const sampled = new Map()
+let geographySource
 
 function pointInRing (x, y, ring) {
   let inside = false
@@ -62,23 +64,37 @@ function projectedMap (definition) {
 }
 
 export function rasterize (regionId = 'SA', threshold = 0.36) {
+  // A warm worker may receive a different fixture (or an updated map).
+  const source = getGeography()
+  if (source !== geographySource) {
+    cache.clear()
+    sampled.clear()
+    geographySource = source
+  }
   const key = `${regionId}:${threshold}`
   if (cache.has(key)) return cache.get(key)
   const definition = regionById(regionId)
   if (!definition) throw new Error('Unknown region')
-  const map = projectedMap(definition)
-  const cells = []
-  for (let y = 0; y < map.height; y++) {
-    for (let x = 0; x < map.width; x++) {
-      let land = 0
-      for (let sy = 0; sy < 4; sy++) {
-        for (let sx = 0; sx < 4; sx++) {
-          if (countryAt(map, x + (sx + 0.5) / 4, y + (sy + 0.5) / 4)) land++
+  let sample = sampled.get(regionId)
+  if (!sample) {
+    const map = projectedMap(definition)
+    const cells = []
+    for (let y = 0; y < map.height; y++) {
+      for (let x = 0; x < map.width; x++) {
+        let land = 0
+        for (let sy = 0; sy < 4; sy++) {
+          for (let sx = 0; sx < 4; sx++) {
+            if (countryAt(map, x + (sx + 0.5) / 4, y + (sy + 0.5) / 4)) land++
+          }
         }
+        cells.push({ position: y * map.width + x, coverage: land / 16, country: countryAt(map, x + 0.5, y + 0.5) })
       }
-      cells.push({ position: y * map.width + x, coverage: land / 16, country: countryAt(map, x + 0.5, y + 0.5) })
     }
+    sample = { map, cells }
+    sampled.set(regionId, sample)
   }
+  // Threshold retries reuse projection and the expensive polygon sampling.
+  const { map, cells } = sample
   // Sea puzzles keep a navigable border around islands, rather than inventing land bridges.
   const candidates = new Set(cells.filter(cell => definition.sea
     ? cell.country === null && cell.coverage < threshold && cell.position % map.width > 0 && cell.position % map.width < map.width - 1 && cell.position >= map.width && cell.position < map.width * (map.height - 1)

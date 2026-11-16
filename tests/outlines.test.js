@@ -5,6 +5,7 @@ import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { gunzipSync } from 'node:zlib'
 import { outlinesForLevel } from '../src/geo/outlines.js'
+import { mosaicPath, MAP_PIXELS_PER_CELL, MAP_TILE_SIZE } from '../src/geo/mosaic.js'
 import { getGeography } from '../src/geo/world.js'
 import stories from '../src/content/story-levels.json' with { type: 'json' }
 import fallbacks from '../src/content/fallback-levels-v4.json' with { type: 'json' }
@@ -47,6 +48,7 @@ test('unknown map versions, regions or dimensions do not display misaligned coun
 
 test('the atlas covers the eight existing projections and contains only rendering data', () => {
   assert.equal(atlas.tileSize, 40)
+  assert.equal(atlas.pixelsPerCell, MAP_PIXELS_PER_CELL)
   assert.deepEqual(Object.keys(atlas.regions).sort(), ['AF', 'AS', 'CAR', 'EE', 'NA', 'OC', 'SA', 'WE'])
   for (const map of Object.values(atlas.regions)) {
     assert.deepEqual(Object.keys(map).sort(), ['context', 'height', 'regions', 'width'])
@@ -89,7 +91,7 @@ test('the original failure is reproduced with an unloaded rasterizer in a fresh 
   assert.match(output, /independent presentation succeeds/)
 })
 
-test('generated maps retain exactly the same projected paths at all thresholds', async () => {
+test('pixelated outlines use the same projection as generated maps at every threshold', async () => {
   // A separate worker leaves the unloaded-world assertions isolated.
   const { Worker } = await import('node:worker_threads')
   const world = JSON.parse(gunzipSync(readFileSync(new URL('../src/data/world.geojson.gz', import.meta.url))))
@@ -120,7 +122,13 @@ test('generated maps retain exactly the same projected paths at all thresholds',
       worker.once('exit', code => { if (code !== 0) reject(new Error(`Worker exited with ${code}`)) })
     })
     assert.equal(results.length, 32)
-    for (const result of results) assert.deepEqual(result.regions, atlas.regions[result.id].regions, `${result.id}:${result.threshold}`)
+    for (const result of results) {
+      const map = atlas.regions[result.id]
+      const margin = Math.max(map.width, map.height) * 3
+      const bounds = [-margin, -margin, map.width + margin, map.height + margin].map(value => value * MAP_TILE_SIZE)
+      const pixelated = result.regions.map(({ id, path }) => ({ id, path: mosaicPath(path, bounds) })).filter(region => region.path)
+      assert.deepEqual(pixelated, map.regions, `${result.id}:${result.threshold}`)
+    }
   } finally {
     await worker.terminate()
   }

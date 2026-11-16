@@ -61,7 +61,7 @@ for (const code of codes) {
   if (rows.length % 14 === 0) console.error(`${rows.length}/${codes.length} measured`)
 }
 const result = report(rows, {
-  generatorVersion: 4,
+  generatorVersion: 5,
   minimumExtraMoves: 5,
   runtime: `Node ${process.version}`,
   platform: platform(),

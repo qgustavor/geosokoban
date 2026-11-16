@@ -71,12 +71,14 @@ test('coast outlines omit internal joins and do not wrap at board edges', () => 
   assert.equal(coastlineEdges(hole, 1).split('M').length - 1, 2)
 })
 
-test('daily is the default, options are in-place panels and hints have no reveal timer', () => {
+test('daily is the default, options are in-place panels and hints have a non-skippable request cooldown', () => {
   const source = name => readFileSync(new URL('../src/' + name, import.meta.url), 'utf8')
   assert.match(source('ui/HomeView.vue'), /const mode = ref\('daily'\)/)
   assert.match(source('ui/App.vue'), /OptionsView v-else-if="app.panel === 'options'" embedded/)
-  assert.doesNotMatch(source('ui/HintPanel.vue'), /showNow|skipDelay|wait|countdown/i)
-  assert.doesNotMatch(source('composables/useAssistance.js'), /waitUntil|skipDelay|hintDelay/)
+  assert.doesNotMatch(source('ui/HintPanel.vue'), /showNow|skipDelay/i)
+  assert.doesNotMatch(source('composables/useAssistance.js'), /skipDelay/)
+  assert.match(source('composables/useAssistance.js'), /if \(!cooldown\.tryStart\(\)\) return/)
+  assert.match(source('ui/HintPanel.vue'), /help\.cooldownSeconds > 0/)
   assert.match(source('ui/PlayView.vue'), /class="result-title"/)
   assert.match(source('ui/PlayView.vue'), /text-wrap: balance/)
   assert.match(source('ui/GameBoard.vue'), /stroke-opacity: \.12/)

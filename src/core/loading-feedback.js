@@ -3,7 +3,7 @@ export const LOADER_FINISH_MS = 400
 
 // Presentation estimates are deliberately independent of puzzle selection and search budgets.
 // Rounded development-worker p75 values; replace these after representative browser measurements.
-export const SEARCH_ESTIMATE_MS = { gentle: 4300, puzzle: 4400 }
+export const SEARCH_ESTIMATE_MS = { gentle: 1000, puzzle: 900 }
 export const emptyFeedback = () => ({ visible: false, stage: 'map', fraction: 0, indeterminate: false })
 
 /** The clock is injectable so fast completion, cancellation and delayed replies are testable. */

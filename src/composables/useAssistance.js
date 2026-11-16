@@ -2,6 +2,7 @@ import { computed, onUnmounted, ref, watch } from 'vue'
 import { isSolved, initialState, replay } from '../core/engine.js'
 import { isDefinitelyStuck } from '../core/solver.js'
 import { makeHintPlan, hintOverlay, advanceHintPlan } from '../core/hints.js'
+import { createHintCooldown } from '../core/hint-cooldown.js'
 
 const signature = (level, state) => `${level.id}|${state.boxes.map(box => `${box.id}:${box.position}`).join('|')}`
 
@@ -11,6 +12,8 @@ export function useAssistance (level, state, onAssisted) {
   const busy = ref(false)
   const warning = ref(false)
   const unavailable = ref(false)
+  const cooldownSeconds = ref(0)
+  const cooldown = createHintCooldown(seconds => { cooldownSeconds.value = seconds })
   let hintWorker = null
   let checkWorker = null
   let hintDeadline = null
@@ -27,6 +30,7 @@ export function useAssistance (level, state, onAssisted) {
   }
 
   function clearHint () {
+    // Hiding, moving, undoing and restarting clear the overlay, not the cooldown.
     cancelHint()
     stage.value = 0
     plan.value = null
@@ -54,7 +58,8 @@ export function useAssistance (level, state, onAssisted) {
   }
 
   function request () {
-    if (isSolved(level.value, state.value) || busy.value) return
+    if (isSolved(level.value, state.value) || busy.value || stage.value >= 4) return
+    if (!cooldown.tryStart()) return
     if (plan.value) {
       reveal()
       return
@@ -136,6 +141,7 @@ export function useAssistance (level, state, onAssisted) {
   }, { flush: 'sync' })
 
   onUnmounted(() => {
+    cooldown.dispose()
     cancelHint()
     cancelCheck()
   })
@@ -146,8 +152,8 @@ export function useAssistance (level, state, onAssisted) {
     busy,
     warning,
     unavailable,
+    cooldownSeconds,
     request,
-    reveal,
     clearHint,
     overlay: computed(() => hintOverlay(plan.value, stage.value, state.value))
   }

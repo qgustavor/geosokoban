@@ -1,7 +1,12 @@
 import { DIRECTIONS, neighbor, walkable } from './engine.js'
 
-/** Cache wall adjacency; reconstruct paths only for pushes actually considered. */
-export function createWalkingSearch (level, floor = walkable(level)) {
+/**
+ * Cache wall adjacency. Internal searches can borrow two reusable workspaces:
+ * one for paths and one for component keys. A borrowed result lasts until the
+ * next call in the SAME mode; region-key searches cannot overwrite a path BFS.
+ * The default keeps independently owned results for external callers.
+ */
+export function createWalkingSearch (level, floor = walkable(level), { reuseBuffers = false } = {}) {
   const size = level.width * level.height
   const adjacent = new Int32Array(size * 4).fill(-1)
   for (const position of floor) {
@@ -10,18 +15,24 @@ export function createWalkingSearch (level, floor = walkable(level)) {
       if (floor.has(next)) adjacent[position * 4 + index] = next
     })
   }
+  const allocate = paths => ({
+    occupied: new Uint8Array(size),
+    visited: new Uint8Array(size),
+    parents: paths ? new Int32Array(size) : null,
+    distances: paths ? new Uint16Array(size) : null,
+    directions: paths ? new Int8Array(size) : null,
+    queue: new Int32Array(size)
+  })
+  const workspaces = reuseBuffers ? [allocate(false), allocate(true)] : null
   return (state, paths = true) => {
-    const occupied = new Uint8Array(size)
+    const { occupied, visited, parents, distances, directions, queue } = workspaces?.[Number(paths)] ?? allocate(paths)
+    if (reuseBuffers) { occupied.fill(0); visited.fill(0) }
     for (const box of state.boxes) occupied[box.position] = 1
-    const visited = new Uint8Array(size)
-    const parents = paths ? new Int32Array(size).fill(-1) : null
-    const distances = paths ? new Uint16Array(size) : null
-    const directions = paths ? new Int8Array(size) : null
-    const queue = new Int32Array(size)
     let end = 1
     let minimum = state.player
     queue[0] = state.player
     visited[state.player] = 1
+    if (paths) { distances[state.player] = 0; parents[state.player] = -1 }
     for (let index = 0; index < end; index++) {
       const position = queue[index]
       for (let direction = 0; direction < 4; direction++) {
@@ -38,7 +49,7 @@ export function createWalkingSearch (level, floor = walkable(level)) {
       has: position => position >= 0 && visited[position] === 1,
       distanceTo: position => paths && position >= 0 && visited[position] ? distances[position] : null,
       pathTo (position) {
-        if (!paths || !visited[position]) return null
+        if (!paths || position < 0 || !visited[position]) return null
         const path = []
         while (position !== state.player) {
           path.push(DIRECTIONS[directions[position]])

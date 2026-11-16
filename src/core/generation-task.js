@@ -1,5 +1,5 @@
 /** Progress messages keep the worker alive. Cancellation never changes the previous board. */
-export function generationTask (worker, message, onProgress = () => {}) {
+export function generationTask (worker, message, onProgress = () => {}, { terminateOnComplete = true } = {}) {
   let finished = false
   let cancel
   const promise = new Promise((resolve, reject) => {
@@ -9,7 +9,7 @@ export function generationTask (worker, message, onProgress = () => {}) {
       worker.onmessage = null
       worker.onerror = null
       worker.onmessageerror = null
-      worker.terminate()
+      if (terminateOnComplete || error || !value) worker.terminate()
       if (error) reject(error)
       else resolve(value)
     }

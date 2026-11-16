@@ -1,7 +1,8 @@
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
-import { boardViewport, diagonalDelay, labelPlacement, coastlineEdges } from '../core/presentation.js'
-import { outlinesForLevel, contextForLevel } from '../geo/outlines.js'
+import { boardViewport, labelPlacement, coastlineEdges } from '../core/presentation.js'
+import { tileTransitionStyle, TILE_ENTER_MS, TILE_LEAVE_MS } from '../core/board-transition.js'
+import { outlinesForLevel, contextForLevel, UNDERLAY_PIXELS_PER_CELL } from '../geo/outlines.js'
 import { createSwipeInput } from '../core/swipe.js'
 import { createScenery } from '../scenery/scene.js'
 import TerrainArt from './TerrainArt.vue'
@@ -37,7 +38,7 @@ const coastlines = computed(() => {
   const floors = new Set(props.level.floors)
   return new Map(props.level.floors.map(position => [position, coastlineEdges(props.level, position, floors)]))
 })
-const tileDelay = position => ({ animationDelay: `${diagonalDelay(props.level, position)}ms` })
+const tileDelay = position => tileTransitionStyle(props.level, position)
 const labelStyle = label => labelPlacement(props.level, label.position, viewport.value, size.value)
 
 const gesture = createSwipeInput(direction => emit('step', direction))
@@ -85,22 +86,24 @@ const route = computed(() => props.overlay.route.map(position => `${x(position) 
 </script>
 
 <template>
-  <div ref="board" class="board-wrap" :class="{ 'board-preview': preview }" :tabindex="preview ? -1 : 0"
+  <div ref="board" class="board-wrap" :data-level="level.id" :class="{ 'board-preview': preview }" :style="{ '--tile-enter-duration': `${TILE_ENTER_MS}ms`, '--tile-leave-duration': `${TILE_LEAVE_MS}ms` }" :tabindex="preview ? -1 : 0"
     :role="preview ? undefined : 'group'" :aria-label="label" @keydown="$emit('key', $event)" @pointerdown="pointerDown" @pointermove="pointerMove"
     @pointerup="pointerEnd" @pointercancel="pointerEnd" @lostpointercapture="pointerEnd" @click.capture="click">
     <div ref="stage" class="board-stage">
     <svg :viewBox="viewBox" preserveAspectRatio="xMidYMid meet" class="board-svg" role="img"
       :aria-label="label" :aria-describedby="preview ? undefined : `${prefix}-description`">
       <desc v-if="!preview" :id="`${prefix}-description`">{{ description }}</desc>
-        <g class="map-outline" :class="{ islands: level.sea }"><path v-for="region in context" :key="region.id" :d="region.path" fill-rule="evenodd" /></g>
+        <g class="map-outline" :class="{ islands: level.sea }" :data-pixels-per-cell="UNDERLAY_PIXELS_PER_CELL" shape-rendering="crispEdges"><path v-for="region in context" :key="region.id" :d="region.path" fill-rule="evenodd" /></g>
         <g v-for="position in level.floors" :key="position" class="land-tile"
           :style="tileDelay(position)">
+          <rect :x="x(position)" :y="y(position) + 7" width="40" height="40"
+            :fill="scenery.tiles.get(position).edge" class="tile-underface" />
           <rect :x="x(position)" :y="y(position)" width="40" height="40"
             :fill="scenery.tiles.get(position).ground" class="tile-surface" :class="{ 'water-tile': level.sea }" />
           <path v-if="!level.sea" :d="coastlines.get(position)" class="coast-edge" :stroke="scenery.tiles.get(position).edge" />
 
         </g>
-        <g class="country-borders"><path v-for="region in regions" :key="region.id" :d="region.path" fill-rule="evenodd" /></g>
+        <g class="country-borders" shape-rendering="crispEdges"><path v-for="region in regions" :key="region.id" :d="region.path" fill-rule="evenodd" /></g>
         <g v-for="detail in scenery.details" :key="`detail-${detail.position}`" :transform="`translate(${x(detail.position)},${y(detail.position)})`">
           <g class="tile-pop" :style="tileDelay(detail.position)"><GroundDetail :kind="detail.kind" :corner="detail.corner" :phase="detail.phase" /></g>
         </g>
@@ -122,7 +125,7 @@ const route = computed(() => props.overlay.route.map(position => `${x(position) 
         </g>
         <g v-for="box in state.boxes" :key="box.id" class="box-actor" :data-country="box.country"
           :style="{ transform: `translate(${x(box.position)}px,${y(box.position)}px)` }" @click="$emit('inspect', box.country)">
-          <g class="piece-reveal" :style="tileDelay(level.boxes.find(initial => initial.id === box.id).position)">
+          <g class="piece-reveal" :style="tileDelay(box.position)">
           <rect v-if="overlay.boxId === box.id" x="-2" y="-2" width="44" height="43" rx="9" class="hint-box" />
           <ellipse cx="20" cy="34" rx="16" ry="4" fill="#233d3955" />
           <rect x="2" y="7" width="36" height="28" rx="4" fill="#9a794b" />
@@ -131,7 +134,7 @@ const route = computed(() => props.overlay.route.map(position => `${x(position) 
           </g>
         </g>
         <g class="player-actor" :style="{ transform: `translate(${x(state.player)}px,${y(state.player) - 4}px)` }">
-          <g class="piece-reveal" :style="tileDelay(level.player)">
+          <g class="piece-reveal" :style="tileDelay(state.player)">
           <path v-if="level.sea" d="M-2 32h44l-8 11H7Z" fill="#f8dfad" stroke="#294e52" stroke-width="1.5" />
           <GlobeIcon width="40" height="44" :direction="facing" :uid="`${prefix}-globe`" />
           </g>
@@ -150,10 +153,10 @@ const route = computed(() => props.overlay.route.map(position => `${x(position) 
 .tile-surface { stroke: #657f60; stroke-opacity: .12; stroke-width: .65; }
 .water-tile { stroke: #d6efeb; stroke-opacity: .12; stroke-width: .55; }
 .coast-edge { fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; stroke-opacity: .65; }
-.map-outline { pointer-events: none; }
-.map-outline path { fill: #a5bca0; stroke: #9fc9bd; stroke-width: 2; opacity: .3; }
-.country-borders { pointer-events: none; }
-.country-borders path { fill: none; stroke: #5b7f684f; stroke-width: 1.5; stroke-dasharray: 3 3; }
+.map-outline { pointer-events: none; shape-rendering: crispEdges; }
+.map-outline path { fill: #a5bca0; stroke: none; opacity: .3; }
+.country-borders { pointer-events: none; shape-rendering: crispEdges; }
+.country-borders path { fill: none; stroke: #5b7f684f; stroke-width: 1.5; stroke-linejoin: miter; stroke-linecap: butt; }
 .goal { stroke: #ad6547; stroke-width: 2; fill: #fff6e9; stroke-dasharray: 4 2; }
 .solved-goal { fill: #adcda0; stroke: #3c7952; stroke-dasharray: none; }
 .goal-number { text-anchor: middle; fill: #81482e; font-size: 21px; font-weight: 750; }
@@ -169,17 +172,57 @@ const route = computed(() => props.overlay.route.map(position => `${x(position) 
 .board-preview { height: 100%; }
 .board-preview .board-stage { inset: 0; }
 .board-svg { overflow: hidden; }
-.islands path { opacity: .75; fill: #dbe2af; stroke: #a8c09c; stroke-width: 3; }
+.islands path { opacity: .75; fill: #dbe2af; }
 .target { cursor: pointer; }
 .target-flag { opacity: .4; pointer-events: none; }
 .delivered-mark { font-size: 16px; fill: #21513c; }
-.land-tile, .tile-pop { animation: arrive .52s cubic-bezier(.2,.8,.2,1) backwards; transform-box: fill-box; transform-origin: center; }
-.piece-reveal { animation: arrive .52s cubic-bezier(.2,.8,.2,1) backwards; transform-box: fill-box; transform-origin: center bottom; }
+.land-tile, .tile-pop, .piece-reveal { transform-box: fill-box; transform-origin: center bottom; }
+.tile-underface { opacity: 0; }
+.board-swap-enter-active, .board-swap-leave-active { pointer-events: none; }
+.board-swap-enter-active .tile-underface, .board-swap-leave-active .tile-underface { opacity: 1; }
+.board-swap-enter-active .land-tile,
+.board-swap-enter-active .tile-pop,
+.board-swap-enter-active .piece-reveal {
+  animation-name: tile-build;
+  animation-duration: var(--tile-enter-duration);
+  animation-timing-function: cubic-bezier(.16,.75,.25,1);
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+}
+.board-swap-leave-active .land-tile,
+.board-swap-leave-active .tile-pop,
+.board-swap-leave-active .piece-reveal {
+  animation-name: tile-dismantle;
+  animation-duration: var(--tile-leave-duration);
+  animation-delay: var(--tile-leave-delay) !important;
+  animation-timing-function: cubic-bezier(.55,0,.85,.35);
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+}
+.board-swap-enter-active .map-outline, .board-swap-enter-active .country-borders { animation: context-reveal .3s .5s both; }
+.board-swap-leave-active .map-outline, .board-swap-leave-active .country-borders { transition: opacity .12s; opacity: 0; }
+.board-swap-leave-active .hint-route, .board-swap-leave-active .push-marker, .board-swap-leave-active .flag-label { visibility: hidden; }
 .hint-box { fill: none; stroke: #c35021; stroke-width: 3; stroke-dasharray: 5 3; }
 .hint-route { stroke: #a94620; stroke-width: 4; stroke-dasharray: 5 5; fill: none; opacity: .9; pointer-events: none; }
 .push-marker { pointer-events: none; }
 .push-marker rect { fill: #ffdf9b55; stroke: #a94620; stroke-width: 2; }
 .push-marker text { font-size: 11px; fill: #572a15; font-weight: 800; paint-order: stroke; stroke: #fff7df; stroke-width: 3; }
-@keyframes arrive { 0% { opacity: 0; transform: translateY(16px) scale(.82); } 55% { opacity: 1; transform: translateY(-5px) scale(1.03); } 80% { transform: translateY(1px) scale(.99); } 100% { opacity: 1; transform: none; } }
+@keyframes tile-build {
+  0% { opacity: 0; transform: translateY(52px) scale(.86,.12); }
+  22% { opacity: 1; }
+  72% { opacity: 1; transform: translateY(-5px) scale(1,1.025); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes tile-dismantle {
+  0% { opacity: 1; transform: none; }
+  25% { opacity: 1; transform: translateY(-4px) scale(1,1.025); }
+  100% { opacity: 0; transform: translateY(48px) scale(.86,.12); }
+}
+@keyframes context-reveal { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .tile-underface { display: none; }
+}
+:global(.reduced-motion) .tile-underface { display: none; }
+
 
 </style>

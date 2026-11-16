@@ -92,6 +92,8 @@ Names identify stylized artwork; they are not a species-observation database.
 
 ## Context, character and aircraft
 
+**0.2.6 rendering note:** context and country borders now use prebuilt quarter-cell pixel contours (4 × 4 logical pixels per game cell), not the earlier smooth polygons. Their shared origin is unchanged. The active level transition now dismantles/builds tiles; the plane component remains available artwork, not an additional simultaneous transition. See `V2_6_CHANGES.md`.
+
 Prepared context paths include all country polygons intersecting each board's viewport,
 not only the selected curriculum region. The background is clipped by the viewport;
 it never creates floor. Western Europe's background therefore includes neighboring
@@ -128,7 +130,7 @@ panel. Missing or rejected native sharing opens an in-app copy/select dialog;
 cancelling a native share sheet does not open the fallback. Options and Credits remain
 reachable from the menu, without discarding the active undo stack.
 
-## Explicitly not changed
+## Historical scope of the scenery-only pass
 
 This pass does not change generator patterns, solution-length filters, story layouts,
 daily seed decisions, solver rules, rankings, accounts or backend integration.

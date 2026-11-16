@@ -1,20 +1,28 @@
 import { initialState, move, walkable } from './engine.js'
 import { reverseDistances } from './solver.js'
 
+// Level geometry is immutable during a search. Cache the expensive closed-goal
+// distance maps, not the answer (which depends on the current box positions).
+const dependencyDistances = new WeakMap()
+
 /** A filled destination can close a route needed by a different flag. */
 export function goalDependencies (level, state = initialState(level)) {
-  const floor = walkable(level)
-  const dependencies = []
-  for (const gate of level.goals) {
-    const closed = new Set(floor)
-    closed.delete(gate.position)
-    for (const box of state.boxes) {
-      if (box.country === gate.country) continue
-      const goal = level.goals.find(goal => goal.country === box.country)
-      if (!reverseDistances(level, goal, closed).has(box.position)) dependencies.push({ before: box.country, after: gate.country })
-    }
+  let checks = dependencyDistances.get(level)
+  if (!checks) {
+    const floor = walkable(level)
+    checks = level.goals.flatMap(gate => {
+      const closed = new Set(floor)
+      closed.delete(gate.position)
+      return level.goals.filter(goal => goal.country !== gate.country).map(goal => ({
+        before: goal.country, after: gate.country, distances: reverseDistances(level, goal, closed)
+      }))
+    })
+    dependencyDistances.set(level, checks)
   }
-  return dependencies
+  return checks.filter(check => {
+    const box = state.boxes.find(box => box.country === check.before)
+    return box && !check.distances.has(box.position)
+  }).map(({ before, after }) => ({ before, after }))
 }
 
 /** Metrics describe a verified push-optimal solution, not a human difficulty rating. */

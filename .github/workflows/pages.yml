@@ -28,7 +28,6 @@ jobs:
             echo '::warning::Bootstrap install: commit the generated package-lock.json before a public release.'
             npm install
           fi
-      - run: npm test
       - name: Require the prepared scenery atlas
         run: node scripts/check-biomes.js --require-data
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6

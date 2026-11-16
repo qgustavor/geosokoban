@@ -1,10 +1,10 @@
-# Difficulty and generation — 0.2.5
+# Difficulty and generation — 0.2.6
 
 ## Three choices
 
 Easy shows faded destination flags. Medium uses question marks with exactly the same mechanical puzzle family. Hard combines hidden targets with stronger box-interaction filters. Mode and difficulty are independent; there is no region picker. Daily is the initial mode.
 
-Hints, geography reveals, unlimited undo, zero-count restart and reduced motion remain available in all three. No score penalties, gameplay timer or cooldown are introduced. The first fixed story lessons may be very simple; the new acceptance floor applies to generated daily/random boards and their fallback pool, not the unchanged 42 story drafts.
+Hints, geography reveals, unlimited undo, zero-count restart and reduced motion remain available in all three. There are no score penalties or gameplay timer. Hint requests have a ten-second cooldown; puzzle movement remains untimed. The first fixed story lessons may be very simple; the new acceptance floor applies to generated daily/random boards and their fallback pool, not the unchanged 42 story drafts.
 
 ## Minimum obstacle contribution: five total moves
 
@@ -36,19 +36,19 @@ A goal placed in a constrained passage makes delivering it too early consequenti
 
 ## Search, certification and fallback
 
-The generator rasterizes geography, chooses countries and legal destinations, builds goal-gate barriers, then uses reversible pulls to construct a solvable starting state with uncovered targets. It replays the constructive route, independently solves for push quality, then certifies the two move optima. Candidates failing any acceptance check are replaced.
+The generator rasterizes geography, chooses countries and legal destinations, builds bent goal-gate partitions plus switchbacks, courtyards, staggered rooms or obstacle islands, then uses reversible pulls to construct a solvable starting state with uncovered targets. It replays the constructive route, independently solves for push quality, then certifies the two move optima. Candidates failing any acceptance check are replaced.
 
-Candidate limits are 48 for gentle layouts and 64 for Hard. Expanded-state work limits are 100,000 and 180,000 respectively; candidate solver calls have their own bounds. Coverage thresholds vary deterministically across attempts. These are computational budgets, not timeouts. There is no general failure-directed local-repair pass in this version.
+Candidate limits are 18 for gentle layouts and 24 for Hard. Expanded-state work limits are 18,000 and 28,000 respectively; candidate solver calls have their own bounds. Coverage thresholds vary deterministically across attempts. These are computational budgets, not timeouts. There is no general failure-directed local-repair pass in this version.
 
 Exhaustion selects from 48 separately frozen boards: three per internal projection (including Caribbean) and mechanical family. Each has the same design and move-gap requirements. Selection uses the requested code, map version, generator version and fallback version, never device elapsed time. Story changes do not alter the pool. Technical failures remain distinguishable from normal search exhaustion.
 
-The current development benchmark used fallback for 19 of 28 requests. There are only three fallback variants per projection/family, so repeated random codes can repeat layouts. This is a known diversity limitation, not a claim of unlimited fresh content. See `BENCHMARKS.md`.
+The paired development benchmark used fallback for 12 of 14 requests. Each projection/difficulty has three certified templates spanning at least two of the four layout families. Seeded extra structures avoid both certified solution footprints; adding obstacles cannot improve an optimum, while preserving an optimal solution prevents it from worsening. Recomputed structural checks still apply. These additions expand visual/layout variety, not necessarily the essential solution sequence: the template pool is finite and patterns can repeat. See `BENCHMARKS.md`.
 
 ## Help and feedback
 
-Movement hints progress immediately on request: useful box → useful push positions → player route → a delivery checkpoint. Routes advance while followed and never execute moves. There is no hint delay, skip-delay link or reveal quota. Geography clues reveal destinations separately. Correct delivery labels the flag itself.
+The first movement hint is immediate; subsequent accepted requests must be at least ten seconds apart: useful box → useful push positions → player route → a delivery checkpoint. Routes advance while followed and never execute moves. The button shows a localized countdown and becomes enabled only at the deadline. The request function independently enforces the deadline. No hint is revealed automatically, and hiding, moving, undoing or restarting cannot reset the cooldown. There is no skip-wait control. Geography clues reveal destinations separately. Correct delivery labels the flag itself.
 
-A proven deadlock shows an animated top overlay with Undo (Z) and Restart (R); inconclusive checks stay silent. Completion holds the final country name for 1.1 seconds, shows “Level clear!” for 0.9 seconds, then opens results. Reduced motion removes animation, not reading time.
+A proven deadlock shows an animated top overlay with Undo (Z) and Restart (R); inconclusive checks stay silent. Completion holds the final country name for 1.1 seconds, shows the bold, letter-staggered “Level clear!” banner for 2.0 seconds, then opens results. Reduced motion removes animation, not reading time.
 
 ## Human review
 

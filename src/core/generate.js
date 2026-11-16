@@ -5,12 +5,15 @@ import { rasterize, MAP_VERSION } from '../geo/rasterize.js'
 import { regionById } from '../content/regions.js'
 import { DIRECTIONS, OPPOSITE, neighbor, reachable, walkable, replay, isSolved, validateLevel, initialState } from './engine.js'
 import { randomFrom, normalizeCode } from './seed.js'
-import { addGoalGatePattern, challengeDistances, pushLowerBound } from './challenge.js'
+import { challengeDistances, pushLowerBound } from './challenge.js'
+import { addPuzzleLayout, LAYOUT_FAMILIES } from './layout-patterns.js'
 import { solve } from './solver.js'
 import { goalDependencies, analyzeDesign, meetsDesign } from './design-quality.js'
 
-export const GENERATOR_VERSION = 4
+import { GENERATOR_VERSION } from './generation-version.js'
+export { GENERATOR_VERSION } from './generation-version.js'
 const THRESHOLDS = [0.36, 0.24, 0.48, 0.12]
+const goalCandidates = new WeakMap()
 
 export class GenerationExhausted extends Error {
   constructor (code, region, planning) {
@@ -25,6 +28,13 @@ export class GenerationExhausted extends Error {
 const distance = (map, a, b) => Math.abs(a % map.width - b % map.width) + Math.abs(Math.floor(a / map.width) - Math.floor(b / map.width))
 
 function candidateGoals (map, country, floor) {
+  let candidates = goalCandidates.get(map)
+  if (!candidates) { candidates = new Map(); goalCandidates.set(map, candidates) }
+  if (!candidates.has(country)) candidates.set(country, findCandidateGoals(map, country, floor))
+  return candidates.get(country)
+}
+
+function findCandidateGoals (map, country, floor) {
   const degree = position => DIRECTIONS.filter(direction => floor.has(neighbor(map, position, direction))).length
   if (!map.sea) {
     return map.cells.filter(cell => cell.country === country && floor.has(cell.position) && degree(cell.position) >= 3)
@@ -82,7 +92,7 @@ function createBase (definition, countries, rng, threshold, motif) {
 /** Each reverse pull records the exact forward moves that undo it. */
 function scramble (base, rng, pulls, planning = false) {
   const floor = walkable(base)
-  const walkSearch = createWalkingSearch(base, floor)
+  const walkSearch = createWalkingSearch(base, floor, { reuseBuffers: true })
   const goalPositions = new Set(base.goals.map(goal => goal.position))
   const lowerBounds = challengeDistances(base)
   let state = {
@@ -147,16 +157,18 @@ export function generate (inputCode, { onProgress = () => {}, attemptLimit, mini
   const definition = regionById(regionId === 'NA' && (stop === 3 || (!stop && rng() < 0.35)) ? 'CAR' : regionId)
   const planning = code.endsWith('-P')
   const count = planning ? 3 : story ? (regionId === 'SA' ? stop : stop === 1 ? 2 : 3) : 3
-  const motif = planning ? (rng() < 0.5 ? 'trapdoor' : 'sliding-door') : ['open', 'detour', 'gate'][stop ? stop - 1 : Math.floor(rng() * 3)]
-  const limit = attemptLimit ?? (planning ? 64 : 48)
-  const workLimit = solverBudget ?? (planning ? 180000 : 100000)
+  const motif = LAYOUT_FAMILIES[Math.floor(rng() * LAYOUT_FAMILIES.length)]
+  // Deterministic work budgets: device speed never changes a shared code.
+  const limit = attemptLimit ?? (planning ? 24 : 18)
+  const workLimit = solverBudget ?? (planning ? 28000 : 18000)
+  if (![limit, workLimit].every(value => Number.isSafeInteger(value) && value >= 0)) throw new RangeError('Invalid generation budget')
   let work = 0
   onProgress({ stage: 'map', attempt: 0, limit })
   for (let attempt = 0; attempt < limit && work < workLimit; attempt++) {
     if (attempt % 4 === 0) onProgress({ stage: 'search', attempt, limit })
     const countries = story ? definition.story.slice(0, count) : [...definition.pool].map(country => ({ country, order: rng() })).sort((a, b) => a.order - b.order).slice(0, count).map(item => item.country)
     let base = createBase(definition, countries, rng, THRESHOLDS[Math.min(3, Math.floor(attempt * 4 / limit))], motif)
-    if (base) base = addGoalGatePattern(base, rng, planning)
+    if (base) base = addPuzzleLayout(base, rng, planning, motif)
     if (!base) continue
     const result = scramble(base, rng, planning ? 35 : 18, planning)
     if (!result) continue
@@ -164,14 +176,14 @@ export function generate (inputCode, { onProgress = () => {}, attemptLimit, mini
     if (validateLevel(level).length) continue
     const certificate = replay(level, level.solution)
     if (!certificate.valid || !isSolved(level, certificate.state)) continue
-    const checked = solve(level, initialState(level), 10000)
+    const checked = solve(level, initialState(level), Math.min(4000, Math.max(0, workLimit - work)))
     work += checked.expanded
     if (checked.status !== 'solved') continue
     const checkedReplay = replay(level, checked.moves)
     if (!checkedReplay.valid || !isSolved(level, checkedReplay.state)) continue
     const quality = analyzeDesign(level, checked.moves)
     if (!meetsDesign(quality, planning)) continue
-    const gap = certifyMoveGap(level, { minimum: minimumExtraMoves, maxStates: Math.min(planning ? 50000 : 35000, Math.floor(Math.max(0, workLimit - work) / 2)) })
+    const gap = certifyMoveGap(level, { minimum: minimumExtraMoves, maxStates: Math.min(planning ? 10000 : 7000, Math.floor(Math.max(0, workLimit - work) / 2)) })
     work += gap.expanded
     if (gap.status !== 'accepted') continue
     onProgress({ stage: 'ready', attempt: attempt + 1, limit })

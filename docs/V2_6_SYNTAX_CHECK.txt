@@ -1,0 +1,26 @@
+All src/scripts/tests JavaScript files passed node --check.
+23 Vue script-setup sections passed JavaScript syntax checking.
+This is not Vue template compilation, lint, or a production build.
+src/ui/App.vue
+src/ui/ChallengePicker.vue
+src/ui/LevelClear.vue
+src/ui/HintPanel.vue
+src/ui/FlagIcon.vue
+src/ui/PlaneIcon.vue
+src/ui/PlayView.vue
+src/ui/GameBoard.vue
+src/ui/ControlIcon.vue
+src/ui/OptionsView.vue
+src/ui/CreditsView.vue
+src/ui/OverlayDialog.vue
+src/ui/TerrainArt.vue
+src/ui/FlightTransition.vue
+src/ui/GroundDetail.vue
+src/ui/GlobeIcon.vue
+src/ui/HomeView.vue
+src/ui/GenerationLoading.vue
+src/pages/NotFoundPage.vue
+src/pages/MenuPage.vue
+src/pages/OptionsPage.vue
+src/pages/CreditsPage.vue
+src/pages/PuzzlePage.vue

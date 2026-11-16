@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.6 — generation, transitions and pixel maps
+
+- Cache generated boards in bounded versioned memory/local storage; retain successful workers and reuse geography sampling and search buffers.
+- Replace straight-only barriers with four multi-structure layout families and 48 newly certified templates; add solution-preserving seeded fallback variation.
+- Bound live search by deterministic candidate/state budgets; record paired 14-code measurements and the increased template-use tradeoff.
+- Dismantle/build outgoing and incoming boards tile by tile, guard input until completion, restore focus and support reduced motion.
+- Add bold outlined clear lettering with staggered scale, upward hop, landing squash and localized whole-phrase accessibility text.
+- Require ten seconds between accepted hint requests, with a translated countdown and no hide/restart bypass.
+- Prebuild context and country borders on a four-pixels-per-cell mosaic lattice; retain gameplay geometry and remove curved/diagonal underlay edges.
+- Record 134 passing Node tests plus isolated CSS checks. Dependency installation, production build, lint and application browser tests remain environment-blocked.
+- Preserve story content, biome data, flags and all dependency versions. Generator/cache/fallback version is now 5.
+
 ## 0.2.5 — generation and game feedback
 
 - Default to Daily; keep Options/Credits in dialogs over the existing session.

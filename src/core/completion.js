@@ -1,5 +1,5 @@
 export const DELIVERY_HOLD_MS = 1100
-export const CLEAR_BANNER_MS = 900
+export const CLEAR_BANNER_MS = 2000
 
 /** Reading time is separate from animation so reduced motion still shows the last flag. */
 export function createCompletionSequence (update, {

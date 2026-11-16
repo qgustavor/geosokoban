@@ -6,7 +6,7 @@ export function stageGateFlag (level, start, solution) {
   const gate = level.goals.find(goal => level.gates.includes(goal.position))
   const index = start.boxes.findIndex(box => box.country === gate.country)
   const floor = walkable(level)
-  const search = createWalkingSearch(level, floor)
+  const search = createWalkingSearch(level, floor, { reuseBuffers: true })
   const normal = level.cut.axis === 'x' ? ['left', 'right'] : ['up', 'down']
   const destinations = normal.map(direction => ({ box: neighbor(level, gate.position, direction), player: neighbor(level, neighbor(level, gate.position, direction), direction) }))
     .filter(target => floor.has(target.box) && floor.has(target.player))

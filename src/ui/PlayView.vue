@@ -1,8 +1,10 @@
 <script setup>
 import { computed, ref, watch, nextTick, onBeforeUnmount } from 'vue'
 import { regionById, STORY_COUNT } from '../content/regions.js'
+import { boardTransitionDuration } from '../core/board-transition.js'
 import { createCompletionSequence } from '../core/completion.js'
 import GameBoard from './GameBoard.vue'
+import LevelClear from './LevelClear.vue'
 import HintPanel from './HintPanel.vue'
 import OverlayDialog from './OverlayDialog.vue'
 import FlagIcon from './FlagIcon.vue'
@@ -21,9 +23,20 @@ const props = defineProps({
   fact: { type: String, default: '' },
   fallbackText: { type: String, default: '' },
   assisted: Boolean,
-  panelOpen: Boolean
+  panelOpen: Boolean,
+  reducedMotion: Boolean
 })
-const emit = defineEmits(['home', 'key', 'step', 'undo', 'restart', 'inspect', 'destination', 'reveal', 'revealAll', 'guidance', 'next', 'share', 'copy', 'dismissShare', 'panel'])
+const emit = defineEmits(['home', 'key', 'step', 'undo', 'restart', 'inspect', 'destination', 'reveal', 'revealAll', 'guidance', 'next', 'share', 'copy', 'dismissShare', 'panel', 'transition'])
+const transitioning = ref(false)
+const transitionDuration = computed(() => boardTransitionDuration(props.reducedMotion))
+function beginTransition () {
+  transitioning.value = !props.reducedMotion
+  emit('transition', transitioning.value)
+}
+function finishTransition () {
+  transitioning.value = false
+  emit('transition', false)
+}
 const visible = country => props.guidance === 'learn' || props.revealed.includes(country)
 const regionName = computed(() => props.t(regionById(props.game.level.region).name))
 const hintOpen = ref(false)
@@ -92,15 +105,20 @@ function boardKey (event) {
   if (event.key === 'Escape') { event.preventDefault(); emit('panel', 'pause'); return }
   emit('key', event)
 }
-onBeforeUnmount(() => { clearLabel(); sequence.reset() })
+onBeforeUnmount(() => { clearLabel(); sequence.reset(); finishTransition() })
 </script>
 
 <template>
-  <main class="play-page" :data-code="game.level.id" :data-completion="phase">
+  <main class="play-page" :class="{ 'is-changing': transitioning }" :data-code="game.level.id" :data-completion="phase"
+    :aria-busy="transitioning" :inert="transitioning || undefined">
+    <Transition name="board-swap" mode="out-in" appear :css="!reducedMotion" :duration="transitionDuration"
+      @before-enter="beginTransition" @before-leave="beginTransition" @after-enter="finishTransition"
+      @enter-cancelled="finishTransition" @leave-cancelled="finishTransition">
     <GameBoard :key="game.level.id" :level="game.level" :state="game.state" :facing="game.facing"
       :label="t('board')" :description="description" :labels="labels"
       :show-flags="guidance === 'learn'" :revealed="revealed" :overlay="help.overlay"
       @key="boardKey" @step="$emit('step', $event)" @inspect="inspect" @destination="$emit('destination', $event)" />
+    </Transition>
     <header class="play-hud">
       <h1>{{ regionName }}</h1>
       <span class="move-counter">{{ t('moves') }} <b>{{ game.state.moves }}</b></span>
@@ -130,8 +148,8 @@ onBeforeUnmount(() => { clearLabel(); sequence.reset() })
       <button class="hud-button" :title="`${t('menu')} (Esc)`" :aria-label="t('menu')" aria-keyshortcuts="Escape" @click="$emit('panel', 'pause')"><ControlIcon name="menu" /></button>
     </nav>
     <span class="sr-only" aria-live="polite">{{ description }}</span>
-    <div v-if="phase === 'clear'" class="clear-announcement" role="status"><span>{{ t('levelClear') }}</span></div>
-    <OverlayDialog v-if="game.solved && phase === 'results' && victoryOpen && !fallbackText && !panelOpen" :label="t('done')" @dismiss="victoryOpen = false">
+    <LevelClear v-if="phase === 'clear'" :text="t('levelClear')" :reduced-motion="reducedMotion" />
+    <OverlayDialog v-if="game.solved && phase === 'results' && victoryOpen && !fallbackText && !panelOpen && !transitioning" :label="t('done')" @dismiss="victoryOpen = false">
       <div class="victory-flags"><FlagIcon v-for="goal in game.level.goals" :key="goal.country" :country="goal.country" /></div>
       <h2 class="result-title">{{ t(game.chapter === STORY_COUNT ? 'finish' : 'done') }}</h2>
       <p class="result-moves">{{ game.state.moves }} <small>{{ t('moves').toLowerCase() }}</small></p>
@@ -154,6 +172,7 @@ onBeforeUnmount(() => { clearLabel(); sequence.reset() })
 </template>
 
 <style scoped>
+.is-changing .play-hud, .is-changing .play-controls { opacity: 0; pointer-events: none; }
 .play-page { position: relative; height: 100dvh; overflow: hidden; }
 .play-hud { position: absolute; top: max(14px, env(safe-area-inset-top)); left: max(20px, env(safe-area-inset-left)); right: max(20px, env(safe-area-inset-right)); display: flex; align-items: center; justify-content: space-between; gap: 12px; pointer-events: none; color: #eff3df; }
 .play-hud h1 { font-size: clamp(16px, 2vw, 22px); margin: 0; font-weight: 700; text-shadow: 0 1px 2px #163f4b44; }
@@ -175,7 +194,7 @@ kbd { font-family: inherit; font-size: 12px; font-weight: 600; line-height: 1.3;
 .hint-overlay { position: absolute; bottom: 88px; right: max(16px, env(safe-area-inset-right)); width: min(340px, calc(100vw - 32px)); max-height: 40dvh; overflow: auto; border: 2px solid #c1d6bd; border-radius: 18px; background: #f3efdbf5; color: #244e58; box-shadow: 0 5px 20px #163e4933; }
 .geography-popover { position: absolute; right: 18px; top: 60px; z-index: 3; }
 .victory-flags { display: flex; justify-content: center; gap: 12px; margin: 0 0 18px; }
-.victory-flags svg { width: 38px; height: 30px; }
+.victory-flags svg { width: 57px; height: 45px; border: 3px solid white; box-shadow: 0 2px 8px rgba(0, 0, 0, 20%); }
 .result-title { text-wrap: balance; font-size: 28px; }
 .result-moves { font-size: 32px; font-weight: 750; margin: 24px 0 28px; }
 .result-moves small { font-size: 14px; font-weight: 500; }
@@ -183,9 +202,6 @@ kbd { font-family: inherit; font-size: 12px; font-weight: 600; line-height: 1.3;
 .result-actions .button { width: 100%; text-wrap: balance; }
 .share-text { width: 100%; min-height: 130px; resize: vertical; padding: 12px; margin-bottom: 16px; color: #244e58; border: 1px solid #a8bdac; background: #fffcef; }
 .result-reopen { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); }
-.clear-announcement { position: absolute; top: 14%; left: 0; width: 100%; display: flex; justify-content: center; pointer-events: none; }
-.clear-announcement span { font-size: clamp(28px, 5vw, 52px); font-weight: 850; color: #fff1bd; text-shadow: 0 3px 0 #245364, 0 5px 14px #17394777; text-align: center; text-wrap: balance; animation: level-clear .9s ease both; padding: 10px 20px; }
-@keyframes level-clear { 0% { opacity: 0; transform: translateY(-18px); } 25%, 75% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(14px); } }
 @media (pointer: coarse) { kbd { display: none; } }
 @media (max-width: 440px) { .top-overlay { padding: 14px; } .recovery-actions .button { font-size: 13px; padding: 10px; } }
 </style>

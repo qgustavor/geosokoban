@@ -3,7 +3,7 @@ import { prepareLevel } from './prepare-level.js'
 
 self.onmessage = ({ data }) => {
   try {
-    setGeography(data.geography)
+    if (data.geography) setGeography(data.geography)
     const level = prepareLevel(data.code, {
       onProgress: progress => self.postMessage({ type: 'progress', ...progress })
     })

@@ -1,0 +1,29 @@
+
+> geosokoban-prototype@0.2.6 prebuild
+> npm run maps:check && npm run biomes:check && node scripts/copy-licenses.js
+
+
+> geosokoban-prototype@0.2.6 maps:check
+> node scripts/build-map-outlines.js --check
+
+Map outlines match the bundled geography and projections.
+
+> geosokoban-prototype@0.2.6 biomes:check
+> node scripts/check-biomes.js
+
+Biome atlas schema and projections are valid.
+node:internal/fs/promises:615
+  return await PromisePrototypeThen(
+         ^
+
+Error: ENOENT: no such file or directory, copyfile '/mnt/data/sokoban-project/node_modules/vue/LICENSE' -> '/mnt/data/sokoban-project/public/licenses/vue.txt'
+    at async copyFile (node:internal/fs/promises:615:10)
+    at async file:///mnt/data/sokoban-project/scripts/copy-licenses.js:6:3 {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'copyfile',
+  path: '/mnt/data/sokoban-project/node_modules/vue/LICENSE',
+  dest: '/mnt/data/sokoban-project/public/licenses/vue.txt'
+}
+
+Node.js v22.16.0

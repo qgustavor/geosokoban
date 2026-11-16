@@ -15,12 +15,17 @@ const directions = computed(() => {
 </script>
 
 <template>
-  <section class="hint-panel" aria-live="polite">
-    <p v-if="help.stage">{{ t('hint' + help.stage, { country: name(help.plan.country) }) }}</p>
-    <p v-else>{{ t(help.busy ? 'thinking' : help.unavailable ? 'noHint' : 'hint') }}</p>
-    <p v-if="help.stage >= 3" class="sr-only">{{ t('route', { directions }) }}</p>
+  <section class="hint-panel">
+    <div aria-live="polite" aria-atomic="true">
+      <p v-if="help.stage">{{ t('hint' + help.stage, { country: name(help.plan.country) }) }}</p>
+      <p v-else>{{ t(help.busy ? 'thinking' : help.unavailable ? 'noHint' : 'hint') }}</p>
+      <p v-if="help.stage >= 3" class="sr-only">{{ t('route', { directions }) }}</p>
+    </div>
     <div class="hint-actions">
-      <button v-if="help.stage < 4" class="button primary" :disabled="help.busy || solved" @click="help.request">{{ t(help.stage ? 'moreHelp' : 'hint') }}</button>
+      <!-- Keep the ticking countdown out of the live announcement region. -->
+      <button v-if="help.stage < 4" class="button primary hint-request" :disabled="help.busy || solved || help.cooldownSeconds > 0" @click="help.request">
+        {{ help.cooldownSeconds > 0 ? t('hintCooldown', { seconds: help.cooldownSeconds }) : t(help.stage ? 'moreHelp' : 'hint') }}
+      </button>
       <button class="button secondary" @click="$emit('dismiss')">{{ t('hideHint') }}</button>
     </div>
   </section>
@@ -30,5 +35,7 @@ const directions = computed(() => {
 .hint-panel { padding: 18px; }
 .hint-panel p { font-size: 14px; margin: 0 0 14px; text-wrap: pretty; }
 .hint-actions { display: flex; gap: 10px; }
-.hint-actions .button { flex: 1; padding: 10px 12px; font-size: 13px; }
+.hint-actions .button { flex: 1; min-width: 0; padding: 10px 12px; font-size: 13px; }
+.hint-request { font-variant-numeric: tabular-nums; }
+.hint-request:disabled { cursor: not-allowed; opacity: .65; }
 </style>

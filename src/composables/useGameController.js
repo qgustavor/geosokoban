@@ -33,10 +33,13 @@ export function useGameController () {
   const requested = ref('')
   const revealed = ref([])
   const factCountry = ref('')
-  const flight = ref('')
-  let pendingCode = ''
+  const boardTransitioning = ref(false)
+  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+  const systemReducedMotion = ref(mediaQuery.matches)
+  const reducedMotion = computed(() => reduced.value || systemReducedMotion.value)
+  const motionChanged = event => { systemReducedMotion.value = event.matches }
   const panelReturn = '/'
-  const game = useSession({ reducedMotion: () => reduced.value || window.matchMedia('(prefers-reduced-motion: reduce)').matches })
+  const game = useSession({ reducedMotion: () => reducedMotion.value })
   const { level, state, chapter, solved } = game
   const session = reactive(game)
   const help = reactive(useAssistance(level, state, () => { assisted.value = true }))
@@ -51,7 +54,14 @@ export function useGameController () {
   })
 
   function focusBoard () {
-    nextTick(() => document.querySelector('.board-wrap:not(.board-preview)')?.focus({ preventScroll: true }))
+    nextTick(() => {
+      if (!boardTransitioning.value && !game.loading.value && !panel.value) document.querySelector('.board-wrap:not(.board-preview)')?.focus({ preventScroll: true })
+    })
+  }
+
+  function setBoardTransitioning (value) {
+    boardTransitioning.value = value
+    if (!value) focusBoard()
   }
 
   function puzzleURL () {
@@ -92,8 +102,6 @@ export function useGameController () {
   }
 
   function open (code) {
-    flight.value = ''
-    pendingCode = ''
     return activate(code)
   }
 
@@ -110,8 +118,6 @@ export function useGameController () {
   function home () {
     panel.value = ''
     game.cancel()
-    flight.value = ''
-    pendingCode = ''
     help.clearHint()
     router.push({ name: 'home' })
     failure.value = null
@@ -121,7 +127,7 @@ export function useGameController () {
   }
 
   function showPanel (name) {
-    if (game.loading.value || !['pause', 'options', 'credits'].includes(name)) return
+    if (game.loading.value || boardTransitioning.value || !['pause', 'options', 'credits'].includes(name)) return
     panel.value = name
   }
 
@@ -136,7 +142,7 @@ export function useGameController () {
   }
 
   function step (direction) {
-    if (view.value !== 'puzzle' || activeCode.value !== route.params.code || flight.value || panel.value) return
+    if (view.value !== 'puzzle' || activeCode.value !== route.params.code || boardTransitioning.value || panel.value) return
     const before = new Set(level.value.goals.filter(goal => state.value.boxes.some(box => box.country === goal.country && box.position === goal.position)).map(goal => goal.country))
     if (!game.step(direction)) return
     notice.value = ''
@@ -150,7 +156,7 @@ export function useGameController () {
   }
 
   function undo () {
-    if (flight.value) return
+    if (boardTransitioning.value) return
     game.undo()
     factCountry.value = ''
     notice.value = ''
@@ -158,7 +164,7 @@ export function useGameController () {
   }
 
   function restart () {
-    if (flight.value) return
+    if (boardTransitioning.value) return
     game.restart()
     help.clearHint()
     factCountry.value = ''
@@ -242,27 +248,13 @@ export function useGameController () {
   }
 
   function nextPuzzle () {
+    if (game.loading.value || boardTransitioning.value) return
     if (chapter.value === STORY_COUNT) {
       home()
       return
     }
     const code = withPlanning(chapter.value ? storyCode(chapter.value + 1) : newCode(), level.value.planning === true)
-    const changingRegion = code.split('-')[1] !== level.value.id.split('-')[1]
-    if (changingRegion && !reduced.value && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      pendingCode = code
-      flight.value = 'depart'
-    } else open(code)
-  }
-
-  async function flightComplete () {
-    if (flight.value === 'depart') {
-      if (await activate(pendingCode)) flight.value = 'arrive'
-      else flight.value = ''
-      pendingCode = ''
-    } else {
-      flight.value = ''
-      focusBoard()
-    }
+    open(code)
   }
 
   function retry () {
@@ -276,8 +268,7 @@ export function useGameController () {
     failure.value = null
     notice.value = ''
     if (route.name !== 'puzzle') {
-      flight.value = ''
-      pendingCode = ''
+      boardTransitioning.value = false
       return
     }
     const code = normalizeCode(route.params.code)
@@ -290,8 +281,6 @@ export function useGameController () {
       focusBoard()
       return
     }
-    flight.value = ''
-    pendingCode = ''
     await activate(code, false)
   }, { immediate: true })
 
@@ -302,6 +291,7 @@ export function useGameController () {
   watch(locale, () => { notice.value = '' })
   onMounted(() => {
     document.documentElement.lang = locale.value
+    mediaQuery.addEventListener('change', motionChanged)
   })
 
   let noticeTimer
@@ -309,14 +299,14 @@ export function useGameController () {
     clearTimeout(noticeTimer)
     if (value && view.value === 'puzzle') noticeTimer = setTimeout(() => { notice.value = '' }, 2800)
   })
-  onUnmounted(() => clearTimeout(noticeTimer))
+  onUnmounted(() => { clearTimeout(noticeTimer); mediaQuery.removeEventListener('change', motionChanged) })
 
   return {
     view, locale, completed, reduced, panel, guidance, challenge, notice, fallbackText,
-    assisted, selected, requested, revealed, fact, flight, activeCode, failure,
+    assisted, selected, requested, revealed, fact, reducedMotion, boardTransitioning, activeCode, failure,
     session, help, resumeCode, t, name, open, home, showPanel, closePanel,
     cancelGeneration, retry, step, key, undo, restart, inspect, selectDestination,
     reveal, revealAll, setGuidance, setChallenge, nextPuzzle, share, copyText,
-    puzzleURL, flightComplete, dismissShare: () => { fallbackText.value = '' }
+    puzzleURL, setBoardTransitioning, dismissShare: () => { fallbackText.value = '' }
   }
 }
