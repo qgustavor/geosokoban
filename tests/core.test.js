@@ -12,10 +12,11 @@ import { validMoveCertificate } from '../src/core/difficulty.js'
 import { prepareLevel } from '../src/core/prepare-level.js'
 import { analyzeDesign, meetsDesign } from '../src/core/design-quality.js'
 import { solve, isDefinitelyStuck } from '../src/core/solver.js'
-import { dailyCode, normalizeCode, randomFrom, newCode } from '../src/core/seed.js'
+import { dailyCode, normalizeCode, parseCode, randomFrom, newCode } from '../src/core/seed.js'
 import { setGeography } from '../src/geo/world.js'
 import { rasterize, countryAt } from '../src/geo/rasterize.js'
 import { REGIONS, storyCode, storyIndex } from '../src/content/regions.js'
+import { storyLevel } from '../src/content/story.js'
 import { makeHintPlan, hintOverlay, advanceHintPlan } from '../src/core/hints.js'
 import { messages, translate, countryName } from '../src/data/i18n.js'
 
@@ -157,8 +158,8 @@ test('50,000 successful walks can all be undone without an artificial cap', () =
 test('daily codes agree at a UTC boundary in every time zone', () => {
   const before = dailyCode(new Date('2026-11-14T20:59:59-03:00'))
   const after = dailyCode(new Date('2026-11-14T21:00:00-03:00'))
-  assert.ok(before.endsWith('D20261114'))
-  assert.ok(after.endsWith('D20261115'))
+  assert.ok(before.endsWith('2026-11-14'))
+  assert.ok(after.endsWith('2026-11-15'))
   assert.equal(after, dailyCode(new Date('2026-11-15T09:00:00+09:00')))
 })
 
@@ -170,12 +171,12 @@ test('invalid dates, versions, regions and ambiguous codes are rejected', () => 
 
   for (const code of invalidCodes) assert.equal(normalizeCode(code), null)
   assert.equal(normalizeCode('G2-SA-D20240229'), 'G2-SA-D20240229')
-  for (const region of REGIONS) assert.ok(normalizeCode(newCode(region.id)).startsWith(`G2-${region.id}-`))
+  for (const region of REGIONS) assert.ok(normalizeCode(newCode(region.id)).startsWith(`${region.slug}-`))
 })
 
 test('daily rotation includes all seven regions in a 90-day sample', () => {
   const regions = new Set()
-  for (let day = 1; day <= 90; day++) regions.add(dailyCode(new Date(Date.UTC(2026, 0, day))).split('-')[1])
+  for (let day = 1; day <= 90; day++) regions.add(parseCode(dailyCode(new Date(Date.UTC(2026, 0, day)))).region)
   assert.equal(regions.size, 7)
 })
 
@@ -214,10 +215,11 @@ test('all 42 fixed story boards have visible destinations and certified solution
   for (let index = 1; index <= 21; index++) {
     const code = storyCode(index)
     assert.equal(storyIndex(code), index)
-    assert.equal(stories[code].id, code)
-    assertCertified(stories[code])
-    assertCertified(stories[code + '-P'])
-    assert.equal(storyIndex(code + '-P'), index)
+    const hard = withPlanning(code, true)
+    assert.equal(storyLevel(code).id, code)
+    assertCertified(storyLevel(code))
+    assertCertified(storyLevel(hard))
+    assert.equal(storyIndex(hard), index)
   }
 })
 

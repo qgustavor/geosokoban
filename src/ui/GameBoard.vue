@@ -494,14 +494,15 @@ const route = computed(() => {
   will-change: transform, opacity;
 }
 
-.board-swap-enter-active .map-outline, .board-swap-enter-active .country-borders {
-  animation: context-reveal .3s .5s both;
-}
+/* Explicit keyframes also fade on first mount. A transition to opacity: 0 can
+   otherwise miss its starting frame when Vue attaches the leave classes. */
+.board-swap-enter-active .map-outline { animation: underlay-arrive .52s .08s both; }
 
-.board-swap-leave-active .map-outline, .board-swap-leave-active .country-borders {
-  transition: opacity .12s;
-  opacity: 0;
-}
+.board-swap-leave-active .map-outline { animation: underlay-depart .34s both; }
+
+.board-swap-enter-active .country-borders { animation: underlay-arrive .3s .5s both; }
+
+.board-swap-leave-active .country-borders { animation: underlay-depart .2s both; }
 
 .board-swap-leave-active .hint-route,
 .board-swap-leave-active .push-marker,
@@ -539,7 +540,9 @@ const route = computed(() => {
   100% { opacity: 0; transform: translateY(48px) scale(.86,.12); }
 }
 
-@keyframes context-reveal { from { opacity: 0; } to { opacity: 1; } }
+@keyframes underlay-arrive { from { opacity: 0; } to { opacity: 1; } }
+
+@keyframes underlay-depart { from { opacity: 1; } to { opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
   .tile-underface { display: none; }

@@ -18,7 +18,10 @@ export function challengeName (guidance, planning) {
 }
 
 export function withPlanning (code, planning) {
-  return code.replace(/-P$/, '') + (planning ? '-P' : '')
+  const base = code.replace(/-P$|-hard$/, '')
+  const suffix = base.startsWith('G2-') ? '-P' : '-hard'
+
+  return base + (planning ? suffix : '')
 }
 
 const coordinate = (level, position, axis) => axis === 'x' ? position % level.width : Math.floor(position / level.width)
@@ -64,11 +67,11 @@ export function addChallengePattern (base, rng, motif) {
       // Two separated gates offer distinct routes rather than one wide doorway.
       const others = motif === 'sliding-door'
         ? openings.filter(position => {
-            const firstAlong = coordinate(base, first, alongAxis)
-            const otherAlong = coordinate(base, position, alongAxis)
+          const firstAlong = coordinate(base, first, alongAxis)
+          const otherAlong = coordinate(base, position, alongAxis)
 
-            return Math.abs(firstAlong - otherAlong) >= 3
-          })
+          return Math.abs(firstAlong - otherAlong) >= 3
+        })
         : [null]
 
       for (const second of others) {

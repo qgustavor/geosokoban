@@ -1,7 +1,8 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { challengeSettings, withPlanning } from '../core/challenge.js'
-import { REGIONS, storyCode } from '../content/regions.js'
+import { REGIONS, storyCode, storyIndex, storyStop, STORY_COUNT, STORY_TOURS } from '../content/regions.js'
+import { storyProgressCode } from '../content/story.js'
 import { dailyCode, newCode } from '../core/seed.js'
 import ChallengePicker from './ChallengePicker.vue'
 
@@ -12,162 +13,270 @@ const props = defineProps({
   challenge: { type: String, required: true },
   notice: { type: String, default: '' }
 })
-
 const emit = defineEmits(['start', 'challenge'])
 const mode = ref('daily')
-const code = ref('')
 const modes = ['story', 'daily', 'random']
 const symbols = ['↗', '◷', '⤨']
+const finished = computed(() => new Set(props.completed.map(storyProgressCode).filter(Boolean)))
+const nextStop = computed(() => storyStop(storyIndex(props.resumeCode)))
+const tours = computed(() => Array.from({ length: STORY_TOURS }, (_, offset) => {
+  const first = offset * REGIONS.length + 1
+  const stops = REGIONS.map((region, index) => finished.value.has(storyCode(first + index)))
 
-function start (code) {
-  // Apply the selected challenge to picker-generated codes; pasted codes retain their own mode.
-  const { planning } = challengeSettings(props.challenge)
-  emit('start', withPlanning(code, planning))
-}
+  return { number: offset + 1, completed: stops.filter(Boolean).length }
+}))
+const playLabel = computed(() => {
+  if (mode.value !== 'story') return props.t('playNow')
+  if (finished.value.size === STORY_COUNT && storyIndex(props.resumeCode) === 1) return props.t('replayJourney')
+
+  return props.t(finished.value.size ? 'continueJourney' : 'beginJourney')
+})
 
 function play () {
-  // Create date/random codes only when starting, not while rendering the menu.
+  // Draw daily/random seeds on activation, never as a side effect of rendering the menu.
   let selectedCode
 
-  if (mode.value === 'story') {
-    selectedCode = props.resumeCode
-  } else if (mode.value === 'daily') {
-    selectedCode = dailyCode()
-  } else {
-    selectedCode = newCode()
-  }
+  if (mode.value === 'story') selectedCode = props.resumeCode
+  else if (mode.value === 'daily') selectedCode = dailyCode()
+  else selectedCode = newCode()
 
-  start(selectedCode)
+  const { planning } = challengeSettings(props.challenge)
+  emit('start', withPlanning(selectedCode, planning))
 }
 </script>
 
 <template>
   <main class="level-selection">
-    <fieldset class="mode-grid">
-      <legend>{{ t('gameMode') }}</legend>
-      <label
-        v-for="(choice, index) in modes"
-        :key="choice"
-        class="mode-card"
-        :class="{ active: mode === choice }"
-      >
-        <input
-          v-model="mode"
-          type="radio"
-          name="game-mode"
-          :value="choice"
-          class="sr-only"
+    <h1 class="sr-only">{{ t('home') }}</h1>
+    <div class="departure-card">
+      <fieldset class="mode-grid" aria-describedby="mode-description">
+        <legend>{{ t('gameMode') }}</legend>
+        <label
+          v-for="(choice, index) in modes"
+          :key="choice"
+          class="mode-card"
+          :class="{ active: mode === choice }"
         >
-        <span class="mode-symbol" aria-hidden="true">{{ symbols[index] }}</span><strong>{{ t(choice) }}</strong>
-      </label>
-    </fieldset>
-    <ChallengePicker :value="challenge" :t="t" @change="$emit('challenge', $event)" />
-    <button class="button primary start-game" @click="play">
-      {{ t('playNow') }}
-    </button>
-    <details v-if="mode === 'story'" class="journey-picker">
-      <summary>{{ t('chooseStop') }}</summary>
-      <div class="journey-grid">
-        <section v-for="(region, regionIndex) in REGIONS" :key="region.id">
-          <h2>{{ t(region.name) }}</h2>
-          <div>
-            <button
-              v-for="stop in 3"
-              :key="stop"
-              class="button secondary"
-              @click="start(storyCode(regionIndex * 3 + stop))"
-            >
-              {{ t('stop', { n: stop }) }} <span v-if="completed.includes(storyCode(regionIndex * 3 + stop))">✓</span>
-            </button>
-          </div>
-        </section>
-      </div>
-    </details>
-    <details class="code-entry">
-      <summary>{{ t('openCode') }}</summary>
-      <form class="input-row" @submit.prevent="$emit('start', code)">
-        <input
-          v-model="code"
-          :aria-label="t('openCode')"
-          :placeholder="t('codePlaceholder')"
-          maxlength="32"
-          autocomplete="off"
-          spellcheck="false"
-        >
-        <button class="button secondary">
-          {{ t('open') }}
+          <input v-model="mode" type="radio" name="game-mode" :value="choice" class="sr-only">
+          <span class="mode-symbol" aria-hidden="true">{{ symbols[index] }}</span>
+          <strong>{{ t(choice) }}</strong>
+        </label>
+      </fieldset>
+      <p id="mode-description" class="mode-description">{{ t(mode + 'Desc') }}</p>
+      <section v-if="mode === 'story'" class="journey-progress" :aria-label="t('journeyProgress')">
+        <ol class="tour-stamps">
+          <li v-for="tour in tours" :key="tour.number" :class="{ complete: tour.completed === REGIONS.length }">
+            <span class="tour-number" aria-hidden="true">
+              {{ tour.completed === REGIONS.length ? '✓' : tour.number }}
+            </span>
+            <div>
+              <strong>{{ t('tourLabel', { n: tour.number }) }}</strong>
+              <span>{{ t('tourStops', { n: tour.completed, total: REGIONS.length }) }}</span>
+            </div>
+          </li>
+        </ol>
+        <p v-if="nextStop" class="next-destination">
+          {{ t('nextDestination', { region: t(nextStop.region.name) }) }}
+        </p>
+      </section>
+      <ChallengePicker :value="challenge" :t="t" @change="$emit('challenge', $event)" />
+      <div class="departure-footer">
+        <button class="button primary start-game" @click="play">
+          {{ playLabel }} <span aria-hidden="true">→</span>
         </button>
-      </form>
-    </details>
-    <p v-if="notice" class="notice" role="status">
-      {{ notice }}
-    </p>
+      </div>
+    </div>
+    <p v-if="notice" class="notice" role="status">{{ notice }}</p>
   </main>
 </template>
 
 <style scoped>
-.level-selection { width: min(760px, calc(100vw - 36px)); margin: 24px auto 40px; }
+.level-selection {
+  width: min(800px, calc(100vw - 36px));
+  margin: 20px auto 0;
+  padding-bottom: 40px;
+}
+
+.departure-card {
+  padding: clamp(20px, 4vw, 34px);
+  border: 1px solid #e2e7c8;
+  border-radius: 26px;
+  color: #254c59;
+  background: #f3efdc;
+  box-shadow: 0 6px 0 #1c53684d, 0 18px 50px #183f4b26;
+}
 
 .mode-grid {
   border: 0;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
   margin: 0;
 }
 
-.mode-grid legend { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+.mode-grid legend {
+  font-size: 13px;
+  font-weight: 750;
+  margin-bottom: 14px;
+  color: #547477;
+}
 
 .mode-card {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 24px 14px;
-  border: 2px solid #79a9b14d;
-  border-radius: 18px;
-  background: #214d62;
-  box-shadow: 0 5px 0 #173a4e99;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 8px;
+  border: 2px solid #ced9c7;
+  border-radius: 16px;
+  background: #e9ecda;
   cursor: pointer;
+  transition: background .16s, border-color .16s;
 }
 
-.mode-card.active { border-color: #b4a6d5; background: #625f8e; }
+.mode-card:hover {
+  border-color: #8cae9f;
+}
 
-.mode-card:has(input:focus-visible) { outline: 3px solid #f4da87; outline-offset: 4px; }
+.mode-card.active {
+  border-color: #285e69;
+  background: #285e69;
+  color: #f4f1d9;
+}
 
-.mode-symbol { font-size: 28px; color: #d2e9dc; }
+.mode-card:has(input:focus-visible) {
+  outline: 3px solid #b47b32;
+  outline-offset: 4px;
+}
 
-.mode-card strong { font-size: 16px; }
+.mode-symbol {
+  font-size: 25px;
+  line-height: 1;
+}
 
-.start-game { display: block; width: min(360px, 100%); margin: 30px auto; }
+.mode-card.active .mode-symbol {
+  color: #f2db87;
+}
 
-.journey-picker, .code-entry { margin-top: 20px; }
+.mode-card strong {
+  font-size: 14px;
+  text-align: center;
+  text-wrap: balance;
+}
 
-summary { cursor: pointer; padding: 10px 0; font-size: 14px; }
+.mode-description {
+  color: #547477;
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 18px 0 0;
+  text-wrap: pretty;
+}
 
-.journey-grid {
+.journey-progress {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px dashed #aabdaf;
+}
+
+.tour-stamps {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 12px;
-  margin-top: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
-.journey-grid section { padding: 16px; background: #214d6299; border-radius: 16px; }
+.tour-stamps li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
 
-.journey-grid h2 { font-size: 16px; }
+.tour-number {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border: 1px solid #b4c4b1;
+  border-radius: 50%;
+  font-weight: 750;
+  color: #6b837a;
+}
 
-.journey-grid section div { display: flex; gap: 7px; }
+.complete .tour-number {
+  background: #477967;
+  border-color: #477967;
+  color: #f3efdc;
+}
 
-.journey-grid .button { padding: 8px; font-size: 12px; flex: 1; }
+.tour-stamps strong, .tour-stamps li div > span {
+  display: block;
+  font-size: 12px;
+}
 
-.input-row { display: flex; gap: 8px; margin-top: 10px; }
+.tour-stamps li div > span {
+  margin-top: 3px;
+  font-size: 11px;
+  color: #547477;
+}
 
-.input-row input { flex: 1; min-width: 0; padding: 12px; }
+.next-destination {
+  font-size: 12px;
+  color: #547477;
+  margin: 16px 0 0;
+}
+
+.departure-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  padding-top: 26px;
+  margin-top: 26px;
+  border-top: 1px dashed #aabdaf;
+}
+
+.start-game {
+  min-width: 210px;
+  text-wrap: balance;
+}
+
+.start-game span {
+  margin-left: 12px;
+}
+
+.notice {
+  margin: 18px 0 0;
+}
 
 @media (max-width: 540px) {
-  .mode-grid { grid-template-columns: 1fr; gap: 12px; }
-  .mode-card { justify-content: flex-start; padding: 15px 22px; }
-  .level-selection { margin-top: 14px; }
+  .level-selection {
+    margin-top: 8px;
+  }
+
+  .mode-grid {
+    gap: 7px;
+  }
+
+  .mode-card {
+    padding: 15px 6px;
+  }
+
+  .mode-card strong {
+    font-size: 12px;
+  }
+
+  .tour-stamps li {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .start-game {
+    width: 100%;
+  }
 }
 </style>

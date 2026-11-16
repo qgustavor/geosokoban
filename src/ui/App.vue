@@ -4,6 +4,7 @@ import { RouterView } from 'vue-router'
 import { useGameController } from '../composables/useGameController.js'
 import { gameContext } from './game-context.js'
 import GlobeIcon from './GlobeIcon.vue'
+import StoryDialogue from './StoryDialogue.vue'
 import GenerationLoading from './GenerationLoading.vue'
 import OverlayDialog from './OverlayDialog.vue'
 import OptionsView from './OptionsView.vue'
@@ -50,7 +51,7 @@ provide(gameContext, app)
     <!-- Preserve the mounted page during loading, but block input even before the loader appears. -->
     <div
       v-show="!app.session.loadingDisplay.visible"
-      :inert="app.session.loading || undefined"
+      :inert="app.session.loading || !!app.storyScene || undefined"
       :aria-busy="app.session.loading"
     >
       <section v-if="app.failure" class="load-error" role="alert">
@@ -64,6 +65,13 @@ provide(gameContext, app)
       </section>
       <RouterView />
     </div>
+    <StoryDialogue
+      v-if="app.storyScene"
+      :key="app.storyScene.id"
+      :scene="app.storyScene"
+      :t="app.t"
+      @finish="app.finishStory"
+    />
     <!-- Options and credits share a dialog so opening them does not replace the current puzzle. -->
     <OverlayDialog
       v-if="app.panel"
@@ -72,6 +80,22 @@ provide(gameContext, app)
       @dismiss="app.closePanel"
     >
       <div v-if="app.panel === 'pause'" class="pause-actions">
+        <div class="puzzle-code">
+          <span>{{ app.t('codeLabel') }}</span>
+          <code>{{ app.activeCode }}</code>
+          <div class="puzzle-share-actions">
+            <button class="quiet" @click="app.sharePuzzle">{{ app.t('sharePuzzle') }}</button>
+            <button class="quiet" @click="app.copyText(app.puzzleURL())">{{ app.t('copyLink') }}</button>
+          </div>
+          <p v-if="app.notice" role="status">{{ app.notice }}</p>
+          <textarea
+            v-if="app.fallbackText"
+            :value="app.fallbackText"
+            :aria-label="app.t('copyFallback')"
+            readonly
+            @focus="$event.target.select()"
+          />
+        </div>
         <button class="button primary" @click="app.closePanel">
           {{ app.t('resume') }}
         </button>
@@ -100,7 +124,7 @@ provide(gameContext, app)
         embedded
         :t="app.t"
         @back="app.closePanel"
-        @clear-progress="app.completed = []"
+        @clear-progress="app.clearProgress"
       />
     </OverlayDialog>
   </div>
@@ -108,6 +132,33 @@ provide(gameContext, app)
 
 <style scoped>
 .pause-actions { display: grid; gap: 12px; }
+
+.puzzle-code { display: grid; gap: 6px; margin-bottom: 10px; }
+
+.puzzle-code > span { font-size: 12px; color: #547477; }
+
+.puzzle-code code {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.puzzle-share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 16px;
+}
+
+.puzzle-share-actions button {
+  text-wrap: balance;
+}
+
+.puzzle-code p { font-size: 12px; margin: 0; }
+
+.puzzle-code textarea { width: 100%; min-height: 80px; }
 
 .header-tools { flex-wrap: wrap; }
 

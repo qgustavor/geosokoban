@@ -1,4 +1,4 @@
-import { normalizeCode } from '../core/seed.js'
+import { normalizeCode, isPlanningCode } from '../core/seed.js'
 
 export function puzzleLocation (input, guidance = 'learn') {
   const code = normalizeCode(input)
@@ -6,7 +6,7 @@ export function puzzleLocation (input, guidance = 'learn') {
   if (!code) throw new Error('Invalid puzzle code')
 
   // Hard puzzles always hide targets; other boards use the requested guidance without changing their code.
-  const hideTargets = code.endsWith('-P') || guidance === 'remember'
+  const hideTargets = isPlanningCode(code) || guidance === 'remember'
   const targetGuidance = hideTargets ? 'remember' : 'learn'
 
   return {

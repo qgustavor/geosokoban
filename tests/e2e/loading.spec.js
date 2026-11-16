@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test'
 import { readFileSync } from 'node:fs'
+import { dailyCode } from '../../src/core/seed.js'
 
 const fixture = JSON.parse(readFileSync(new URL('../../src/content/story-levels.json', import.meta.url)))['G2-SA-S3']
-const code = 'G2-SA-0123456789'
+const code = dailyCode(new Date('2026-11-14T12:00:00Z'))
 
 async function setup (page) {
   await page.clock.install({ time: new Date('2026-11-14T12:00:00Z') })
@@ -39,9 +40,7 @@ async function setup (page) {
 }
 
 async function start (page) {
-  await page.locator('.code-entry summary').click()
-  await page.locator('.code-entry input').fill(code)
-  await page.locator('.code-entry button').click()
+  await page.locator('.start-game').click()
   await expect.poll(() => page.evaluate(() => window.generationRequests)).toBe(1)
 }
 
@@ -74,7 +73,7 @@ test('story mode never starts generation feedback or a generation worker', async
   await setup(page)
   await page.locator('label:has(input[name="game-mode"][value="story"])').click()
   await page.locator('.start-game').click()
-  await expect(page.locator('.play-page')).toHaveAttribute('data-code', 'G2-SA-S1')
+  await expect(page.locator('.play-page')).toHaveAttribute('data-code', 'south-america-tour-1')
   await page.clock.runFor(10000)
   await expect(page.locator('.generation-loading')).toHaveCount(0)
   expect(await page.evaluate(() => window.generationRequests)).toBe(0)

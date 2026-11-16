@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { readFileSync } from 'node:fs'
+import { skipStory } from './story-helpers.js'
 import stories from '../../src/content/story-levels.json' with { type: 'json' }
 
 const mapRequest = /world[^/]*\.gz(?:\?.*)?$/
@@ -32,7 +33,7 @@ test('menu, options, credits and story do not request the geography asset', asyn
   await page.locator('.credits-page > button').click()
   await page.locator('label:has(input[name="game-mode"][value="story"])').click()
   await page.locator('.start-game').click()
-  await expect(page.locator('.play-page')).toHaveAttribute('data-code', 'G2-SA-S1')
+  await expect(page.locator('.play-page')).toHaveAttribute('data-code', 'south-america-tour-1')
   await expect(page.locator('.generation-loading')).toHaveCount(0)
   await expect(page.locator('.board-wrap:not(.board-preview) .country-borders path').first()).toBeVisible()
   expect(requests).toBe(0)
@@ -69,13 +70,11 @@ test('a map failure leaves the menu available and retries without reloading the 
     ? route.fulfill({ status: 503, body: 'Unavailable' })
     : route.continue())
   await page.goto('./')
-  await page.locator('.code-entry summary').click()
-  await page.locator('.code-entry input').fill(generated)
-  await page.locator('.code-entry button').click()
+  await page.locator('.start-game').click()
   await expect(page.locator('.load-error')).toContainText('The map could not load.')
   await expect(page.locator('.level-selection')).toBeVisible()
   await page.getByRole('button', { name: 'Try again', exact: true }).click()
-  await expect(page.locator('.play-page')).toHaveAttribute('data-code', generated, { timeout: 30000 })
+  await expect(page.locator('.play-page')).toBeVisible({ timeout: 30000 })
   expect(requests).toBe(2)
 })
 
@@ -84,6 +83,7 @@ test('refresh uses a hash route and in-game options do not navigate or lose an u
   await expect(page.locator('.target-flag')).toHaveCount(0)
   await page.reload()
   await expect(page.locator('.play-page')).toHaveAttribute('data-code', 'G2-SA-S2')
+  await skipStory(page)
   await page.locator('.board-wrap').focus()
   await page.keyboard.press(keys[stories['G2-SA-S2'].solution[0]])
   await expect(page.locator('.move-counter b')).toHaveText('1')
@@ -152,6 +152,8 @@ for (const locale of ['en', 'pt-BR', 'es']) {
     await expect(page.locator('.level-selection')).toBeVisible()
     await expect(page.locator('.challenge-card')).toHaveCount(3)
     await expect(page.locator('.mode-card')).toHaveCount(3)
+    await expect(page.locator('.menu-mark, .menu-heading, .departure-note')).toHaveCount(0)
+    await expect(page.locator('.level-selection h1')).toHaveClass('sr-only')
     await expect(page.locator('.generation-loading')).toHaveCount(0)
     expect(requests).toBe(0)
     expect(errors).toEqual([])

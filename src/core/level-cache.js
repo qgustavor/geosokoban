@@ -1,4 +1,4 @@
-import { normalizeCode } from './seed.js'
+import { parseCode, normalizeCode } from './seed.js'
 import { GENERATOR_VERSION, FALLBACK_VERSION } from './generation-version.js'
 import { MAP_VERSION } from '../geo/rasterize.js'
 import { validateLevel, replay, isSolved } from './engine.js'
@@ -10,18 +10,19 @@ export const LEVEL_CACHE_VERSION = `1:${MAP_VERSION}:${GENERATOR_VERSION}:${FALL
 /** Cached files are untrusted input; never let corrupt storage break starting a game. */
 export function cacheableLevel (code, level) {
   try {
-    if (!level || normalizeCode(code) !== code || level.id !== code) return false
+    const parsed = parseCode(code)
+    if (!level || parsed?.code !== code || level.id !== code) return false
 
     // Matching IDs alone do not make an older map or generator's board reusable.
     const currentVersions = level.generatorVersion === GENERATOR_VERSION && level.mapVersion === MAP_VERSION
     if (!currentVersions) return false
 
-    const region = code.split('-')[1]
+    const { region, planning } = parsed
 
     // North America codes can select the internal Caribbean map; other regions
     // must match exactly rather than accepting a board from a different pool.
     if (level.region !== region && !(region === 'NA' && level.region === 'CAR')) return false
-    if (!!level.planning !== code.endsWith('-P')) return false
+    if (!!level.planning !== planning) return false
 
     const boundedDimensions = [level.width, level.height].every(size =>
       Number.isInteger(size) && size > 0 && size <= 128

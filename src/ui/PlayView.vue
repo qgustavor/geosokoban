@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch, nextTick, onBeforeUnmount } from 'vue'
-import { regionById, STORY_COUNT } from '../content/regions.js'
+import { regionById, storyStop, STORY_COUNT, STORY_TOURS } from '../content/regions.js'
 import { boardTransitionDuration } from '../core/board-transition.js'
 import { createCompletionSequence } from '../core/completion.js'
 import GameBoard from './GameBoard.vue'
@@ -48,6 +48,7 @@ function finishTransition () {
 
 const visible = country => props.guidance === 'learn' || props.revealed.includes(country)
 const regionName = computed(() => props.t(regionById(props.game.level.region).name))
+const storyChapter = computed(() => storyStop(props.game.chapter))
 const hintOpen = ref(false)
 const victoryOpen = ref(true)
 const phase = ref(props.game.solved ? 'results' : 'playing')
@@ -241,7 +242,12 @@ onBeforeUnmount(() => {
       />
     </Transition>
     <header class="play-hud">
-      <h1>{{ regionName }}</h1>
+      <div>
+        <p v-if="storyChapter" class="journey-hud">
+          {{ t('worldTour', { n: storyChapter.tour, total: STORY_TOURS }) }}
+        </p>
+        <h1>{{ regionName }}</h1>
+      </div>
       <span class="move-counter">{{ t('moves') }} <b>{{ game.state.moves }}</b></span>
     </header>
     <Transition name="warning">
@@ -257,7 +263,11 @@ onBeforeUnmount(() => {
         </div>
       </section>
     </Transition>
-    <div v-if="notice" class="utility-notice" role="status">
+    <div
+      v-if="notice && !panelOpen && !showVictory && !fallbackText"
+      class="utility-notice"
+      role="status"
+    >
       {{ notice }}
     </div>
     <div v-if="requested && !visible(requested)" class="geography-popover">
@@ -330,9 +340,10 @@ onBeforeUnmount(() => {
       <p class="result-moves">
         {{ game.state.moves }} <small>{{ t('moves').toLowerCase() }}</small>
       </p>
+      <p v-if="notice" class="result-notice" role="status">{{ notice }}</p>
       <div class="result-actions">
-        <button v-if="game.chapter !== STORY_COUNT" class="button primary" @click="$emit('next')">
-          {{ t(game.chapter ? 'next' : 'another') }}
+        <button class="button primary" @click="$emit('next')">
+          {{ t(game.chapter === STORY_COUNT ? 'storyEnding' : game.chapter ? 'next' : 'another') }}
         </button>
         <button class="button secondary" @click="$emit('share')">
           {{ t('share') }}
@@ -349,7 +360,12 @@ onBeforeUnmount(() => {
     >
       {{ t('done') }}
     </button>
-    <OverlayDialog v-if="fallbackText" :label="t('share')" @dismiss="$emit('dismissShare')">
+    <!-- Pause owns its inline fallback; never stack another modal underneath it. -->
+    <OverlayDialog
+      v-if="fallbackText && !panelOpen"
+      :label="t('share')"
+      @dismiss="$emit('dismissShare')"
+    >
       <h2 class="result-title">
         {{ t('share') }}
       </h2>
@@ -392,6 +408,8 @@ onBeforeUnmount(() => {
 }
 
 .play-hud h1 { font-size: clamp(16px, 2vw, 22px); margin: 0; font-weight: 700; text-shadow: 0 1px 2px #163f4b44; }
+
+.journey-hud { margin: 0 0 4px; font-size: 11px; letter-spacing: .04em; opacity: .85; }
 
 .move-counter { font-size: 12px; opacity: .9; white-space: nowrap; }
 
@@ -506,6 +524,11 @@ kbd {
 .result-moves { font-size: 32px; font-weight: 750; margin: 24px 0 28px; }
 
 .result-moves small { font-size: 14px; font-weight: 500; }
+
+.result-notice {
+  margin: 0 0 16px;
+  font-size: 14px;
+}
 
 .result-actions { display: grid; gap: 12px; }
 

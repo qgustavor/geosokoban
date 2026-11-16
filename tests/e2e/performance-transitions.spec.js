@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { skipStory } from './story-helpers.js'
 import stories from '../../src/content/story-levels.json' with { type: 'json' }
 import templates from '../../src/content/fallback-levels-v5.json' with { type: 'json' }
 
@@ -12,6 +13,7 @@ test('same-region and cross-region navigation dismantle the old board before bui
   await preferences(page)
   await page.goto('./#/puzzle/G2-SA-S1')
   await expect(page.locator('.play-page')).toHaveAttribute('aria-busy', 'false')
+  await skipStory(page)
   for (const [previous, next] of [['G2-SA-S1', 'G2-SA-S2'], ['G2-SA-S2', 'G2-NA-S1']]) {
     await page.evaluate(code => {
       location.hash = `/puzzle/${code}`
@@ -22,6 +24,7 @@ test('same-region and cross-region navigation dismantle the old board before bui
     await expect(page.locator('.move-counter b')).toHaveText('0')
     await expect(page.locator('.board-swap-enter-active')).toHaveAttribute('data-level', next)
     await expect(page.locator('.play-page')).toHaveAttribute('aria-busy', 'false')
+    await skipStory(page)
     await expect(page.locator('.board-wrap')).toHaveCount(1)
     await expect(page.locator('.board-wrap')).toBeFocused()
     await expect(page.locator('.flight-overlay')).toHaveCount(0)
@@ -36,6 +39,7 @@ test('reduced motion swaps immediately and never leaves controls inert', async (
   })
   await expect(page.locator('.board-wrap')).toHaveAttribute('data-level', 'G2-SA-S2')
   await expect(page.locator('.play-page')).toHaveAttribute('aria-busy', 'false')
+  await skipStory(page)
   await expect(page.locator('.board-swap-enter-active, .board-swap-leave-active')).toHaveCount(0)
   await page.locator('.board-wrap').focus()
   const keys = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' }
@@ -47,6 +51,7 @@ test('rapid navigation during a transition settles on the newest route', async (
   await preferences(page)
   await page.goto('./#/puzzle/G2-SA-S1')
   await expect(page.locator('.play-page')).toHaveAttribute('aria-busy', 'false')
+  await skipStory(page)
   await page.evaluate(() => {
     location.hash = '/puzzle/G2-SA-S2'
   })
@@ -56,6 +61,7 @@ test('rapid navigation during a transition settles on the newest route', async (
   })
   await expect(page.locator('.board-wrap')).toHaveAttribute('data-level', 'G2-SA-S3')
   await expect(page.locator('.play-page')).toHaveAttribute('aria-busy', 'false')
+  await skipStory(page)
 })
 
 test('generated boards use memory and persistent caches; different codes share a warm worker', async ({ page }) => {
@@ -70,6 +76,7 @@ test('generated boards use memory and persistent caches; different codes share a
         if (!String(url).includes('generate')) return new NativeWorker(url, options)
         window.generationWorkers++
       }
+
       postMessage (message) {
         window.generationMessages.push({ code: message.code, geography: !!message.geography })
         // Real workers never reply in the caller's stack; retain that asynchronous boundary.
@@ -77,6 +84,7 @@ test('generated boards use memory and persistent caches; different codes share a
           data: { type: 'complete', level: { ...level, id: message.code } }
         }))
       }
+
       terminate () {}
     }
   }, fixture)
@@ -131,6 +139,7 @@ test('clear lettering is staggered, hops above baseline, and is announced as one
   await preferences(page)
   await page.goto('./#/puzzle/G2-SA-S1')
   await expect(page.locator('.play-page')).toHaveAttribute('aria-busy', 'false')
+  await skipStory(page)
   const keys = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' }
   for (const direction of stories['G2-SA-S1'].solution) await page.keyboard.press(keys[direction])
   await expect(page.locator('.clear-announcement')).toBeVisible()

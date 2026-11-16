@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { skipStory } from './story-helpers.js'
 import stories from '../../src/content/story-levels.json' with { type: 'json' }
 
 const keys = { up: 'ArrowUp', right: 'ArrowRight', down: 'ArrowDown', left: 'ArrowLeft' }
@@ -12,6 +13,7 @@ test.beforeEach(async ({ page }) => {
 async function open (page, code = 'G2-SA-S2', guidance = 'learn') {
   await page.goto(`./#/puzzle/${code}?g=${guidance}`)
   await expect(page.locator('.play-page')).toHaveAttribute('data-code', code)
+  await skipStory(page)
 }
 
 async function options (page) {
@@ -81,6 +83,7 @@ test('a swipe moves in the requested direction without also inspecting a flag', 
 test('delivery labels precede clear and results; share falls back visibly without an undo action', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'share', { value: undefined, configurable: true })
+    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true })
   })
   await open(page, 'G2-SA-S1')
   await page.locator('.board-wrap').focus()
@@ -105,7 +108,8 @@ test('three difficulty choices set target visibility and the layout variant', as
     await page.locator('label:has(input[name="game-mode"][value="story"])').click()
     await page.locator(`label:has(input[name="challenge"][value="${choice}"])`).click()
     await page.locator('.start-game').click()
-    await expect(page.locator('.play-page')).toHaveAttribute('data-code', `G2-SA-S1${planning ? '-P' : ''}`)
+    const expectedCode = `south-america-tour-1${planning ? '-hard' : ''}`
+    await expect(page.locator('.play-page')).toHaveAttribute('data-code', expectedCode)
     await expect(page.locator('.target-flag')).toHaveCount(recall ? 0 : 1)
     await expect(page.locator('.box-actor')).toHaveCount(planning ? 3 : 1)
   }
@@ -142,7 +146,6 @@ for (const locale of ['en', 'pt-BR', 'es']) {
   })
 }
 
-
 test('subtle continuous tiles retain coastlines, target contrast and a diagonal reveal', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('geosokoban.prototype.v2', JSON.stringify({ locale: 'en', reduced: false }))
@@ -153,7 +156,7 @@ test('subtle continuous tiles retain coastlines, target contrast and a diagonal 
     width: element.getAttribute('width'),
     rx: element.getAttribute('rx')
   }))
-  expect(Number(style.opacity)).toBeLessThan(.2)
+  expect(Number(style.opacity)).toBeLessThan(0.2)
   expect(style.width).toBe('40')
   expect(style.rx).toBeNull()
   await expect(page.locator('.coast-edge[d^="M"]').first()).toHaveAttribute('d', /M/)

@@ -1,5 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import { normalizeCode } from '../core/seed.js'
+import { normalizeCode, isPlanningCode } from '../core/seed.js'
 import { puzzleLocation } from './locations.js'
 import MenuPage from '../pages/MenuPage.vue'
 import PuzzlePage from '../pages/PuzzlePage.vue'
@@ -37,10 +37,10 @@ export function createAppRouter () {
     // Let the puzzle view report invalid codes rather than replacing them with a different puzzle.
     if (!code) return true
 
-    // The code selects the board; g controls destination visibility. Hard (-P) requires hidden targets.
+    // The code selects the board; g controls destination visibility. Hard requires hidden targets.
     const needsCanonicalLocation = to.params.code !== code ||
       !['learn', 'remember'].includes(to.query.g) ||
-      (code.endsWith('-P') && to.query.g !== 'remember')
+      (isPlanningCode(code) && to.query.g !== 'remember')
 
     if (needsCanonicalLocation) {
       // Correct deep links without leaving an extra malformed entry in the browser's Back history.

@@ -1,6 +1,19 @@
 import { REGIONS } from '../content/regions.js'
 
-const ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'
+// Short, familiar words are easier to dictate than a string of ambiguous letters.
+// These are seed tokens, not UI translations: changing language must not change a puzzle.
+const ADJECTIVES = [
+  'amber', 'blue', 'brave', 'bright', 'calm', 'clear', 'cool', 'coral',
+  'cozy', 'fair', 'fresh', 'gentle', 'golden', 'green', 'happy', 'kind',
+  'little', 'lucky', 'mellow', 'merry', 'misty', 'pale', 'quiet', 'rosy',
+  'silver', 'snowy', 'soft', 'sunny', 'tiny', 'warm', 'wild', 'young'
+]
+const NOUNS = [
+  'bay', 'bird', 'bloom', 'boat', 'brook', 'cloud', 'cove', 'dawn',
+  'dune', 'fern', 'field', 'finch', 'forest', 'garden', 'hill', 'island',
+  'kite', 'lake', 'leaf', 'moon', 'moss', 'otter', 'panda', 'pearl',
+  'rain', 'reef', 'river', 'shell', 'star', 'sun', 'trail', 'wave'
+]
 
 export function hashSeed (text) {
   let hash = 2166136261
@@ -36,43 +49,80 @@ export function randomFrom (seed) {
 }
 
 export function dailyCode (date = new Date()) {
-  // Use the UTC date so the same instant selects the same daily puzzle in every timezone.
-  const day = date.toISOString().slice(0, 10).replaceAll('-', '')
-  const regionIndex = hashSeed(day) % REGIONS.length
-  const region = REGIONS[regionIndex].id
+  // Keep UTC as the shared daily boundary, with a date a person can actually read.
+  const day = date.toISOString().slice(0, 10)
+  const region = REGIONS[hashSeed(day.replaceAll('-', '')) % REGIONS.length]
 
-  return `G2-${region}-D${day}`
+  return `${region.slug}-${day}`
 }
 
 export function newCode (region = null) {
-  const bytes = new Uint8Array(11)
+  const bytes = new Uint32Array(4)
   globalThis.crypto.getRandomValues(bytes)
 
-  // The last byte selects a region only when the caller has not supplied a recognized one.
-  const hasRequestedRegion = REGIONS.some(item => item.id === region)
-  const chosen = hasRequestedRegion ? region : REGIONS[bytes[10] % REGIONS.length].id
-  // Five bits address the share-code alphabet; the first ten bytes supply the puzzle's seed text.
-  const seedText = Array.from(bytes.slice(0, 10), byte => ALPHABET[byte & 31]).join('')
+  const chosen = REGIONS.find(item => item.id === region) ?? REGIONS[bytes[3] % REGIONS.length]
+  const adjective = ADJECTIVES[bytes[0] % ADJECTIVES.length]
+  const noun = NOUNS[bytes[1] % NOUNS.length]
+  const number = 10 + bytes[2] % 90
 
-  return `G2-${chosen}-${seedText}`
+  return `${chosen.slug}-${adjective}-${noun}-${number}`
+}
+
+function calendarDate (year, month, day) {
+  const iso = `${year}-${month}-${day}`
+  const date = new Date(`${iso}T00:00:00Z`)
+
+  // JavaScript rolls some invalid days into the next month; require an exact round trip.
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === iso
+}
+
+/** Parse once, rather than making callers infer region and difficulty from hyphen positions. */
+export function parseCode (value) {
+  if (typeof value !== 'string') return null
+
+  const input = value.trim()
+  const legacy = /^G2-(SA|NA|EE|WE|AF|AS|OC)-([^-]+)(-P)?$/i.exec(input)
+
+  // Retain the frozen asset/test codes without imposing a version on new share codes.
+  if (legacy) {
+    const token = legacy[2].toUpperCase()
+    const daily = /^D(\d{4})(\d{2})(\d{2})$/.exec(token)
+    const tour = /^S([1-3])$/.exec(token)
+    const valid = daily
+      ? calendarDate(daily[1], daily[2], daily[3])
+      : !!tour || /^[0-9A-HJKMNP-TV-Z]{10}$/.test(token)
+    if (!valid) return null
+
+    return {
+      code: input.toUpperCase(),
+      region: legacy[1].toUpperCase(),
+      planning: !!legacy[3],
+      tour: Number(tour?.[1] ?? 0)
+    }
+  }
+
+  // Spaces and underscores are accepted when a code is copied from a note or dictated.
+  const code = input.toLowerCase().replace(/[\s_]+/g, '-')
+  const planning = code.endsWith('-hard')
+  const base = planning ? code.slice(0, -5) : code
+  const region = REGIONS.find(item => base.startsWith(`${item.slug}-`))
+  if (!region) return null
+
+  const token = base.slice(region.slug.length + 1)
+  const tour = /^tour-([1-3])$/.exec(token)
+  const daily = /^(\d{4})-(\d{2})-(\d{2})$/.exec(token)
+  const words = /^([a-z]+)-([a-z]+)-([1-9]\d)$/.exec(token)
+  const validWords = words && ADJECTIVES.includes(words[1]) && NOUNS.includes(words[2])
+  const valid = daily ? calendarDate(daily[1], daily[2], daily[3]) : !!tour || validWords
+  if (!valid) return null
+
+  return { code, region: region.id, planning, tour: Number(tour?.[1] ?? 0) }
 }
 
 export function normalizeCode (value) {
-  const code = String(value).trim().toUpperCase()
-  const match = /^G2-(SA|NA|EE|WE|AF|AS|OC)-([^-]+)(?:-P)?$/.exec(code)
-  if (!match) return null
+  return parseCode(value)?.code ?? null
+}
 
-  const daily = /^D(\d{4})(\d{2})(\d{2})$/.exec(match[2])
-  if (daily) {
-    const iso = `${daily[1]}-${daily[2]}-${daily[3]}`
-    const date = new Date(`${iso}T00:00:00Z`)
-
-    // Date parsing can roll an out-of-range day into the next month; require an exact round trip.
-    const isCalendarDate = !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === iso
-    return isCalendarDate ? code : null
-  }
-
-  const isRandomOrStorySeed = /^(?:[0-9A-HJKMNP-TV-Z]{10}|S[1-3])$/.test(match[2])
-
-  return isRandomOrStorySeed ? code : null
+export function isPlanningCode (code) {
+  return parseCode(code)?.planning === true
 }

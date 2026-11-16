@@ -6,5 +6,5 @@ const app = useGameContext()
 </script>
 
 <template>
-  <CreditsView :t="app.t" @back="app.closePanel" @clear-progress="app.completed = []" />
+  <CreditsView :t="app.t" @back="app.closePanel" @clear-progress="app.clearProgress" />
 </template>

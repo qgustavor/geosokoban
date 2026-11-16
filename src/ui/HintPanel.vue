@@ -63,7 +63,13 @@ const requestLabel = computed(() => {
 
 .hint-actions { display: flex; gap: 10px; }
 
-.hint-actions .button { flex: 1; min-width: 0; padding: 10px 12px; font-size: 13px; }
+.hint-actions .button {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  font-size: 13px;
+  text-wrap: balance;
+}
 
 .hint-request { font-variant-numeric: tabular-nums; }
 

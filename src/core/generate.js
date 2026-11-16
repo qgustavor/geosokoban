@@ -4,7 +4,7 @@ import { createWalkingSearch } from './walking-search.js'
 import { rasterize, MAP_VERSION } from '../geo/rasterize.js'
 import { regionById } from '../content/regions.js'
 import { DIRECTIONS, OPPOSITE, neighbor, reachable, walkable, replay, isSolved, validateLevel, initialState } from './engine.js'
-import { randomFrom, normalizeCode } from './seed.js'
+import { randomFrom, parseCode } from './seed.js'
 import { challengeDistances, pushLowerBound } from './challenge.js'
 import { addPuzzleLayout, LAYOUT_FAMILIES } from './layout-patterns.js'
 import { solve } from './solver.js'
@@ -240,19 +240,17 @@ export function generate (inputCode, {
   minimumExtraMoves = MINIMUM_EXTRA_MOVES,
   solverBudget
 } = {}) {
-  const code = normalizeCode(inputCode)
-  if (!code) throw new Error('Invalid puzzle code')
+  const parsed = parseCode(inputCode)
+  if (!parsed) throw new Error('Invalid puzzle code')
 
-  const [, regionId, suffix] = code.split('-')
-  const story = /^S([1-3])$/.exec(suffix)
-  const stop = Number(story?.[1] ?? 0)
+  const { code, region: regionId, planning, tour: stop } = parsed
+  const story = stop > 0
   const rng = randomFrom(`${code}|${MAP_VERSION}|${GENERATOR_VERSION}`)
 
   // Keep this draw conditional: story stops and non-NA regions must not consume
   // the random value reserved for choosing the Caribbean map on generated NA codes.
   const useCaribbean = regionId === 'NA' && (stop === 3 || (!stop && rng() < 0.35))
   const definition = regionById(useCaribbean ? 'CAR' : regionId)
-  const planning = code.endsWith('-P')
   let count = 3
 
   if (!planning && story) {

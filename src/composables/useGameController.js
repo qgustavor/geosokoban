@@ -2,11 +2,13 @@ import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from
 import { useRoute, useRouter } from 'vue-router'
 import { puzzleLocation } from '../router/locations.js'
 import { shareResult } from '../core/share.js'
+import { useStoryDialogue } from './useStoryDialogue.js'
+import { resumeStory, storyProgressCode } from '../content/story.js'
 import { useSession } from './useSession.js'
 import { useAssistance } from './useAssistance.js'
-import { normalizeCode, newCode } from '../core/seed.js'
+import { normalizeCode, newCode, isPlanningCode } from '../core/seed.js'
 import { CHALLENGES, challengeSettings, challengeName, withPlanning } from '../core/challenge.js'
-import { storyCode, STORY_COUNT } from '../content/regions.js'
+import { storyCode, storyIndex, STORY_COUNT } from '../content/regions.js'
 import relations from '../content/relations.json' with { type: 'json' }
 import { translate, countryName } from '../data/i18n.js'
 import { readPreferences, savePreferences } from '../ui/storage.js'
@@ -21,6 +23,8 @@ export function useGameController () {
 
   const locale = ref(saved.locale ?? detected)
   const completed = ref(saved.completed)
+  const pendingStory = ref(saved.pendingStory)
+  const dialogue = useStoryDialogue(locale)
   const reduced = ref(saved.reduced)
   const panel = ref('')
   const guidance = ref(saved.guidance)
@@ -57,13 +61,7 @@ export function useGameController () {
 
   const t = (key, params) => translate(locale.value, key, params)
   const name = country => countryName(country, locale.value)
-  const resumeCode = computed(() => {
-    const storyCodes = Array.from({ length: STORY_COUNT }, (_, index) => storyCode(index + 1))
-    const nextStory = storyCodes.find(code => !completed.value.includes(code))
-
-    // Finishing every chapter makes Resume start the story again rather than disappear.
-    return nextStory ?? storyCode(1)
-  })
+  const resumeCode = computed(() => resumeStory(completed.value, pendingStory.value))
 
   const fact = computed(() => {
     if (!factCountry.value) return ''
@@ -82,7 +80,7 @@ export function useGameController () {
   function focusBoard () {
     // Wait for routed/panel DOM updates, then avoid stealing focus from an active overlay or transition.
     nextTick(() => {
-      if (boardTransitioning.value || game.loading.value || panel.value) return
+      if (boardTransitioning.value || game.loading.value || panel.value || dialogue.scene.value) return
 
       document.querySelector('.board-wrap:not(.board-preview)')?.focus({ preventScroll: true })
     })
@@ -112,6 +110,7 @@ export function useGameController () {
 
     failure.value = null
     panel.value = ''
+    dialogue.cancel()
 
     try {
       if (!await game.start(code)) return false
@@ -131,7 +130,20 @@ export function useGameController () {
       if (navigate) await router.push(puzzleLocation(code, guidance.value))
 
       window.scrollTo(0, 0)
-      focusBoard()
+
+      if (storyIndex(code)) {
+        const resumingDialogue = pendingStory.value &&
+          storyProgressCode(pendingStory.value) === storyProgressCode(code)
+
+        if (resumingDialogue) {
+          // The puzzle was solved before leaving. Resume its unread scene, then travel on.
+          playAfterStory(code)
+        } else {
+          dialogue.start(code, 'before', focusBoard)
+        }
+      } else {
+        focusBoard()
+      }
 
       return true
     } catch (error) {
@@ -143,6 +155,11 @@ export function useGameController () {
   }
 
   function open (code) {
+    // Starting a completed campaign begins a fresh three-tour journey.
+    if (storyIndex(code) === 1 && completed.value.length === STORY_COUNT && !pendingStory.value) {
+      completed.value = []
+    }
+
     return activate(code)
   }
 
@@ -160,6 +177,7 @@ export function useGameController () {
   }
 
   function home () {
+    dialogue.cancel()
     panel.value = ''
     game.cancel()
     help.clearHint()
@@ -171,7 +189,8 @@ export function useGameController () {
   }
 
   function showPanel (name) {
-    if (game.loading.value || boardTransitioning.value || !['pause', 'options', 'credits'].includes(name)) return
+    if (dialogue.scene.value || game.loading.value || boardTransitioning.value) return
+    if (!['pause', 'options', 'credits'].includes(name)) return
 
     panel.value = name
   }
@@ -180,7 +199,13 @@ export function useGameController () {
     if (panel.value) {
       // In-game options and credits return to Pause; closing Pause returns to the board.
       panel.value = panel.value !== 'pause' && view.value === 'puzzle' ? 'pause' : ''
-      if (!panel.value) focusBoard()
+
+      if (!panel.value) {
+        // The pause menu owns its inline copy fallback; leaving it must not open a second share dialog.
+        fallbackText.value = ''
+        focusBoard()
+      }
+
       return
     }
 
@@ -197,7 +222,7 @@ export function useGameController () {
   function step (direction) {
     // During navigation the route can name a board that has not replaced the old session yet.
     if (view.value !== 'puzzle' || activeCode.value !== route.params.code) return
-    if (boardTransitioning.value || panel.value) return
+    if (boardTransitioning.value || panel.value || dialogue.scene.value) return
 
     const deliveredCountries = level.value.goals.filter(hasDeliveredFlag).map(goal => goal.country)
     const previouslyDelivered = new Set(deliveredCountries)
@@ -216,24 +241,28 @@ export function useGameController () {
 
     if (solved.value && chapter.value) {
       // Hard and non-Hard versions count toward the same story chapter.
-      const storyId = level.value.id.replace(/-P$/, '')
+      const storyId = storyProgressCode(level.value.id)
       completed.value = [...new Set([...completed.value, storyId])]
+      // Save this separately from puzzle completion so the closing scene survives a reload.
+      pendingStory.value = level.value.id
     }
   }
 
   function undo () {
-    if (boardTransitioning.value) return
+    if (boardTransitioning.value || dialogue.scene.value) return
 
     game.undo()
+    clearUndoneCheckpoint()
     factCountry.value = ''
     notice.value = ''
     focusBoard()
   }
 
   function restart () {
-    if (boardTransitioning.value) return
+    if (boardTransitioning.value || dialogue.scene.value) return
 
     game.restart()
+    clearUndoneCheckpoint()
     help.clearHint()
     factCountry.value = ''
     notice.value = ''
@@ -242,6 +271,8 @@ export function useGameController () {
   }
 
   function key (event) {
+    if (dialogue.scene.value) return
+
     // Leave shortcuts, composed text and editing controls to the browser or focused field.
     if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return
 
@@ -329,29 +360,89 @@ export function useGameController () {
     }
   }
 
+  let sharing = false
+
+  async function sendShare (data) {
+    // Repeated taps must not launch a second chooser or copy while the first chooser is still open.
+    if (sharing) return
+
+    sharing = true
+    notice.value = ''
+    fallbackText.value = ''
+    const sharedCode = activeCode.value
+
+    try {
+      // Call immediately, before awaiting any work, to retain the button's user activation.
+      const result = await shareResult(data)
+
+      // A delayed platform response must not put old sharing feedback on another page or puzzle.
+      if (view.value !== 'puzzle' || activeCode.value !== sharedCode) return
+
+      if (result.status === 'copied') notice.value = t('copied')
+      else if (result.status === 'fallback') fallbackText.value = result.text
+    } finally {
+      sharing = false
+    }
+  }
+
+  function sharePuzzle () {
+    // Sharing an unfinished puzzle is an invitation, not a result with a misleading move count.
+    return sendShare({ title: 'GeoSokoban', url: puzzleURL() })
+  }
+
   async function share () {
     const moves = state.value.moves
     // Report the loaded board's planning mode, not a preference selected for a future puzzle.
     const challengeLabel = t('challenge' + challengeName(guidance.value, level.value.planning === true))
     const assistanceLabel = t(assisted.value ? 'assisted' : 'unassisted')
-    const text = t('shareResult', { moves, challenge: challengeLabel, help: assistanceLabel })
-    const result = await shareResult({ title: 'GeoSokoban', text, url: puzzleURL() })
+    const resultText = t('shareResult', { moves, challenge: challengeLabel, help: assistanceLabel })
+    const text = `${resultText}\n${level.value.id}`
 
-    if (result.status === 'fallback') fallbackText.value = result.text
+    return sendShare({ title: 'GeoSokoban', text, url: puzzleURL() })
   }
 
-  function nextPuzzle () {
-    if (game.loading.value || boardTransitioning.value) return
+  function clearUndoneCheckpoint () {
+    // Undo/restart after solving is a return to play, not a pending departure.
+    if (!solved.value && storyProgressCode(pendingStory.value) === storyProgressCode(level.value.id)) {
+      pendingStory.value = ''
+    }
+  }
 
-    if (chapter.value === STORY_COUNT) {
+  function travelAfterStory (code) {
+    const index = storyIndex(code)
+    if (!index) return
+
+    pendingStory.value = ''
+
+    if (index === STORY_COUNT) {
       home()
       return
     }
 
-    // Continue the story when applicable; otherwise draw a new seed and keep the current planning mode.
-    const nextCode = chapter.value ? storyCode(chapter.value + 1) : newCode()
-    const code = withPlanning(nextCode, level.value.planning === true)
-    open(code)
+    open(withPlanning(storyCode(index + 1), isPlanningCode(code)))
+  }
+
+  function playAfterStory (code) {
+    // Missing/empty scenes continue immediately; authored scenes own the departure until dismissed.
+    dialogue.start(code, 'after', () => travelAfterStory(code))
+  }
+
+  function nextPuzzle () {
+    if (game.loading.value || boardTransitioning.value || dialogue.scene.value) return
+
+    if (chapter.value) {
+      if (!solved.value) return
+
+      playAfterStory(level.value.id)
+      return
+    }
+
+    open(withPlanning(newCode(), level.value.planning === true))
+  }
+
+  function clearProgress () {
+    completed.value = []
+    pendingStory.value = ''
   }
 
   function retry () {
@@ -367,6 +458,7 @@ export function useGameController () {
     notice.value = ''
 
     if (route.name !== 'puzzle') {
+      dialogue.cancel()
       boardTransitioning.value = false
       return
     }
@@ -374,12 +466,13 @@ export function useGameController () {
     const code = normalizeCode(route.params.code)
 
     if (!code) {
+      dialogue.cancel()
       failure.value = { key: 'errorCode', code: null }
       return
     }
 
     // Hard always hides destinations; other boards take guidance from the shareable query parameter.
-    const rememberTargets = code.endsWith('-P') || route.query.g === 'remember'
+    const rememberTargets = isPlanningCode(code) || route.query.g === 'remember'
     guidance.value = rememberTargets ? 'remember' : 'learn'
 
     // A guidance-only URL change must not restart the current puzzle or discard its history.
@@ -388,13 +481,15 @@ export function useGameController () {
       return
     }
 
+    dialogue.cancel()
     await activate(code, false)
   }, { immediate: true })
 
-  watch([locale, completed, reduced, guidance, planning], () => {
+  watch([locale, completed, pendingStory, reduced, guidance, planning], () => {
     savePreferences({
       locale: locale.value,
       completed: completed.value,
+      pendingStory: pendingStory.value,
       reduced: reduced.value,
       guidance: guidance.value,
       planning: planning.value
@@ -425,6 +520,7 @@ export function useGameController () {
 
   onUnmounted(() => {
     clearTimeout(noticeTimer)
+    dialogue.cancel()
     mediaQuery.removeEventListener('change', motionChanged)
   })
 
@@ -450,6 +546,9 @@ export function useGameController () {
     session,
     help,
     resumeCode,
+    storyScene: dialogue.scene,
+    finishStory: dialogue.finish,
+    clearProgress,
     t,
     name,
     open,
@@ -470,6 +569,7 @@ export function useGameController () {
     setChallenge,
     nextPuzzle,
     share,
+    sharePuzzle,
     copyText,
     puzzleURL,
     setBoardTransitioning,

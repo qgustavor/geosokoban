@@ -33,16 +33,16 @@ defineEmits(['change'])
 <style scoped>
 .challenge-picker { margin: 28px 0 0; border: 0; padding: 0; }
 
-.challenge-picker legend { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+.challenge-picker legend { font-size: 13px; font-weight: 750; margin-bottom: 12px; color: #547477; }
 
 .challenge-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 
 .challenge-card {
   padding: 17px 12px;
-  border: 2px solid #79a9b14d;
+  border: 2px solid #ced9c7;
   border-radius: 16px;
-  background: #214d62;
-  box-shadow: 0 4px 0 #173a4e88;
+  background: #e9ecda;
+  transition: background .16s, border-color .16s;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -50,11 +50,11 @@ defineEmits(['change'])
   gap: 8px;
 }
 
-.challenge-card.active { border-color: #b4a6d5; background: #625f8e; }
+.challenge-card.active { border-color: #547b70; background: #d5e4cf; }
 
-.challenge-card:has(input:focus-visible) { outline: 3px solid #f4da87; outline-offset: 3px; }
+.challenge-card:has(input:focus-visible) { outline: 3px solid #b47b32; outline-offset: 3px; }
 
-.difficulty-dots { font-size: 10px; letter-spacing: 3px; color: #f3d984; }
+.difficulty-dots { font-size: 10px; letter-spacing: 3px; color: #547b70; }
 
 .challenge-card strong { font-size: 14px; }
 </style>

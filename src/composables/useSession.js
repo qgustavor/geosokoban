@@ -2,15 +2,16 @@ import { computed, shallowRef, ref, onUnmounted } from 'vue'
 import { Session } from '../core/session.js'
 import { isSolved } from '../core/engine.js'
 import { loadGeography } from '../geo/world.js'
-import storyLevels from '../content/story-levels.json' with { type: 'json' }
-import { storyIndex } from '../content/regions.js'
+import { storyLevel } from '../content/story.js'
+import { isPlanningCode } from '../core/seed.js'
+import { storyCode, storyIndex } from '../content/regions.js'
 import { createGenerationClient } from '../core/generation-client.js'
 import { createLevelCache } from '../core/level-cache.js'
 import { createLoadingFeedback, emptyFeedback } from '../core/loading-feedback.js'
 
 export function useSession ({ reducedMotion = () => false } = {}) {
   // Publish whole snapshots rather than deeply proxying the engine's board and history.
-  const level = shallowRef(storyLevels['G2-SA-S1'])
+  const level = shallowRef(storyLevel(storyCode(1)))
   let session = new Session(level.value)
   const state = shallowRef(session.state)
   const historyCount = ref(0)
@@ -52,14 +53,14 @@ export function useSession ({ reducedMotion = () => false } = {}) {
     cancel()
     const current = revision
     // Story and cached boards are already prepared, so they need neither geography nor a loader.
-    const cached = storyLevels[code] ?? cache.get(code)
+    const cached = storyLevel(code) ?? cache.get(code)
 
     try {
       let next = cached
 
       if (!cached) {
         loading.value = true
-        feedback.start(code.endsWith('-P'))
+        feedback.start(isPlanningCode(code))
 
         // Cancellation first owns the map request, then transfers to the generation worker.
         const controller = new AbortController()
@@ -139,7 +140,18 @@ export function useSession ({ reducedMotion = () => false } = {}) {
   })
 
   return {
-    level, state, historyCount, facing, solved, chapter,
-    loading, loadingDisplay, start, cancel, step, undo, restart
+    level,
+    state,
+    historyCount,
+    facing,
+    solved,
+    chapter,
+    loading,
+    loadingDisplay,
+    start,
+    cancel,
+    step,
+    undo,
+    restart
   }
 }

@@ -6,16 +6,23 @@ const emit = defineEmits(['dismiss'])
 const dialog = ref(null)
 let previousFocus
 
+function focusInitialControl () {
+  const initialFocus = dialog.value?.querySelector('[autofocus]') ??
+    dialog.value?.querySelector('button, textarea, input, select')
+
+  initialFocus?.focus({ preventScroll: true })
+}
+
 // Switching panels reuses the dialog; wait for the new controls before moving focus.
 watch(() => props.label, async () => {
   await nextTick()
-  dialog.value?.querySelector('button, textarea, input, select')?.focus({ preventScroll: true })
+  focusInitialControl()
 })
 
 onMounted(() => {
   previousFocus = document.activeElement
   dialog.value.showModal()
-  dialog.value.querySelector('button, textarea, input')?.focus()
+  focusInitialControl()
 })
 
 onBeforeUnmount(() => {
