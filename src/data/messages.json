@@ -1,5 +1,11 @@
 {
   "en": {
+    "audio": "Audio",
+    "music": "Music",
+    "soundEffects": "Sound effects",
+    "musicVolume": "Music volume",
+    "sfxVolume": "Sound effects volume",
+    "volumePercent": "{value}%",
     "prototype": "PROTOTYPE",
     "fieldNotes": "A geography puzzle",
     "home": "Home",
@@ -174,6 +180,12 @@
     "storyEnding": "Meet the visitor"
   },
   "pt-BR": {
+    "audio": "Áudio",
+    "music": "Música",
+    "soundEffects": "Efeitos sonoros",
+    "musicVolume": "Volume da música",
+    "sfxVolume": "Volume dos efeitos",
+    "volumePercent": "{value}%",
     "prototype": "PROTÓTIPO",
     "fieldNotes": "Um quebra-cabeça de geografia",
     "home": "Início",
@@ -348,6 +360,12 @@
     "storyEnding": "Conhecer o visitante"
   },
   "es": {
+    "audio": "Audio",
+    "music": "Música",
+    "soundEffects": "Efectos de sonido",
+    "musicVolume": "Volumen de la música",
+    "sfxVolume": "Volumen de los efectos",
+    "volumePercent": "{value}%",
     "prototype": "PROTOTIPO",
     "fieldNotes": "Un puzle de geografía",
     "home": "Inicio",

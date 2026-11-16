@@ -340,7 +340,9 @@ onBeforeUnmount(() => {
       <p class="result-moves">
         {{ game.state.moves }} <small>{{ t('moves').toLowerCase() }}</small>
       </p>
-      <p v-if="notice" class="result-notice" role="status">{{ notice }}</p>
+      <p v-if="notice" class="result-notice" role="status">
+        {{ notice }}
+      </p>
       <div class="result-actions">
         <button class="button primary" @click="$emit('next')">
           {{ t(game.chapter === STORY_COUNT ? 'storyEnding' : game.chapter ? 'next' : 'another') }}

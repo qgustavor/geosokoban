@@ -94,11 +94,14 @@ export const STORY_SCENES = {
     after: {
       cast: ['globe', 'unknown'],
       lines: [
-        { speaker: 'unknown', text: text(
-          'Oh no… I’ve mixed them up again. I thought I had it right this time!',
-          'Ah, não… Misturei tudo de novo. Achei que desta vez tinha acertado!',
-          'Ay, no… Las he mezclado otra vez. ¡Pensé que esta vez lo había hecho bien!'
-        ) },
+        {
+          speaker: 'unknown',
+          text: text(
+            'Oh no… I’ve mixed them up again. I thought I had it right this time!',
+            'Ah, não… Misturei tudo de novo. Achei que desta vez tinha acertado!',
+            'Ay, no… Las he mezclado otra vez. ¡Pensé que esta vez lo había hecho bien!'
+          )
+        },
         globe(
           'Someone is just ahead! One more trip around the world. Maybe we can help each other.',
           'Tem alguém logo adiante! Mais uma volta ao mundo. Talvez possamos nos ajudar.',
@@ -123,21 +126,27 @@ export const STORY_SCENES = {
     after: {
       cast: ['globe', 'visitor'],
       lines: [
-        { speaker: 'visitor', text: text(
-          'It was me. I wanted to put the flags in the right places, but I kept getting turned around. I’m sorry.',
-          'Fui eu. Queria colocar as bandeiras nos lugares certos, mas me atrapalhei. Desculpa.',
-          'Fui yo. Quería poner las banderas en sus lugares, pero me confundí. Lo siento.'
-        ) },
+        {
+          speaker: 'visitor',
+          text: text(
+            'It was me. I wanted to put the flags in the right places, but I kept getting turned around. I’m sorry.',
+            'Fui eu. Queria colocar as bandeiras nos lugares certos, mas me atrapalhei. Desculpa.',
+            'Fui yo. Quería poner las banderas en sus lugares, pero me confundí. Lo siento.'
+          )
+        },
         globe(
           'Thanks for telling us. We’ve learned a lot on these three journeys. We can show you!',
           'Obrigado por contar. Aprendemos muito nestas três viagens. Podemos te mostrar!',
           'Gracias por contárnoslo. Aprendimos mucho en estos tres viajes. ¡Podemos enseñarte!'
         ),
-        { speaker: 'visitor', text: text(
-          'Could I come along next time? I’ll ask before moving anything.',
-          'Posso ir junto da próxima vez? Vou perguntar antes de mover qualquer coisa.',
-          '¿Puedo ir con ustedes la próxima vez? Preguntaré antes de mover nada.'
-        ) },
+        {
+          speaker: 'visitor',
+          text: text(
+            'Could I come along next time? I’ll ask before moving anything.',
+            'Posso ir junto da próxima vez? Vou perguntar antes de mover qualquer coisa.',
+            '¿Puedo ir con ustedes la próxima vez? Preguntaré antes de mover nada.'
+          )
+        },
         globe(
           'Of course. The world is more fun to explore with a friend.',
           'Claro. Explorar o mundo é mais divertido com um amigo.',

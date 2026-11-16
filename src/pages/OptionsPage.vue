@@ -10,8 +10,16 @@ const app = useGameContext()
     :t="app.t"
     :locale="app.locale"
     :reduced="app.reduced"
+    :music="app.audio.music"
+    :sfx="app.audio.sfx"
+    :music-volume="app.audio.musicVolume"
+    :sfx-volume="app.audio.sfxVolume"
     @back="app.closePanel"
     @locale="app.locale = $event"
     @reduced="app.reduced = $event"
+    @music="app.audio.music = $event"
+    @sfx="app.audio.sfx = $event"
+    @music-volume="app.audio.musicVolume = $event"
+    @sfx-volume="app.audio.sfxVolume = $event"
   />
 </template>

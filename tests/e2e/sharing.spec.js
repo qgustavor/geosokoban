@@ -14,13 +14,15 @@ async function sharingPlatform (page, native = 'available', clipboard = 'availab
     Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => true })
     Object.defineProperty(navigator, 'share', {
       configurable: true,
-      value: native === 'unavailable' ? undefined : async data => {
-        window.sharingProbe.shares.push(data)
-        window.sharingProbe.activations.push(navigator.userActivation.isActive)
+      value: native === 'unavailable'
+        ? undefined
+        : async data => {
+          window.sharingProbe.shares.push(data)
+          window.sharingProbe.activations.push(navigator.userActivation.isActive)
 
-        if (native === 'cancelled') throw new DOMException('Cancelled', 'AbortError')
-        if (native === 'failed') throw new DOMException('Unavailable', 'DataError')
-      }
+          if (native === 'cancelled') throw new DOMException('Cancelled', 'AbortError')
+          if (native === 'failed') throw new DOMException('Unavailable', 'DataError')
+        }
     })
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,

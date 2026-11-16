@@ -93,7 +93,9 @@ test('authored dialogue has named speakers and matching localized content', () =
 test('finishing or skipping a scene invokes its continuation once; cancelling does not', () => {
   let state
   const events = []
-  const playback = createStoryPlayback(() => true, value => { state = value })
+  const playback = createStoryPlayback(() => true, value => {
+    state = value
+  })
   playback.start('first', 'before', () => events.push('first'))
   assert.deepEqual(state, { code: 'first', phase: 'before' })
   playback.finish()
@@ -126,7 +128,12 @@ test('preferences preserve unread ending checkpoints and canonicalize old comple
   })
   Object.defineProperty(globalThis, 'localStorage', {
     configurable: true,
-    value: { getItem: () => saved, setItem: (key, value) => { saved = value } }
+    value: {
+      getItem: () => saved,
+      setItem: (key, value) => {
+        saved = value
+      }
+    }
   })
 
   try {

@@ -1,5 +1,6 @@
 import { storyProgressCode } from '../content/story.js'
 import { normalizeCode } from '../core/seed.js'
+import { audioSettings } from '../audio/settings.js'
 
 const KEY = 'geosokoban.prototype.v2'
 
@@ -15,6 +16,7 @@ export function readPreferences () {
       : []
 
     return {
+      ...audioSettings(data),
       locale,
       completed,
       pendingStory: storyProgressCode(data?.pendingStory) ? normalizeCode(data.pendingStory) : '',
@@ -24,7 +26,15 @@ export function readPreferences () {
     }
   } catch {
     // Invalid JSON and unavailable storage must not prevent a new session from starting.
-    return { locale: null, completed: [], pendingStory: '', reduced: false, guidance: 'learn', planning: false }
+    return {
+      ...audioSettings(),
+      locale: null,
+      completed: [],
+      pendingStory: '',
+      reduced: false,
+      guidance: 'learn',
+      planning: false
+    }
   }
 }
 

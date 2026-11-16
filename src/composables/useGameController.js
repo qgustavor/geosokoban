@@ -6,6 +6,8 @@ import { useStoryDialogue } from './useStoryDialogue.js'
 import { resumeStory, storyProgressCode } from '../content/story.js'
 import { useSession } from './useSession.js'
 import { useAssistance } from './useAssistance.js'
+import { useGameAudio } from './useGameAudio.js'
+import { movementSound } from '../audio/score.js'
 import { normalizeCode, newCode, isPlanningCode } from '../core/seed.js'
 import { CHALLENGES, challengeSettings, challengeName, withPlanning } from '../core/challenge.js'
 import { storyCode, storyIndex, STORY_COUNT } from '../content/regions.js'
@@ -17,6 +19,7 @@ export function useGameController () {
   const router = useRouter()
   const route = useRoute()
   const saved = readPreferences()
+  const audio = reactive(useGameAudio(saved))
   const detected = navigator.language.startsWith('pt')
     ? 'pt-BR'
     : navigator.language.startsWith('es') ? 'es' : 'en'
@@ -57,6 +60,7 @@ export function useGameController () {
   const session = reactive(game)
   const help = reactive(useAssistance(level, state, () => {
     assisted.value = true
+    audio.play('hint')
   }))
 
   const t = (key, params) => translate(locale.value, key, params)
@@ -111,6 +115,7 @@ export function useGameController () {
     failure.value = null
     panel.value = ''
     dialogue.cancel()
+    audio.stopEffects()
 
     try {
       if (!await game.start(code)) return false
@@ -177,6 +182,7 @@ export function useGameController () {
   }
 
   function home () {
+    audio.stopEffects()
     dialogue.cancel()
     panel.value = ''
     game.cancel()
@@ -223,10 +229,18 @@ export function useGameController () {
     // During navigation the route can name a board that has not replaced the old session yet.
     if (view.value !== 'puzzle' || activeCode.value !== route.params.code) return
     if (boardTransitioning.value || panel.value || dialogue.scene.value) return
+    if (game.loading.value || solved.value) return
 
+    const previousState = state.value
     const deliveredCountries = level.value.goals.filter(hasDeliveredFlag).map(goal => goal.country)
     const previouslyDelivered = new Set(deliveredCountries)
-    if (!game.step(direction)) return
+    if (!game.step(direction)) {
+      audio.play('blocked')
+      return
+    }
+
+    // Only accepted actions are audible; snapshots restored by undo must not celebrate old deliveries.
+    audio.play(movementSound(level.value, previousState, state.value))
 
     notice.value = ''
     fallbackText.value = ''
@@ -251,7 +265,7 @@ export function useGameController () {
   function undo () {
     if (boardTransitioning.value || dialogue.scene.value) return
 
-    game.undo()
+    if (game.undo()) audio.play('undo')
     clearUndoneCheckpoint()
     factCountry.value = ''
     notice.value = ''
@@ -261,7 +275,7 @@ export function useGameController () {
   function restart () {
     if (boardTransitioning.value || dialogue.scene.value) return
 
-    game.restart()
+    if (game.restart()) audio.play('restart')
     clearUndoneCheckpoint()
     help.clearHint()
     factCountry.value = ''
@@ -453,6 +467,7 @@ export function useGameController () {
   watch(() => route.fullPath, async () => {
     // Route changes supersede pending preparation even when the new route is not a puzzle.
     game.cancel()
+    audio.stopEffects()
     panel.value = ''
     failure.value = null
     notice.value = ''
@@ -485,14 +500,27 @@ export function useGameController () {
     await activate(code, false)
   }, { immediate: true })
 
-  watch([locale, completed, pendingStory, reduced, guidance, planning], () => {
+  // Dialogue and menus need reading space, but the music loop should not restart on every panel change.
+  watch([panel, dialogue.scene], ([panelName, scene]) => {
+    audio.setQuiet(Boolean(panelName || scene))
+  })
+
+  // Audio choices share the existing save so they survive reloads without erasing story progress.
+  watch([
+    locale, completed, pendingStory, reduced, guidance, planning,
+    () => audio.music, () => audio.sfx, () => audio.musicVolume, () => audio.sfxVolume
+  ], () => {
     savePreferences({
       locale: locale.value,
       completed: completed.value,
       pendingStory: pendingStory.value,
       reduced: reduced.value,
       guidance: guidance.value,
-      planning: planning.value
+      planning: planning.value,
+      music: audio.music,
+      sfx: audio.sfx,
+      musicVolume: audio.musicVolume,
+      sfxVolume: audio.sfxVolume
     })
     document.documentElement.lang = locale.value
   })
@@ -525,6 +553,7 @@ export function useGameController () {
   })
 
   return {
+    audio,
     view,
     locale,
     completed,

@@ -56,10 +56,14 @@ function portrait (id, character) {
     <section class="story-scene" @keydown.stop="key">
       <header class="story-heading">
         <div>
-          <p class="story-tour">{{ scene.title }}</p>
+          <p class="story-tour">
+            {{ scene.title }}
+          </p>
           <h2>{{ scene.region }}</h2>
         </div>
-        <button class="quiet story-skip" @click="$emit('finish')">{{ t('skipScene') }}</button>
+        <button class="quiet story-skip" @click="$emit('finish')">
+          {{ t('skipScene') }}
+        </button>
       </header>
       <div class="story-stage" aria-hidden="true">
         <div class="story-horizon" />
@@ -78,11 +82,17 @@ function portrait (id, character) {
       </div>
       <!-- Whole lines are shown immediately: no timed reading or typewriter announcements. -->
       <div class="story-text" aria-live="polite" aria-atomic="true">
-        <p class="story-speaker">{{ speaker.name }}</p>
-        <p class="story-line">{{ line.text }}</p>
+        <p class="story-speaker">
+          {{ speaker.name }}
+        </p>
+        <p class="story-line">
+          {{ line.text }}
+        </p>
       </div>
       <footer class="story-actions">
-        <button class="quiet" :disabled="index === 0" @click="previous">{{ t('back') }}</button>
+        <button class="quiet" :disabled="index === 0" @click="previous">
+          {{ t('back') }}
+        </button>
         <span class="story-page" :aria-label="t('dialoguePage', { n: index + 1, total: scene.lines.length })">
           {{ index + 1 }} / {{ scene.lines.length }}
         </span>

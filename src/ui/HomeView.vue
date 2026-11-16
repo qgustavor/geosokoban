@@ -47,7 +47,9 @@ function play () {
 
 <template>
   <main class="level-selection">
-    <h1 class="sr-only">{{ t('home') }}</h1>
+    <h1 class="sr-only">
+      {{ t('home') }}
+    </h1>
     <div class="departure-card">
       <fieldset class="mode-grid" aria-describedby="mode-description">
         <legend>{{ t('gameMode') }}</legend>
@@ -57,12 +59,20 @@ function play () {
           class="mode-card"
           :class="{ active: mode === choice }"
         >
-          <input v-model="mode" type="radio" name="game-mode" :value="choice" class="sr-only">
+          <input
+            v-model="mode"
+            type="radio"
+            name="game-mode"
+            :value="choice"
+            class="sr-only"
+          >
           <span class="mode-symbol" aria-hidden="true">{{ symbols[index] }}</span>
           <strong>{{ t(choice) }}</strong>
         </label>
       </fieldset>
-      <p id="mode-description" class="mode-description">{{ t(mode + 'Desc') }}</p>
+      <p id="mode-description" class="mode-description">
+        {{ t(mode + 'Desc') }}
+      </p>
       <section v-if="mode === 'story'" class="journey-progress" :aria-label="t('journeyProgress')">
         <ol class="tour-stamps">
           <li v-for="tour in tours" :key="tour.number" :class="{ complete: tour.completed === REGIONS.length }">
@@ -86,7 +96,9 @@ function play () {
         </button>
       </div>
     </div>
-    <p v-if="notice" class="notice" role="status">{{ notice }}</p>
+    <p v-if="notice" class="notice" role="status">
+      {{ notice }}
+    </p>
   </main>
 </template>
 

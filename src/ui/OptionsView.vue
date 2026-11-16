@@ -1,11 +1,17 @@
 <script setup>
+import AudioSettings from './AudioSettings.vue'
+
 defineProps({
   t: { type: Function, required: true },
   locale: { type: String, required: true },
   reduced: Boolean,
+  music: Boolean,
+  sfx: { type: Boolean, default: true },
+  musicVolume: { type: Number, default: 35 },
+  sfxVolume: { type: Number, default: 65 },
   embedded: Boolean
 })
-defineEmits(['back', 'locale', 'reduced'])
+defineEmits(['back', 'locale', 'reduced', 'music', 'sfx', 'musicVolume', 'sfxVolume'])
 </script>
 
 <template>
@@ -25,6 +31,18 @@ defineEmits(['back', 'locale', 'reduced'])
       <span>{{ t('reduceMotion') }}</span>
       <input type="checkbox" :checked="reduced" @change="$emit('reduced', $event.target.checked)">
     </label>
+
+    <AudioSettings
+      :t="t"
+      :music="music"
+      :sfx="sfx"
+      :music-volume="musicVolume"
+      :sfx-volume="sfxVolume"
+      @music="$emit('music', $event)"
+      @sfx="$emit('sfx', $event)"
+      @music-volume="$emit('musicVolume', $event)"
+      @sfx-volume="$emit('sfxVolume', $event)"
+    />
 
     <button class="button secondary back-button" @click="$emit('back')">
       {{ t('back') }}

@@ -84,10 +84,16 @@ provide(gameContext, app)
           <span>{{ app.t('codeLabel') }}</span>
           <code>{{ app.activeCode }}</code>
           <div class="puzzle-share-actions">
-            <button class="quiet" @click="app.sharePuzzle">{{ app.t('sharePuzzle') }}</button>
-            <button class="quiet" @click="app.copyText(app.puzzleURL())">{{ app.t('copyLink') }}</button>
+            <button class="quiet" @click="app.sharePuzzle">
+              {{ app.t('sharePuzzle') }}
+            </button>
+            <button class="quiet" @click="app.copyText(app.puzzleURL())">
+              {{ app.t('copyLink') }}
+            </button>
           </div>
-          <p v-if="app.notice" role="status">{{ app.notice }}</p>
+          <p v-if="app.notice" role="status">
+            {{ app.notice }}
+          </p>
           <textarea
             v-if="app.fallbackText"
             :value="app.fallbackText"
@@ -115,9 +121,17 @@ provide(gameContext, app)
         :t="app.t"
         :locale="app.locale"
         :reduced="app.reduced"
+        :music="app.audio.music"
+        :sfx="app.audio.sfx"
+        :music-volume="app.audio.musicVolume"
+        :sfx-volume="app.audio.sfxVolume"
         @back="app.closePanel"
         @locale="app.locale = $event"
         @reduced="app.reduced = $event"
+        @music="app.audio.music = $event"
+        @sfx="app.audio.sfx = $event"
+        @music-volume="app.audio.musicVolume = $event"
+        @sfx-volume="app.audio.sfxVolume = $event"
       />
       <CreditsView
         v-else
