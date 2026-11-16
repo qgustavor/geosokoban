@@ -1,6 +1,7 @@
 <script setup>
 import { useGameContext } from '../ui/game-context.js'
 import CreditsView from '../ui/CreditsView.vue'
+
 const app = useGameContext()
 </script>
 

@@ -12,6 +12,7 @@ function bruteForce (level) {
   const start = initialState(level)
   const seen = new Set([key(start)])
   const queue = [start]
+
   for (let i = 0; i < queue.length; i++) {
     const state = queue[i]
     if (isSolved(level, state)) return state.moves
@@ -19,21 +20,34 @@ function bruteForce (level) {
       const next = move(level, state, direction, floor)
       const signature = key(next)
       if (next !== state && !seen.has(signature)) {
-        seen.add(signature); queue.push(next)
+        seen.add(signature)
+        queue.push(next)
       }
     }
   }
+
   return Infinity
 }
 
-const rectangle = (width, height) => Array.from({ length: width * height }, (_, i) => i).filter(i => i % width > 0 && i % width < width - 1 && i >= width && i < width * (height - 1))
+const rectangle = (width, height) => {
+  const positions = Array.from({ length: width * height }, (_, i) => i)
+
+  // Leave the outermost row and column off the floor list to form an enclosing wall.
+  return positions.filter(position => {
+    const column = position % width
+    return column > 0 && column < width - 1 && position >= width && position < width * (height - 1)
+  })
+}
 
 test('move-optimal A* agrees with independent unit-step BFS on 300 small labelled-box boards', () => {
   const rng = randomFrom('optimality-cases-v1')
   let solved = 0
   for (let index = 0; index < 300; index++) {
     const floors = rectangle(6, 6)
-    const shuffled = floors.map(position => ({ position, order: rng() })).sort((a, b) => a.order - b.order).map(item => item.position)
+    const ordered = floors.map(position => ({ position, order: rng() }))
+    ordered.sort((a, b) => a.order - b.order)
+    const shuffled = ordered.map(item => item.position)
+
     const level = {
       width: 6,
       height: 6,

@@ -1,7 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { boardTransitionDuration, tileTransitionStyle, TILE_ENTER_MS, TILE_LEAVE_MS } from '../src/core/board-transition.js'
+import {
+  boardTransitionDuration, tileTransitionStyle, TILE_ENTER_MS, TILE_LEAVE_MS
+} from '../src/core/board-transition.js'
 
 test('explicit transition durations cover every tile, and exit reverses the diagonal sweep', () => {
   for (const level of [{ width: 1, height: 1 }, { width: 26, height: 24 }, { width: 5, height: 60 }]) {
@@ -13,8 +15,11 @@ test('explicit transition durations cover every tile, and exit reverses the diag
       const enter = parseFloat(style.animationDelay)
       const leave = parseFloat(style['--tile-leave-delay'])
       assert.ok(enter >= previousEnter && leave <= previousLeave)
-      previousEnter = enter; previousLeave = leave
+      previousEnter = enter
+      previousLeave = leave
     }
+
+    // The wrapper must cover each tile's delay plus its own movement duration.
     for (let position = 0; position < level.width * level.height; position++) {
       const style = tileTransitionStyle(level, position)
       assert.ok(parseFloat(style.animationDelay) + TILE_ENTER_MS <= duration.enter)
@@ -27,7 +32,8 @@ test('explicit transition durations cover every tile, and exit reverses the diag
 test('the board stays mounted for out-in transitions, with input locks and reduced-motion support', () => {
   const source = file => readFileSync(new URL('../src/' + file, import.meta.url), 'utf8')
   const play = source('ui/PlayView.vue')
-  assert.match(play, /<Transition name="board-swap" mode="out-in" appear/)
+  // Attribute line wrapping must not change whether the transition contract passes.
+  assert.match(play, /<Transition\s+name="board-swap"\s+mode="out-in"\s+appear(?:\s|>)/)
   assert.match(play, /:duration="transitionDuration"/)
   assert.match(play, /:css="!reducedMotion"/)
   assert.match(play, /:key="game.level.id"/)

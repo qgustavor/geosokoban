@@ -1,10 +1,17 @@
 <script setup>
-defineProps({ kind: { type: String, required: true }, corner: { type: Number, default: 0 }, phase: { type: Number, default: 0 } })
+defineProps({
+  kind: { type: String, required: true },
+  corner: { type: Number, default: 0 },
+  phase: { type: Number, default: 0 }
+})
+
+// Offsets keep small details near the four edges of a 40-unit tile, clear of its central actors.
 const corners = [[3, 3], [26, 3], [3, 26], [26, 26]]
 </script>
 
 <template>
   <g :transform="`translate(${corners[corner][0]},${corners[corner][1]})`" class="ground-detail" aria-hidden="true">
+    <!-- Negative delay starts each detail partway through its cycle, avoiding synchronized swaying. -->
     <g class="detail-blades" :style="{ animationDelay: `${-phase}s` }">
       <g v-if="kind === 'flowers'">
         <path d="m5 10 1-6m3 7V8" stroke="#7b9c72" />
@@ -62,7 +69,10 @@ const corners = [[3, 3], [26, 3], [3, 26], [26, 26]]
 
 <style scoped>
 .ground-detail { pointer-events: none; stroke-width: 1; stroke-linecap: round; opacity: .85; }
+
 .detail-blades { transform-origin: 6px 11px; animation: small-sway 6s ease-in-out infinite; }
+
 @keyframes small-sway { 50% { transform: skewX(5deg); } }
+
 @media (prefers-reduced-motion: reduce) { .detail-blades { animation: none; } }
 </style>

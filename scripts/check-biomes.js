@@ -10,6 +10,7 @@ import { createBiomeLookup, sampleRegion } from './lib/biome-sampling.js'
 
 assert.equal(atlas.mapVersion, MAP_VERSION, 'The scenery projection is stale')
 assert.equal(atlas.version, 1)
+
 if (atlas.status !== 'prepared') {
   console.warn('Biome atlas is unprepared: the game uses neutral scenery. Run npm run biomes:prepare.')
   if (process.argv.includes('--require-data')) process.exitCode = 1
@@ -18,11 +19,14 @@ if (atlas.status !== 'prepared') {
   assert.ok(atlas.source.ecoregions >= 800)
   assert.equal(Object.keys(atlas.regions).length, 8)
   assert.match(atlas.source.sha256, /^[a-f0-9]{64}$/)
+
   for (const definition of [...REGIONS, CARIBBEAN]) {
     const map = atlas.regions[definition.id]
     assert.equal(map.width, definition.width)
     assert.equal(map.height, definition.height)
     assert.equal(map.cells.length, definition.width * definition.height)
+
+    // Cells store primary ID, secondary ID, land classification coverage, and primary share.
     for (const cell of map.cells.filter(Boolean)) {
       assert.ok(atlas.ecoregions[cell[0]])
       assert.ok(cell[1] === null || atlas.ecoregions[cell[1]])
@@ -30,15 +34,19 @@ if (atlas.status !== 'prepared') {
       assert.ok(cell[3] > 0 && cell[3] <= 1)
     }
   }
+
   console.log('Biome atlas schema and projections are valid.')
+
   if (process.argv.includes('--reproduce')) {
     const bytes = gunzipSync(await readFile(new URL('../data-sources/resolve-2017.geojson.gz', import.meta.url)))
+    // Reproduction requires the exact cached source, not a newer live export.
     assert.equal(createHash('sha256').update(bytes).digest('hex'), atlas.source.sha256)
     const lookup = createBiomeLookup(JSON.parse(bytes))
     setGeography(JSON.parse(gunzipSync(await readFile(new URL('../src/data/world.geojson.gz', import.meta.url)))))
     for (const definition of [...REGIONS, CARIBBEAN]) {
       const map = rasterize(definition.id)
-      assert.deepEqual(sampleRegion(definition, lookup, (x, y) => countryAt(map, x, y) !== null), atlas.regions[definition.id])
+      const sampled = sampleRegion(definition, lookup, (x, y) => countryAt(map, x, y) !== null)
+      assert.deepEqual(sampled, atlas.regions[definition.id])
     }
     console.log('Biome atlas exactly matches the cached source snapshot.')
   }

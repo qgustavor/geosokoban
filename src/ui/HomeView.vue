@@ -12,16 +12,32 @@ const props = defineProps({
   challenge: { type: String, required: true },
   notice: { type: String, default: '' }
 })
+
 const emit = defineEmits(['start', 'challenge'])
 const mode = ref('daily')
 const code = ref('')
 const modes = ['story', 'daily', 'random']
 const symbols = ['↗', '◷', '⤨']
+
 function start (code) {
-  emit('start', withPlanning(code, challengeSettings(props.challenge).planning))
+  // Apply the selected challenge to picker-generated codes; pasted codes retain their own mode.
+  const { planning } = challengeSettings(props.challenge)
+  emit('start', withPlanning(code, planning))
 }
+
 function play () {
-  start(mode.value === 'story' ? props.resumeCode : mode.value === 'daily' ? dailyCode() : newCode())
+  // Create date/random codes only when starting, not while rendering the menu.
+  let selectedCode
+
+  if (mode.value === 'story') {
+    selectedCode = props.resumeCode
+  } else if (mode.value === 'daily') {
+    selectedCode = dailyCode()
+  } else {
+    selectedCode = newCode()
+  }
+
+  start(selectedCode)
 }
 </script>
 
@@ -91,22 +107,67 @@ function play () {
 
 <style scoped>
 .level-selection { width: min(760px, calc(100vw - 36px)); margin: 24px auto 40px; }
-.mode-grid { border: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; }
+
+.mode-grid {
+  border: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
 .mode-grid legend { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
-.mode-card { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 24px 14px; border: 2px solid #79a9b14d; border-radius: 18px; background: #214d62; box-shadow: 0 5px 0 #173a4e99; cursor: pointer; }
+
+.mode-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 14px;
+  border: 2px solid #79a9b14d;
+  border-radius: 18px;
+  background: #214d62;
+  box-shadow: 0 5px 0 #173a4e99;
+  cursor: pointer;
+}
+
 .mode-card.active { border-color: #b4a6d5; background: #625f8e; }
+
 .mode-card:has(input:focus-visible) { outline: 3px solid #f4da87; outline-offset: 4px; }
+
 .mode-symbol { font-size: 28px; color: #d2e9dc; }
+
 .mode-card strong { font-size: 16px; }
+
 .start-game { display: block; width: min(360px, 100%); margin: 30px auto; }
+
 .journey-picker, .code-entry { margin-top: 20px; }
+
 summary { cursor: pointer; padding: 10px 0; font-size: 14px; }
-.journey-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 10px; }
+
+.journey-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
 .journey-grid section { padding: 16px; background: #214d6299; border-radius: 16px; }
+
 .journey-grid h2 { font-size: 16px; }
+
 .journey-grid section div { display: flex; gap: 7px; }
+
 .journey-grid .button { padding: 8px; font-size: 12px; flex: 1; }
+
 .input-row { display: flex; gap: 8px; margin-top: 10px; }
+
 .input-row input { flex: 1; min-width: 0; padding: 12px; }
-@media (max-width: 540px) { .mode-grid { grid-template-columns: 1fr; gap: 12px; } .mode-card { justify-content: flex-start; padding: 15px 22px; } .level-selection { margin-top: 14px; } }
+
+@media (max-width: 540px) {
+  .mode-grid { grid-template-columns: 1fr; gap: 12px; }
+  .mode-card { justify-content: flex-start; padding: 15px 22px; }
+  .level-selection { margin-top: 14px; }
+}
 </style>

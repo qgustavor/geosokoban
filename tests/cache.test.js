@@ -5,10 +5,20 @@ import { createLevelCache, LEVEL_CACHE_KEY, LEVEL_CACHE_VERSION } from '../src/c
 import { GENERATOR_VERSION } from '../src/core/generation-version.js'
 
 const source = Object.values(frozen).find(level => level.region === 'SA' && !level.planning)
-const fixture = (index = 0) => ({ ...structuredClone(source), id: `G2-SA-${String(index).padStart(10, '0')}`, generatorVersion: GENERATOR_VERSION })
+const fixture = (index = 0) => ({
+  ...structuredClone(source),
+  id: `G2-SA-${String(index).padStart(10, '0')}`,
+  generatorVersion: GENERATOR_VERSION
+})
+
 function storage () {
   const values = new Map()
-  return { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key) }
+
+  return {
+    getItem: key => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: key => values.delete(key)
+  }
 }
 
 test('generated levels survive a new cache instance without sharing mutable data', () => {
@@ -22,6 +32,7 @@ test('generated levels survive a new cache instance without sharing mutable data
   restored.solution.length = 0
   assert.ok(cache.get(fixture().id).solution.length)
   assert.ok(cache.get(` ${fixture().id.toLowerCase()} `))
+
   function newCache () {
     return createLevelCache({ storage: () => disk })
   }
@@ -29,7 +40,13 @@ test('generated levels survive a new cache instance without sharing mutable data
 
 test('LRU capacity evicts the least recently read level, not the newest', () => {
   const cache = createLevelCache({ storage: () => null, maxEntries: 2 })
-  cache.set(fixture(0)); cache.set(fixture(1)); cache.get(fixture(0).id); cache.set(fixture(2))
+  cache.set(fixture(0))
+  cache.set(fixture(1))
+
+  // Reading the oldest entry makes it recent; insertion must evict the other entry.
+  cache.get(fixture(0).id)
+  cache.set(fixture(2))
+
   assert.equal(cache.size, 2)
   assert.equal(cache.get(fixture(1).id), null)
   assert.ok(cache.get(fixture(0).id))
@@ -79,7 +96,15 @@ test('unavailable storage, quota failures and oversized persistence retain a wor
 
 test('invalid certificates and old generator versions are never cached', () => {
   const cache = createLevelCache({ storage: () => null })
-  for (const level of [null, {}, { ...fixture(), generatorVersion: GENERATOR_VERSION - 1 }, { ...fixture(), planning: true }, { ...fixture(), moveCertificate: null }]) {
+  const invalidLevels = [
+    null,
+    {},
+    { ...fixture(), generatorVersion: GENERATOR_VERSION - 1 },
+    { ...fixture(), planning: true },
+    { ...fixture(), moveCertificate: null }
+  ]
+
+  for (const level of invalidLevels) {
     assert.equal(cache.set(level), false)
   }
   assert.equal(cache.get('invalid'), null)

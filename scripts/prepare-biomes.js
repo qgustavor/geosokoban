@@ -17,6 +17,8 @@ const downloadOptions = { offset: 0.015, precision: 4, pageSize: 100 }
 
 async function download () {
   const features = []
+
+  // Fixed ordering keeps page boundaries reproducible for the same source snapshot.
   for (let offset = 0; ; offset += downloadOptions.pageSize) {
     const url = new URL(endpoint)
     url.search = new URLSearchParams({
@@ -31,23 +33,33 @@ async function download () {
       resultOffset: String(offset),
       resultRecordCount: String(downloadOptions.pageSize)
     }).toString()
+
     const response = await fetch(url, { signal: AbortSignal.timeout(120000) })
     if (!response.ok) throw new Error(`Ecoregion download failed (${response.status})`)
+
     const page = await response.json()
     if (page.error) throw new Error(page.error.message ?? 'Ecoregion service error')
     if (page.type !== 'FeatureCollection' || !Array.isArray(page.features)) throw new Error('Ecoregion service did not return GeoJSON')
+
     features.push(...page.features)
     console.log(`Fetched ${features.length} ecoregion features.`)
     if (page.features.length < downloadOptions.pageSize) break
     if (offset > 10000) throw new Error('Unexpected ecoregion pagination; refusing an incomplete atlas')
   }
-  if (new Set(features.map(feature => feature.properties.ECO_ID)).size < 800) throw new Error('Ecoregion response appears incomplete')
+
+  const distinctEcoregions = new Set(features.map(feature => feature.properties.ECO_ID))
+  if (distinctEcoregions.size < 800) throw new Error('Ecoregion response appears incomplete')
+
   return { type: 'FeatureCollection', features }
 }
 
 async function readSource (path) {
   const bytes = await readFile(path)
-  return JSON.parse(bytes[0] === 0x1f && bytes[1] === 0x8b ? gunzipSync(bytes).toString('utf8') : bytes.toString('utf8'))
+  // Detect gzip by its header rather than the extension, supporting plain and compressed local exports.
+  const compressed = bytes[0] === 0x1f && bytes[1] === 0x8b
+  const source = compressed ? gunzipSync(bytes).toString('utf8') : bytes.toString('utf8')
+
+  return JSON.parse(source)
 }
 
 async function main () {
@@ -55,6 +67,8 @@ async function main () {
   const refresh = process.argv.includes('--refresh')
   let collection
   let provenance
+
+  // Explicit source wins over cache; --refresh bypasses only the cache, not a supplied source.
   if (sourceArgument) {
     collection = await readSource(resolve(sourceArgument.slice('--source='.length)))
     provenance = { url: 'local-export', generalizedDegrees: null, coordinateDecimals: null }
@@ -67,24 +81,39 @@ async function main () {
       collection = null
     }
   }
+
   if (!collection) {
     collection = await download()
-    provenance = { url: endpoint, generalizedDegrees: downloadOptions.offset, coordinateDecimals: downloadOptions.precision }
+    provenance = {
+      url: endpoint,
+      generalizedDegrees: downloadOptions.offset,
+      coordinateDecimals: downloadOptions.precision
+    }
   }
+
   const lookup = createBiomeLookup(collection)
   if (Object.keys(lookup.records).length < 800) throw new Error('The global source must contain at least 800 distinct ecoregions')
-  const licenses = [...new Set(collection.features.map(feature => String(feature.properties?.LICENSE ?? '').trim()))]
+
+  const sourceLicenses = collection.features.map(feature => String(feature.properties?.LICENSE ?? '').trim())
+  const licenses = [...new Set(sourceLicenses)]
   if (licenses.some(license => !/^CC[- ]BY[- ]?4\.0$/i.test(license))) throw new Error('Expected a CC BY 4.0 RESOLVE export, including its LICENSE field')
+
+  // Hash the exact JSON stored in the cache so the check script can reproduce this atlas offline.
   const sourceBytes = JSON.stringify(collection)
   const sha256 = createHash('sha256').update(sourceBytes).digest('hex')
-  setGeography(JSON.parse(gunzipSync(await readFile(new URL('src/data/world.geojson.gz', root)))))
+
+  const worldBytes = await readFile(new URL('src/data/world.geojson.gz', root))
+  setGeography(JSON.parse(gunzipSync(worldBytes)))
   const regions = Object.fromEntries([...REGIONS, CARIBBEAN].map(definition => {
     const map = rasterize(definition.id)
-    return [definition.id, sampleRegion(definition, lookup, (x, y) => countryAt(map, x, y) !== null)]
+    const sampled = sampleRegion(definition, lookup, (x, y) => countryAt(map, x, y) !== null)
+    return [definition.id, sampled]
   }))
+
   for (const [region, map] of Object.entries(regions)) {
     if (!map.cells.some(cell => cell !== null)) throw new Error(`No classified land samples for ${region}; refusing an empty atlas`)
   }
+
   const result = {
     version: 1,
     mapVersion: MAP_VERSION,
@@ -102,6 +131,8 @@ async function main () {
     ecoregions: lookup.records,
     regions
   }
+
+  // Publish only after validation and source caching; failures must leave the existing atlas in place.
   const temporary = new URL(destination.href + '.tmp')
   await writeFile(temporary, JSON.stringify(result) + '\n')
   await mkdir(new URL('data-sources/', root), { recursive: true })

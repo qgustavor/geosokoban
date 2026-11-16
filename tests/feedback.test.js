@@ -8,9 +8,11 @@ function clock () {
   const pending = new Map()
   let count = 0
   let now = 0
+
   return {
     schedule (callback, ms) {
-      pending.set(++count, { at: now + ms, callback }); return count
+      pending.set(++count, { at: now + ms, callback })
+      return count
     },
     clear (id) {
       pending.delete(id)
@@ -18,7 +20,10 @@ function clock () {
     advance (ms) {
       const end = now + ms
       while (true) {
-        const next = [...pending].filter(([, value]) => value.at <= end).sort((a, b) => a[1].at - b[1].at)[0]
+        // Re-read after each callback because completion can schedule the next phase immediately.
+        const due = [...pending].filter(([, value]) => value.at <= end)
+        due.sort((a, b) => a[1].at - b[1].at)
+        const next = due[0]
         if (!next) break
         now = next[1].at
         pending.delete(next[0])
@@ -78,7 +83,7 @@ test('coast outlines omit internal joins and do not wrap at board edges', () => 
 test('daily is the default, options are in-place panels and hints have a non-skippable request cooldown', () => {
   const source = name => readFileSync(new URL('../src/' + name, import.meta.url), 'utf8')
   assert.match(source('ui/HomeView.vue'), /const mode = ref\('daily'\)/)
-  assert.match(source('ui/App.vue'), /OptionsView v-else-if="app.panel === 'options'" embedded/)
+  assert.match(source('ui/App.vue'), /OptionsView\s+v-else-if="app.panel === 'options'"\s+embedded(?:\s|>)/)
   assert.doesNotMatch(source('ui/HintPanel.vue'), /showNow|skipDelay/i)
   assert.doesNotMatch(source('composables/useAssistance.js'), /skipDelay/)
   assert.match(source('composables/useAssistance.js'), /if \(!cooldown\.tryStart\(\)\) return/)

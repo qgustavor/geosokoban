@@ -56,7 +56,10 @@ test('seeded fallback structures preserve both witness paths and the exact move 
     const variant = varyCertifiedLayout(level, code)
     assert.deepEqual(variant, varyCertifiedLayout(level, code))
     assert.deepEqual(variant.moveCertificate, level.moveCertificate)
-    const footprint = new Set([...solutionFootprint(level, level.solution), ...solutionFootprint(level, level.designSolution)])
+    // Both stored witnesses must stay traversable: move-optimal and push-optimal paths may differ.
+    const moveFootprint = solutionFootprint(level, level.solution)
+    const designFootprint = solutionFootprint(level, level.designSolution)
+    const footprint = new Set([...moveFootprint, ...designFootprint])
     const added = variant.obstacles.filter(position => !level.obstacles.includes(position))
     if (added.length) varied++
     assert.ok(added.every(position => !footprint.has(position)))

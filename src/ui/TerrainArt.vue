@@ -1,8 +1,10 @@
 <script setup>
+// Scenery chooses these visual variants independently of collision rules; every obstacle occupies one cell.
 defineProps({ kind: { type: String, required: true }, flip: Boolean })
 </script>
 
 <template>
+  <!-- Translate before mirroring so the artwork remains inside the same 40-unit tile. -->
   <g
     class="terrain-art"
     aria-hidden="true"
@@ -30,9 +32,21 @@ defineProps({ kind: { type: String, required: true }, flip: Boolean })
           stroke-width="2.6"
         />
         <template v-else>
-          <path v-if="kind === 'acacia'" d="M4 13C2 8 8 5 13 7c3-6 10-5 13-1 7-1 12 3 11 8-5 4-27 4-33-1Z" fill="#7caa76" />
-          <path v-else-if="kind === 'olive'" d="M5 20C1 13 8 7 13 9 14 3 22 2 26 7c9-1 13 8 7 14-6 6-22 6-28-1Z" fill="#a3b58a" />
-          <path v-else d="M6 24C0 20 3 12 8 11 6 4 15 1 20 5c7-5 15 0 13 7 7 4 5 13-1 14-9 4-18 2-26-2Z" :fill="kind === 'mangrove' ? '#7ea786' : '#79b68a'" />
+          <path
+            v-if="kind === 'acacia'"
+            d="M4 13C2 8 8 5 13 7c3-6 10-5 13-1 7-1 12 3 11 8-5 4-27 4-33-1Z"
+            fill="#7caa76"
+          />
+          <path
+            v-else-if="kind === 'olive'"
+            d="M5 20C1 13 8 7 13 9 14 3 22 2 26 7c9-1 13 8 7 14-6 6-22 6-28-1Z"
+            fill="#a3b58a"
+          />
+          <path
+            v-else
+            d="M6 24C0 20 3 12 8 11 6 4 15 1 20 5c7-5 15 0 13 7 7 4 5 13-1 14-9 4-18 2-26-2Z"
+            :fill="kind === 'mangrove' ? '#7ea786' : '#79b68a'"
+          />
           <path
             d="M9 13q2-5 7-4m7-1q5-2 7 3"
             fill="none"
@@ -81,7 +95,10 @@ defineProps({ kind: { type: String, required: true }, flip: Boolean })
       </g>
     </g>
     <g v-else-if="kind === 'mandacaru'">
-      <path d="M15 34V11c0-5 7-5 7 0v10h4V12c0-5 6-5 6 0v12q0 4-5 4h-5v6ZM15 25H9q-4 0-4-4v-5c0-4 6-4 6 0v3h4" fill="#74a57a" />
+      <path
+        d="M15 34V11c0-5 7-5 7 0v10h4V12c0-5 6-5 6 0v12q0 4-5 4h-5v6ZM15 25H9q-4 0-4-4v-5c0-4 6-4 6 0v3h4"
+        fill="#74a57a"
+      />
       <path
         d="M18 33V11m11 1v12h-7M8 16v6h6"
         fill="none"
@@ -152,8 +169,21 @@ defineProps({ kind: { type: String, required: true }, flip: Boolean })
 </template>
 
 <style scoped>
-.terrain-art { stroke: #355a58; stroke-width: 1.45; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.terrain-art {
+  stroke: #355a58;
+  stroke-width: 1.45;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
 .canopy { transform-origin: 20px 29px; animation: foliage 7s ease-in-out infinite; }
-@keyframes foliage { 0%, 70%, 100% { transform: rotate(0); } 83% { transform: rotate(1.5deg); } 93% { transform: rotate(-.7deg); } }
+
+@keyframes foliage {
+  0%, 70%, 100% { transform: rotate(0); }
+  83% { transform: rotate(1.5deg); }
+  93% { transform: rotate(-.7deg); }
+}
+
 @media (prefers-reduced-motion: reduce) { .canopy { animation: none; } }
 </style>

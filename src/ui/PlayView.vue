@@ -26,26 +26,38 @@ const props = defineProps({
   panelOpen: Boolean,
   reducedMotion: Boolean
 })
-const emit = defineEmits(['home', 'key', 'step', 'undo', 'restart', 'inspect', 'destination', 'reveal', 'revealAll', 'guidance', 'next', 'share', 'copy', 'dismissShare', 'panel', 'transition'])
+const emit = defineEmits([
+  'home', 'key', 'step', 'undo', 'restart', 'inspect', 'destination', 'reveal', 'revealAll',
+  'guidance', 'next', 'share', 'copy', 'dismissShare', 'panel', 'transition'
+])
+
 const transitioning = ref(false)
 const transitionDuration = computed(() => boardTransitionDuration(props.reducedMotion))
+
 function beginTransition () {
+  // Lock input for the whole tile sweep, not just for an individual tile's animation.
   transitioning.value = !props.reducedMotion
   emit('transition', transitioning.value)
 }
+
 function finishTransition () {
+  // Cancellation must release the same lock as a completed entry animation.
   transitioning.value = false
   emit('transition', false)
 }
+
 const visible = country => props.guidance === 'learn' || props.revealed.includes(country)
 const regionName = computed(() => props.t(regionById(props.game.level.region).name))
 const hintOpen = ref(false)
 const victoryOpen = ref(true)
 const phase = ref(props.game.solved ? 'results' : 'playing')
 const delivery = ref(null)
+
+// Completion owns the delay between solving, the clear banner, and the results dialog.
 const sequence = createCompletionSequence(value => {
   phase.value = value
 })
+
 let labelTimer = null
 let labelRevision = 0
 
@@ -53,72 +65,140 @@ function clearLabel () {
   clearTimeout(labelTimer)
   delivery.value = null
 }
+
 function labelFlag (country) {
   const box = props.game.state.boxes.find(box => box.country === country)
   if (!box) return
+
   clearLabel()
+
+  // A fresh key restarts the label animation even when the same flag is inspected twice.
   delivery.value = { country, position: box.position, id: ++labelRevision }
   labelTimer = setTimeout(() => {
+    // Keep the final delivery label until the completion sequence replaces it with results.
     if (!props.game.solved) delivery.value = null
   }, 2800)
 }
+
 function inspect (country) {
   labelFlag(country)
   emit('inspect', country)
 }
+
 watch(() => props.game.level.id, () => {
   hintOpen.value = false
   victoryOpen.value = true
   clearLabel()
   sequence.reset()
 })
+
 watch(() => props.game.solved, value => {
   if (value) {
     hintOpen.value = false
     victoryOpen.value = true
     sequence.start()
   } else {
+    // Undoing a solved board cancels any pending completion timer.
     clearLabel()
     sequence.reset()
   }
 })
+
 watch(() => props.game.state, (next, previous) => {
   if (!previous || next.moves <= previous.moves) {
-    clearLabel(); return
+    // Undo and restart are not new deliveries, even if a flag returns to a destination.
+    clearLabel()
+    return
   }
-  const arrived = props.game.level.goals.find(goal =>
-    next.boxes.some(box => box.country === goal.country && box.position === goal.position) &&
-    !previous.boxes.some(box => box.country === goal.country && box.position === goal.position))
-  if (arrived) labelFlag(arrived.country)
-  else if (delivery.value && !next.boxes.some(box => box.country === delivery.value.country && box.position === delivery.value.position)) clearLabel()
+
+  const arrived = props.game.level.goals.find(goal => {
+    const isDelivered = next.boxes.some(box => box.country === goal.country && box.position === goal.position)
+    if (!isDelivered) return false
+
+    const wasDelivered = previous.boxes.some(box => box.country === goal.country && box.position === goal.position)
+    return !wasDelivered
+  })
+
+  if (arrived) {
+    labelFlag(arrived.country)
+  } else if (delivery.value) {
+    const labeledFlagStillHere = next.boxes.some(box =>
+      box.country === delivery.value.country && box.position === delivery.value.position)
+
+    if (!labeledFlagStillHere) clearLabel()
+  }
 })
-const labels = computed(() => delivery.value && phase.value !== 'results'
-  ? [{ ...delivery.value, text: props.name(delivery.value.country) }]
-  : [])
+
+const labels = computed(() => {
+  if (!delivery.value || phase.value === 'results') return []
+
+  return [{ ...delivery.value, text: props.name(delivery.value.country) }]
+})
+
 const description = computed(() => {
   const { state, level } = props.game
-  const at = position => ({ row: Math.floor(position / level.width) + 1, column: position % level.width + 1 })
-  return [props.t('position', at(state.player)), ...state.boxes.map(box => props.t('flagPosition', { country: visible(box.country) ? props.name(box.country) : props.t('unknownFlag'), ...at(box.position) })),
-    ...level.goals.map((goal, index) => props.t('goalPosition', { country: visible(goal.country) ? props.name(goal.country) : props.t('destination', { n: index + 1 }), ...at(goal.position) }))].join(' ')
+
+  // Engine positions are zero-based row-major indices; spoken coordinates start at one.
+  const at = position => ({
+    row: Math.floor(position / level.width) + 1,
+    column: position % level.width + 1
+  })
+
+  const playerDescription = props.t('position', at(state.player))
+  const flagDescriptions = state.boxes.map(box => {
+    const country = visible(box.country) ? props.name(box.country) : props.t('unknownFlag')
+    return props.t('flagPosition', { country, ...at(box.position) })
+  })
+  const goalDescriptions = level.goals.map((goal, index) => {
+    // Remember mode must conceal destinations in the spoken description as well as on the board.
+    const country = visible(goal.country)
+      ? props.name(goal.country)
+      : props.t('destination', { n: index + 1 })
+
+    return props.t('goalPosition', { country, ...at(goal.position) })
+  })
+
+  return [playerDescription, ...flagDescriptions, ...goalDescriptions].join(' ')
 })
+
+const showVictory = computed(() => props.game.solved &&
+  phase.value === 'results' &&
+  victoryOpen.value &&
+  !props.fallbackText &&
+  !props.panelOpen &&
+  !transitioning.value)
+
 function closeHint () {
-  hintOpen.value = false; props.help.clearHint()
+  hintOpen.value = false
+  props.help.clearHint()
 }
+
 function toggleHint () {
-  if (hintOpen.value) closeHint()
-  else {
-    hintOpen.value = true; if (!props.help.stage) props.help.request()
+  if (hintOpen.value) {
+    closeHint()
+  } else {
+    hintOpen.value = true
+    if (!props.help.stage) props.help.request()
   }
+
+  // The overlay changes the DOM; restore board keyboard control after that update.
   nextTick(() => document.querySelector('.board-wrap')?.focus({ preventScroll: true }))
 }
+
 function boardKey (event) {
   if (event.key === 'Escape') {
-    event.preventDefault(); emit('panel', 'pause'); return
+    event.preventDefault()
+    emit('panel', 'pause')
+    return
   }
+
   emit('key', event)
 }
+
 onBeforeUnmount(() => {
-  clearLabel(); sequence.reset(); finishTransition()
+  clearLabel()
+  sequence.reset()
+  finishTransition()
 })
 </script>
 
@@ -240,7 +320,7 @@ onBeforeUnmount(() => {
     </nav>
     <span class="sr-only" aria-live="polite">{{ description }}</span>
     <LevelClear v-if="phase === 'clear'" :text="t('levelClear')" :reduced-motion="reducedMotion" />
-    <OverlayDialog v-if="game.solved && phase === 'results' && victoryOpen && !fallbackText && !panelOpen && !transitioning" :label="t('done')" @dismiss="victoryOpen = false">
+    <OverlayDialog v-if="showVictory" :label="t('done')" @dismiss="victoryOpen = false">
       <div class="victory-flags">
         <FlagIcon v-for="goal in game.level.goals" :key="goal.country" :country="goal.country" />
       </div>
@@ -262,7 +342,11 @@ onBeforeUnmount(() => {
         </button>
       </div>
     </OverlayDialog>
-    <button v-if="game.solved && phase === 'results' && !victoryOpen" class="result-reopen button secondary" @click="victoryOpen = true">
+    <button
+      v-if="game.solved && phase === 'results' && !victoryOpen"
+      class="result-reopen button secondary"
+      @click="victoryOpen = true"
+    >
       {{ t('done') }}
     </button>
     <OverlayDialog v-if="fallbackText" :label="t('share')" @dismiss="$emit('dismissShare')">
@@ -290,35 +374,160 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .is-changing .play-hud, .is-changing .play-controls { opacity: 0; pointer-events: none; }
+
 .play-page { position: relative; height: 100dvh; overflow: hidden; }
-.play-hud { position: absolute; top: max(14px, env(safe-area-inset-top)); left: max(20px, env(safe-area-inset-left)); right: max(20px, env(safe-area-inset-right)); display: flex; align-items: center; justify-content: space-between; gap: 12px; pointer-events: none; color: #eff3df; }
+
+/* Keep the HUD above the map without stealing pointer input from the board beneath it. */
+.play-hud {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  left: max(20px, env(safe-area-inset-left));
+  right: max(20px, env(safe-area-inset-right));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: none;
+  color: #eff3df;
+}
+
 .play-hud h1 { font-size: clamp(16px, 2vw, 22px); margin: 0; font-weight: 700; text-shadow: 0 1px 2px #163f4b44; }
+
 .move-counter { font-size: 12px; opacity: .9; white-space: nowrap; }
+
 .move-counter b { font-size: 17px; margin-left: 5px; font-variant-numeric: tabular-nums; }
-.play-controls { display: flex; align-items: center; gap: 10px; position: absolute; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); transform: translateX(-50%); padding: 6px; border-radius: 18px; background: #1c536577; }
-.hud-button { width: 46px; height: 46px; padding: 0; display: flex; align-items: center; justify-content: center; border: 1px solid #b5d9d266; border-radius: 12px; background: #245b6ecc; color: #f1efdb; line-height: 1; box-shadow: 0 3px 0 #163f4b77; }
+
+.play-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: absolute;
+  left: 50%;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  padding: 6px;
+  border-radius: 18px;
+  background: #1c536577;
+}
+
+.hud-button {
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #b5d9d266;
+  border-radius: 12px;
+  background: #245b6ecc;
+  color: #f1efdb;
+  line-height: 1;
+  box-shadow: 0 3px 0 #163f4b77;
+}
+
 .hud-button.active { background: #776b9d; }
-.top-overlay { position: absolute; top: max(58px, calc(env(safe-area-inset-top) + 48px)); left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100vw - 28px); padding: 18px 22px; border: 2px solid #d9ba7c; border-radius: 22px; background: #f3efdbf5; color: #244e58; box-shadow: 0 5px 0 #17445133; z-index: 4; text-align: center; }
+
+.top-overlay {
+  position: absolute;
+  top: max(58px, calc(env(safe-area-inset-top) + 48px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100vw - 28px);
+  padding: 18px 22px;
+  border: 2px solid #d9ba7c;
+  border-radius: 22px;
+  background: #f3efdbf5;
+  color: #244e58;
+  box-shadow: 0 5px 0 #17445133;
+  z-index: 4;
+  text-align: center;
+}
+
 .deadlock-warning strong { display: block; font-size: clamp(20px, 3vw, 28px); margin-bottom: 12px; text-wrap: balance; }
+
 .recovery-actions { display: flex; justify-content: center; gap: 12px; }
+
 .recovery-actions .button { display: flex; align-items: center; gap: 8px; }
-kbd { font-family: inherit; font-size: 12px; font-weight: 600; line-height: 1.3; border: 1px solid currentColor; border-radius: 4px; padding: 2px 5px; opacity: .65; }
+
+kbd {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  padding: 2px 5px;
+  opacity: .65;
+}
+
 .warning-enter-active, .warning-leave-active { transition: transform .25s ease-out, opacity .25s ease-out; }
+
 .warning-enter-from, .warning-leave-to { opacity: 0; transform: translate(-50%, -16px); }
+
 .hint-enter-active, .hint-leave-active { transition: transform .18s ease-out, opacity .18s; }
+
 .hint-enter-from, .hint-leave-to { opacity: 0; transform: translateY(8px); }
-.utility-notice { position: absolute; left: 50%; bottom: 86px; transform: translateX(-50%); padding: 8px 16px; background: #f3efdb; color: #244e58; border-radius: 12px; pointer-events: none; }
-.hint-overlay { position: absolute; bottom: 88px; right: max(16px, env(safe-area-inset-right)); width: min(340px, calc(100vw - 32px)); max-height: 40dvh; overflow: auto; border: 2px solid #c1d6bd; border-radius: 18px; background: #f3efdbf5; color: #244e58; box-shadow: 0 5px 20px #163e4933; }
+
+.utility-notice {
+  position: absolute;
+  left: 50%;
+  bottom: 86px;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  background: #f3efdb;
+  color: #244e58;
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.hint-overlay {
+  position: absolute;
+  bottom: 88px;
+  right: max(16px, env(safe-area-inset-right));
+  width: min(340px, calc(100vw - 32px));
+  max-height: 40dvh;
+  overflow: auto;
+  border: 2px solid #c1d6bd;
+  border-radius: 18px;
+  background: #f3efdbf5;
+  color: #244e58;
+  box-shadow: 0 5px 20px #163e4933;
+}
+
 .geography-popover { position: absolute; right: 18px; top: 60px; z-index: 3; }
+
 .victory-flags { display: flex; justify-content: center; gap: 12px; margin: 0 0 18px; }
+
 .victory-flags svg { width: 57px; height: 45px; border: 3px solid white; box-shadow: 0 2px 8px rgba(0, 0, 0, 20%); }
+
 .result-title { text-wrap: balance; font-size: 28px; }
+
 .result-moves { font-size: 32px; font-weight: 750; margin: 24px 0 28px; }
+
 .result-moves small { font-size: 14px; font-weight: 500; }
+
 .result-actions { display: grid; gap: 12px; }
+
 .result-actions .button { width: 100%; text-wrap: balance; }
-.share-text { width: 100%; min-height: 130px; resize: vertical; padding: 12px; margin-bottom: 16px; color: #244e58; border: 1px solid #a8bdac; background: #fffcef; }
+
+.share-text {
+  width: 100%;
+  min-height: 130px;
+  resize: vertical;
+  padding: 12px;
+  margin-bottom: 16px;
+  color: #244e58;
+  border: 1px solid #a8bdac;
+  background: #fffcef;
+}
+
 .result-reopen { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); }
+
 @media (pointer: coarse) { kbd { display: none; } }
-@media (max-width: 440px) { .top-overlay { padding: 14px; } .recovery-actions .button { font-size: 13px; padding: 10px; } }
+
+@media (max-width: 440px) {
+  .top-overlay { padding: 14px; }
+  .recovery-actions .button { font-size: 13px; padding: 10px; }
+}
 </style>

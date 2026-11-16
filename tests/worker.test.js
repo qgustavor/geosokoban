@@ -9,6 +9,7 @@ const stories = JSON.parse(readFileSync(new URL('../src/content/story-levels.jso
 const geography = JSON.parse(gunzipSync(readFileSync(new URL('../src/data/world.geojson.gz', import.meta.url))))
 
 function callWorker (file, message) {
+  // Run the shipped worker entry point, adapting only the transport from self to parentPort.
   const source = `
     import { parentPort } from 'node:worker_threads'
     globalThis.self = { postMessage: data => parentPort.postMessage(data) }
@@ -21,17 +22,20 @@ function callWorker (file, message) {
       worker.terminate()
       reject(new Error('Test worker timed out'))
     }, 15000)
+
     const finish = () => {
       clearTimeout(timeout)
       worker.terminate()
     }
+
     worker.on('message', data => {
       if (data.type === 'progress') return
       finish()
       resolve(data)
     })
     worker.once('error', error => {
-      finish(); reject(error)
+      finish()
+      reject(error)
     })
     worker.postMessage(message)
   })

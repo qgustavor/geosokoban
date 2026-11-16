@@ -142,20 +142,34 @@ for (const locale of ['en', 'pt-BR', 'es']) {
   })
 }
 
+
 test('subtle continuous tiles retain coastlines, target contrast and a diagonal reveal', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('geosokoban.prototype.v2', JSON.stringify({ locale: 'en', reduced: false })))
+  await page.addInitScript(() => {
+    localStorage.setItem('geosokoban.prototype.v2', JSON.stringify({ locale: 'en', reduced: false }))
+  })
   await open(page)
-  const style = await page.locator('.tile-surface').first().evaluate(element => ({ opacity: getComputedStyle(element).strokeOpacity, width: element.getAttribute('width'), rx: element.getAttribute('rx') }))
-  expect(Number(style.opacity)).toBeLessThan(0.2)
+  const style = await page.locator('.tile-surface').first().evaluate(element => ({
+    opacity: getComputedStyle(element).strokeOpacity,
+    width: element.getAttribute('width'),
+    rx: element.getAttribute('rx')
+  }))
+  expect(Number(style.opacity)).toBeLessThan(.2)
   expect(style.width).toBe('40')
   expect(style.rx).toBeNull()
   await expect(page.locator('.coast-edge[d^="M"]').first()).toHaveAttribute('d', /M/)
-  const delays = await page.locator('.land-tile').evaluateAll(elements => elements.map(element => parseFloat(element.style.animationDelay)))
+  const delays = await page.locator('.land-tile').evaluateAll(elements => {
+    return elements.map(element => parseFloat(element.style.animationDelay))
+  })
   expect(Math.max(...delays)).toBeGreaterThan(Math.min(...delays))
   await expect(page.locator('.selected-country, .selected-outline')).toHaveCount(0)
   const icons = await page.locator('.hud-button').evaluateAll(buttons => buttons.map(button => {
-    const a = button.getBoundingClientRect(); const b = button.querySelector('svg').getBoundingClientRect()
-    return { dx: Math.abs(a.x + a.width / 2 - b.x - b.width / 2), dy: Math.abs(a.y + a.height / 2 - b.y - b.height / 2) }
+    const buttonBounds = button.getBoundingClientRect()
+    const iconBounds = button.querySelector('svg').getBoundingClientRect()
+
+    // Compare visual centers in screen coordinates, not CSS offsets within the button.
+    const dx = Math.abs(buttonBounds.x + buttonBounds.width / 2 - iconBounds.x - iconBounds.width / 2)
+    const dy = Math.abs(buttonBounds.y + buttonBounds.height / 2 - iconBounds.y - iconBounds.height / 2)
+    return { dx, dy }
   }))
   expect(icons.every(icon => icon.dx < 1 && icon.dy < 1)).toBe(true)
 })

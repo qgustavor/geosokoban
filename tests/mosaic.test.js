@@ -9,6 +9,8 @@ function ringsFor (path) {
   let ring = null
   let x = 0
   let y = 0
+
+  // This reader is intentionally independent of the production scanline/contour implementation.
   for (let index = 0; index < tokens.length;) {
     const command = tokens[index++]
     if (command === 'Z') continue
@@ -24,24 +26,34 @@ function ringsFor (path) {
     else assert.fail(`Unexpected path command ${command}`)
     ring.push([x, y])
   }
+
   return rings
 }
 
 function contains (rings, x, y) {
   let inside = false
+
+  // Even-odd parity across every ring keeps holes independent of ring winding direction.
   for (const ring of rings) {
     for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
       const [xi, yi] = ring[i]
       const [xj, yj] = ring[j]
-      if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside
+      const spansLatitude = (yi > y) !== (yj > y)
+      if (!spansLatitude) continue
+
+      const intersectionX = (xj - xi) * (y - yi) / (yj - yi) + xi
+      if (x < intersectionX) inside = !inside
     }
   }
+
   return inside
 }
 
 function assertPixelCentersMatch (source, bounds = [-60, -60, 100, 100]) {
   const raw = ringsFor(source)
   const pixels = ringsFor(mosaicPath(source, bounds))
+
+  // Compare pixel centers, not polygon boundaries where either adjacent pixel may touch the coast.
   for (let y = bounds[1] + 5; y < bounds[3]; y += 10) {
     for (let x = bounds[0] + 5; x < bounds[2]; x += 10) {
       assert.equal(contains(pixels, x, y), contains(raw, x, y), `${x},${y}`)

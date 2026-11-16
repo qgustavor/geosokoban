@@ -8,6 +8,8 @@ async function setup (page) {
   await page.clock.install({ time: new Date('2026-11-14T12:00:00Z') })
   await page.addInitScript(({ level }) => {
     localStorage.setItem('geosokoban.prototype.v2', JSON.stringify({ locale: 'en' }))
+
+    // Control generation replies without replacing hint workers or the application's loading timers.
     const OriginalWorker = window.Worker
     window.generationRequests = 0
     window.Worker = class {
@@ -18,7 +20,10 @@ async function setup (page) {
 
       postMessage (request) {
         window.generationRequests++
-        window.replyToGeneration = () => this.onmessage?.({ data: { type: 'complete', level: { ...level, id: request.code } } })
+        // Build the reply when invoked so cancellation can remove the current message handler.
+        window.replyToGeneration = () => this.onmessage?.({
+          data: { type: 'complete', level: { ...level, id: request.code } }
+        })
         this.onmessage?.({ data: { type: 'progress', stage: 'search' } })
       }
 
@@ -29,6 +34,7 @@ async function setup (page) {
   }, { level: fixture })
   await page.goto('./')
   await expect(page.locator('.level-selection')).toBeVisible()
+  // Pause after boot so each test advances only the loader intervals it intends to exercise.
   await page.clock.pauseAt(new Date('2026-11-14T13:00:00Z'))
 }
 

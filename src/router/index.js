@@ -18,15 +18,37 @@ export function createAppRouter () {
       { path: '/credits', name: 'credits', component: CreditsPage },
       { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundPage }
     ],
-    scrollBehavior: (to, from, savedPosition) => savedPosition ?? (to.path === from.path ? undefined : { top: 0 })
+    scrollBehavior: (to, from, savedPosition) => {
+      // Back/forward restoration takes priority, even when the route's path has not changed.
+      if (savedPosition !== null && savedPosition !== undefined) return savedPosition
+
+      // A query-only change, such as destination guidance, should not reset the scroll position.
+      if (to.path === from.path) return undefined
+
+      return { top: 0 }
+    }
   })
+
   router.beforeEach(to => {
     if (to.name !== 'puzzle') return true
+
     const code = normalizeCode(to.params.code)
-    if (code && (to.params.code !== code || !['learn', 'remember'].includes(to.query.g) || code.endsWith('-P') && to.query.g !== 'remember')) {
+
+    // Let the puzzle view report invalid codes rather than replacing them with a different puzzle.
+    if (!code) return true
+
+    // The code selects the board; g controls destination visibility. Hard (-P) requires hidden targets.
+    const needsCanonicalLocation = to.params.code !== code ||
+      !['learn', 'remember'].includes(to.query.g) ||
+      (code.endsWith('-P') && to.query.g !== 'remember')
+
+    if (needsCanonicalLocation) {
+      // Correct deep links without leaving an extra malformed entry in the browser's Back history.
       return { ...puzzleLocation(code, to.query.g), replace: true }
     }
+
     return true
   })
+
   return router
 }

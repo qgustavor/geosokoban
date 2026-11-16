@@ -9,7 +9,10 @@ import OverlayDialog from './OverlayDialog.vue'
 import OptionsView from './OptionsView.vue'
 import CreditsView from './CreditsView.vue'
 
+// Keep one controller above RouterView so navigation changes the page, not the game session.
+// The reactive wrapper unwraps its refs for both the shell and injected route views.
 const app = reactive(useGameController())
+
 provide(gameContext, app)
 </script>
 
@@ -28,7 +31,14 @@ provide(gameContext, app)
         <button class="quiet credits-link" :disabled="app.session.loading" @click="app.showPanel('credits')">
           {{ app.t('credits') }}
         </button>
-        <label class="language-picker"><span class="sr-only">{{ app.t('language') }}</span><select v-model="app.locale"><option value="en">English</option><option value="pt-BR">Português</option><option value="es">Español</option></select></label>
+        <label class="language-picker">
+          <span class="sr-only">{{ app.t('language') }}</span>
+          <select v-model="app.locale">
+            <option value="en">English</option>
+            <option value="pt-BR">Português</option>
+            <option value="es">Español</option>
+          </select>
+        </label>
       </div>
     </header>
     <GenerationLoading
@@ -37,7 +47,12 @@ provide(gameContext, app)
       :t="app.t"
       @cancel="app.cancelGeneration"
     />
-    <div v-show="!app.session.loadingDisplay.visible" :inert="app.session.loading || undefined" :aria-busy="app.session.loading">
+    <!-- Preserve the mounted page during loading, but block input even before the loader appears. -->
+    <div
+      v-show="!app.session.loadingDisplay.visible"
+      :inert="app.session.loading || undefined"
+      :aria-busy="app.session.loading"
+    >
       <section v-if="app.failure" class="load-error" role="alert">
         <p>{{ app.t(app.failure.key) }}</p>
         <button v-if="app.failure.code" class="button secondary" @click="app.retry">
@@ -49,6 +64,7 @@ provide(gameContext, app)
       </section>
       <RouterView />
     </div>
+    <!-- Options and credits share a dialog so opening them does not replace the current puzzle. -->
     <OverlayDialog
       v-if="app.panel"
       :label="app.t(app.panel === 'pause' ? 'menu' : app.panel)"
@@ -92,7 +108,10 @@ provide(gameContext, app)
 
 <style scoped>
 .pause-actions { display: grid; gap: 12px; }
+
 .header-tools { flex-wrap: wrap; }
+
 .load-error { padding: 20px; margin: 16px 0; border: 1px solid var(--line); border-radius: 10px; }
+
 .load-error .quiet { margin-left: 16px; }
 </style>

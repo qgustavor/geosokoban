@@ -8,26 +8,39 @@ import { parseArgs } from 'node:util'
 import { isSolved, replay, validateLevel } from '../src/core/engine.js'
 import { benchmarkCodes, report } from './benchmark-utils.js'
 
-const { values } = parseArgs({ options: { samples: { type: 'string', default: '20' }, output: { type: 'string', default: 'docs/benchmarks/node-worker.json' } } })
+const { values } = parseArgs({
+  options: {
+    samples: { type: 'string', default: '20' },
+    output: { type: 'string', default: 'docs/benchmarks/node-worker.json' }
+  }
+})
 const samples = Number(values.samples)
 if (!Number.isInteger(samples) || samples < 1 || samples > 1000) throw new Error('Use --samples between 1 and 1000 per region and difficulty')
-const geography = JSON.parse(gunzipSync(readFileSync(new URL('../src/data/world.geojson.gz', import.meta.url))))
+
+const worldBytes = readFileSync(new URL('../src/data/world.geojson.gz', import.meta.url))
+const geography = JSON.parse(gunzipSync(worldBytes))
 
 function measure (code) {
   return new Promise(resolve => {
+    // Include worker construction and imports, not just the generator's synchronous work.
     const started = performance.now()
     const worker = new Worker(new URL('./benchmark-worker.js', import.meta.url))
     const updates = []
     let settled = false
+
     const finish = (data = {}, error = null) => {
+      // Error, exit, watchdog and terminal message can race; record only one result.
       if (settled) return
+
       settled = true
       const ms = performance.now() - started
       clearTimeout(watchdog)
       worker.terminate()
+
       const level = data.level
       const checked = level ? replay(level, level.solution) : null
       const valid = !!level && !validateLevel(level).length && checked.valid && isSolved(level, checked.state)
+
       resolve({
         code,
         difficulty: code.endsWith('-P') ? 'puzzle' : 'gentle',
@@ -42,6 +55,7 @@ function measure (code) {
         updates
       })
     }
+
     // Timeouts are retained as failed samples, never counted as fast successful runs.
     const watchdog = setTimeout(() => finish({}, new Error('Benchmark watchdog: 120 seconds')), 120000)
     worker.on('message', data => {
@@ -52,16 +66,20 @@ function measure (code) {
     worker.on('exit', code => {
       if (!settled) finish({}, new Error(`Worker exited: ${code}`))
     })
+
     worker.postMessage({ code, geography })
   })
 }
 
 const rows = []
 const codes = benchmarkCodes(samples)
+
+// No overlapping workers: each sample measures an otherwise idle generator.
 for (const code of codes) {
   rows.push(await measure(code))
   if (rows.length % 14 === 0) console.error(`${rows.length}/${codes.length} measured`)
 }
+
 const result = report(rows, {
   generatorVersion: 5,
   minimumExtraMoves: 5,
@@ -74,6 +92,7 @@ const result = report(rows, {
   method: 'Sequential fresh Node workers running the exact generation-worker source through a parentPort adapter. Includes worker startup, imports, geography structured cloning and the reply. Excludes application startup, network transfer and board rendering. No warmup samples discarded.',
   scope: 'Development-machine measurements only, not player-device or browser percentiles.'
 })
+
 const output = resolve(values.output)
 mkdirSync(dirname(output), { recursive: true })
 writeFileSync(output, JSON.stringify(result, null, 2) + '\n')

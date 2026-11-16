@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+
 const props = defineProps({
   help: { type: Object, required: true },
   t: { type: Function, required: true },
@@ -7,10 +8,21 @@ const props = defineProps({
   width: { type: Number, required: true },
   solved: Boolean
 })
+
 defineEmits(['dismiss'])
+
 const directions = computed(() => {
+  // The final reveal shows the whole delivery, while earlier stages show only the next segment.
   const records = props.help.stage === 4 ? props.help.plan?.delivery : props.help.plan?.segment
   return (records ?? []).map(record => props.t(record.direction)).join(' → ')
+})
+
+const requestLabel = computed(() => {
+  if (props.help.cooldownSeconds > 0) {
+    return props.t('hintCooldown', { seconds: props.help.cooldownSeconds })
+  }
+
+  return props.t(props.help.stage ? 'moreHelp' : 'hint')
 })
 </script>
 
@@ -35,7 +47,7 @@ const directions = computed(() => {
         :disabled="help.busy || solved || help.cooldownSeconds > 0"
         @click="help.request"
       >
-        {{ help.cooldownSeconds > 0 ? t('hintCooldown', { seconds: help.cooldownSeconds }) : t(help.stage ? 'moreHelp' : 'hint') }}
+        {{ requestLabel }}
       </button>
       <button class="button secondary" @click="$emit('dismiss')">
         {{ t('hideHint') }}
@@ -46,9 +58,14 @@ const directions = computed(() => {
 
 <style scoped>
 .hint-panel { padding: 18px; }
+
 .hint-panel p { font-size: 14px; margin: 0 0 14px; text-wrap: pretty; }
+
 .hint-actions { display: flex; gap: 10px; }
+
 .hint-actions .button { flex: 1; min-width: 0; padding: 10px 12px; font-size: 13px; }
+
 .hint-request { font-variant-numeric: tabular-nums; }
+
 .hint-request:disabled { cursor: not-allowed; opacity: .65; }
 </style>

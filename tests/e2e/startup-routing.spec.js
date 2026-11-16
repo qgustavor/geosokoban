@@ -18,7 +18,8 @@ test('menu, options, credits and story do not request the geography asset', asyn
   const errors = []
   page.on('pageerror', error => errors.push(error.message))
   await page.route(mapRequest, route => {
-    requests++; return route.abort()
+    requests++
+    return route.abort()
   })
   await page.goto('./')
   await expect(page.locator('.level-selection')).toBeVisible()
@@ -103,7 +104,8 @@ test('refresh uses a hash route and in-game options do not navigate or lose an u
 test('unknown routes and invalid puzzle codes do not request a map', async ({ page }) => {
   let requests = 0
   await page.route(mapRequest, route => {
-    requests++; return route.abort()
+    requests++
+    return route.abort()
   })
   await page.goto('./#/missing')
   await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible()
@@ -119,7 +121,8 @@ for (const code of ['G2-SA-S1', 'G2-NA-S1', 'G2-NA-S3', 'G2-EE-S1', 'G2-WE-S1', 
       let requests = 0
       page.on('pageerror', error => errors.push(error.message))
       await page.route(mapRequest, route => {
-        requests++; return route.abort()
+        requests++
+        return route.abort()
       })
       await page.goto(`./#/puzzle/${code}${suffix}?g=learn`)
       await expect(page.locator('.play-page')).toHaveAttribute('data-code', code + suffix)
@@ -142,7 +145,8 @@ for (const locale of ['en', 'pt-BR', 'es']) {
       localStorage.setItem('geosokoban.prototype.v2', JSON.stringify({ locale, reduced: true }))
     }, locale)
     await page.route(mapRequest, route => {
-      requests++; return route.abort()
+      requests++
+      return route.abort()
     })
     await page.goto('./')
     await expect(page.locator('.level-selection')).toBeVisible()

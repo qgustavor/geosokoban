@@ -1,6 +1,7 @@
 <script setup>
 import { useGameContext } from '../ui/game-context.js'
 import HomeView from '../ui/HomeView.vue'
+
 const app = useGameContext()
 </script>
 

@@ -4,7 +4,10 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { gunzipSync } from 'node:zlib'
 import { initialState, neighbor, move, isSolved, replay, validateLevel, reachable } from '../src/core/engine.js'
 import { Session } from '../src/core/session.js'
-import { CHALLENGES, challengeName, challengeSettings, withPlanning, crossesChallengeGate, challengeDistances, pushLowerBound } from '../src/core/challenge.js'
+import {
+  CHALLENGES, challengeName, challengeSettings, withPlanning,
+  crossesChallengeGate, challengeDistances, pushLowerBound
+} from '../src/core/challenge.js'
 import { validMoveCertificate } from '../src/core/difficulty.js'
 import { prepareLevel } from '../src/core/prepare-level.js'
 import { analyzeDesign, meetsDesign } from '../src/core/design-quality.js'
@@ -37,23 +40,36 @@ function tiny () {
 function assertCertified (level) {
   assert.deepEqual(validateLevel(level), [], level.id)
   assert.equal(isSolved(level, initialState(level)), false, level.id)
+
   const result = replay(level, level.solution)
   assert.equal(result.valid, true, level.id)
   assert.equal(isSolved(level, result.state), true, level.id)
+
   const map = rasterize(level.region, level.threshold)
   for (const goal of level.goals) {
     assert.ok(countries[goal.country], goal.country)
-    if (!level.sea) assert.equal(countryAt(map, goal.position % level.width + 0.5, Math.floor(goal.position / level.width) + 0.5), goal.country)
-    else {
-      assert.equal(countryAt(map, goal.position % level.width + 0.5, Math.floor(goal.position / level.width) + 0.5), null)
+    // Geographic placement uses tile centers; sea goals sit offshore near a separate land anchor.
+    const x = goal.position % level.width + 0.5
+    const y = Math.floor(goal.position / level.width) + 0.5
+
+    if (!level.sea) {
+      assert.equal(countryAt(map, x, y), goal.country)
+    } else {
+      assert.equal(countryAt(map, x, y), null)
       assert.ok(goal.anchor?.length === 2)
-      assert.ok(Math.hypot(goal.position % level.width + 0.5 - goal.anchor[0], Math.floor(goal.position / level.width) + 0.5 - goal.anchor[1]) <= 2.8)
+
+      const distanceToAnchor = Math.hypot(x - goal.anchor[0], y - goal.anchor[1])
+      assert.ok(distanceToAnchor <= 2.8)
     }
   }
 }
 
 test('neighbors never wrap across board edges', () => {
-  for (const [position, direction] of [[6, 'right'], [7, 'left'], [0, 'up'], [20, 'down']]) assert.equal(neighbor(tiny(), position, direction), -1)
+  const edgeSteps = [[6, 'right'], [7, 'left'], [0, 'up'], [20, 'down']]
+
+  for (const [position, direction] of edgeSteps) {
+    assert.equal(neighbor(tiny(), position, direction), -1)
+  }
 })
 
 test('walking, pushing, invalid actions and immutable states', () => {
@@ -96,7 +112,10 @@ test('starting targets cannot be covered or overlap', () => {
   assert.ok(validateLevel(level).includes('Overlapping actors'))
 })
 
-test('walking flood fill respects boxes', () => assert.deepEqual([...reachable(tiny(), initialState(tiny())).keys()], [8, 9]))
+test('walking flood fill respects boxes', () => {
+  const positions = [...reachable(tiny(), initialState(tiny())).keys()]
+  assert.deepEqual(positions, [8, 9])
+})
 
 test('restart resets counts and undo restores the complete pre-restart state', () => {
   const session = new Session(tiny())
@@ -129,7 +148,9 @@ test('50,000 successful walks can all be undone without an artificial cap', () =
   for (let index = 0; index < 50000; index++) assert.equal(session.step(index % 2 ? 'left' : 'right'), true)
   assert.equal(session.history.length, 50000)
   assert.equal(session.state.moves, 50000)
-  while (session.undo()) {}
+  while (session.undo()) {
+    // Drain history through the public operation; the restored state is checked below.
+  }
   assert.deepEqual(session.state, initialState(tiny()))
 })
 
@@ -143,7 +164,11 @@ test('daily codes agree at a UTC boundary in every time zone', () => {
 
 test('invalid dates, versions, regions and ambiguous codes are rejected', () => {
   assert.equal(normalizeCode(' g2-sa-0123456789 '), 'G2-SA-0123456789')
-  for (const code of ['G1-SA-S1', 'G2-SA-D20260230', 'G2-SA-S4', '<script>', 'G2-ZZ-S1', 'G2-SA-OOOOOOOOOO', 'G2-SA-']) assert.equal(normalizeCode(code), null)
+  const invalidCodes = [
+    'G1-SA-S1', 'G2-SA-D20260230', 'G2-SA-S4', '<script>', 'G2-ZZ-S1', 'G2-SA-OOOOOOOOOO', 'G2-SA-'
+  ]
+
+  for (const code of invalidCodes) assert.equal(normalizeCode(code), null)
   assert.equal(normalizeCode('G2-SA-D20240229'), 'G2-SA-D20240229')
   for (const region of REGIONS) assert.ok(normalizeCode(newCode(region.id)).startsWith(`G2-${region.id}-`))
 })
@@ -166,7 +191,9 @@ test('all translations have matching keys and interpolation parameters', () => {
     assert.deepEqual(Object.keys(dictionary).sort(), keys, locale)
     for (const key of keys) {
       assert.ok(dictionary[key].length)
-      assert.deepEqual((dictionary[key].match(/\{\w+\}/g) ?? []).sort(), (messages.en[key].match(/\{\w+\}/g) ?? []).sort())
+      const translatedParameters = (dictionary[key].match(/\{\w+\}/g) ?? []).sort()
+      const englishParameters = (messages.en[key].match(/\{\w+\}/g) ?? []).sort()
+      assert.deepEqual(translatedParameters, englishParameters)
     }
   }
   assert.equal(translate('es', 'destination', { n: 2 }), 'Destino 2')
@@ -176,7 +203,9 @@ test('world data and translated country records cover the same features', () => 
   assert.equal(world.features.length, 177)
   for (const feature of world.features) {
     assert.ok(countries[feature.properties.id])
-    for (const locale of ['en', 'pt-BR', 'es']) assert.notEqual(countryName(feature.properties.id, locale), feature.properties.id)
+    for (const locale of ['en', 'pt-BR', 'es']) {
+      assert.notEqual(countryName(feature.properties.id, locale), feature.properties.id)
+    }
   }
 })
 
@@ -338,7 +367,10 @@ function assertChallenge (level) {
   assert.ok(state.pushes >= 10, level.id)
   const coordinate = position => level.cut.axis === 'x' ? position % level.width : Math.floor(position / level.width)
   const cutCells = level.floors.filter(position => coordinate(position) === level.cut.position)
-  assert.deepEqual(cutCells.filter(position => !level.obstacles.includes(position)).sort((a, b) => a - b), [...level.gates].sort((a, b) => a - b), level.id)
+  // Every opening in the partition must be a declared gate; incidental gaps would bypass the challenge.
+  const openings = cutCells.filter(position => !level.obstacles.includes(position)).sort((a, b) => a - b)
+  const gates = [...level.gates].sort((a, b) => a - b)
+  assert.deepEqual(openings, gates, level.id)
 }
 
 test('every harder story board contains a necessary gate and a ten-push lower bound', () => {

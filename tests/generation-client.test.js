@@ -17,11 +17,15 @@ class FakeWorker {
     this.onmessage?.({ data })
   }
 }
+
 function fixture () {
   const workers = []
   const client = createGenerationClient(() => {
-    const worker = new FakeWorker(); workers.push(worker); return worker
+    const worker = new FakeWorker()
+    workers.push(worker)
+    return worker
   })
+
   return { client, workers }
 }
 
@@ -49,6 +53,7 @@ test('cancellation terminates busy workers, ignores late replies and initializes
   const { client, workers } = fixture()
   const geography = {}
   const first = client.generate('first', geography)
+  // Save the callback itself: detached listeners can still have an already-queued reply.
   const late = workers[0].onmessage
   client.cancel()
   assert.equal(await first, null)

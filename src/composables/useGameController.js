@@ -15,7 +15,10 @@ export function useGameController () {
   const router = useRouter()
   const route = useRoute()
   const saved = readPreferences()
-  const detected = navigator.language.startsWith('pt') ? 'pt-BR' : navigator.language.startsWith('es') ? 'es' : 'en'
+  const detected = navigator.language.startsWith('pt')
+    ? 'pt-BR'
+    : navigator.language.startsWith('es') ? 'es' : 'en'
+
   const locale = ref(saved.locale ?? detected)
   const completed = ref(saved.completed)
   const reduced = ref(saved.reduced)
@@ -24,6 +27,7 @@ export function useGameController () {
   const planning = ref(saved.planning)
   const challenge = computed(() => challengeName(guidance.value, planning.value))
   const view = computed(() => route.name)
+
   const activeCode = ref('')
   const failure = ref(null)
   const notice = ref('')
@@ -34,33 +38,53 @@ export function useGameController () {
   const revealed = ref([])
   const factCountry = ref('')
   const boardTransitioning = ref(false)
+
   const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
   const systemReducedMotion = ref(mediaQuery.matches)
+  // An explicit preference or the operating system can disable motion.
   const reducedMotion = computed(() => reduced.value || systemReducedMotion.value)
   const motionChanged = event => {
     systemReducedMotion.value = event.matches
   }
   const panelReturn = '/'
+
   const game = useSession({ reducedMotion: () => reducedMotion.value })
   const { level, state, chapter, solved } = game
   const session = reactive(game)
   const help = reactive(useAssistance(level, state, () => {
     assisted.value = true
   }))
+
   const t = (key, params) => translate(locale.value, key, params)
   const name = country => countryName(country, locale.value)
-  const resumeCode = computed(() => Array.from({ length: STORY_COUNT }, (_, index) => storyCode(index + 1)).find(code => !completed.value.includes(code)) ?? storyCode(1))
+  const resumeCode = computed(() => {
+    const storyCodes = Array.from({ length: STORY_COUNT }, (_, index) => storyCode(index + 1))
+    const nextStory = storyCodes.find(code => !completed.value.includes(code))
+
+    // Finishing every chapter makes Resume start the story again rather than disappear.
+    return nextStory ?? storyCode(1)
+  })
+
   const fact = computed(() => {
     if (!factCountry.value) return ''
+
     const relation = relations[factCountry.value]
-    return relation
-      ? t('relation', { country: name(factCountry.value), direction: t('geo' + relation[0][0].toUpperCase() + relation[0].slice(1)), other: name(relation[1]) })
-      : t('findCountry', { country: name(factCountry.value) })
+    if (!relation) return t('findCountry', { country: name(factCountry.value) })
+
+    const country = name(factCountry.value)
+    const directionKey = 'geo' + relation[0][0].toUpperCase() + relation[0].slice(1)
+    const direction = t(directionKey)
+    const other = name(relation[1])
+
+    return t('relation', { country, direction, other })
   })
 
   function focusBoard () {
+    // Wait for routed/panel DOM updates, then avoid stealing focus from an active overlay or transition.
     nextTick(() => {
-      if (!boardTransitioning.value && !game.loading.value && !panel.value) document.querySelector('.board-wrap:not(.board-preview)')?.focus({ preventScroll: true })
+      if (boardTransitioning.value || game.loading.value || panel.value) return
+
+      document.querySelector('.board-wrap:not(.board-preview)')?.focus({ preventScroll: true })
     })
   }
 
@@ -71,21 +95,28 @@ export function useGameController () {
 
   function puzzleURL () {
     const resolved = router.resolve(puzzleLocation(level.value.id, guidance.value))
+
     return new URL(resolved.href, window.location.href).href
   }
 
   async function activate (input, navigate = true) {
     if (game.loading.value) game.cancel()
+
     const code = normalizeCode(input)
+
     if (!code) {
       notice.value = t('errorCode')
       if (!navigate) failure.value = { key: 'errorCode', code: null }
       return false
     }
+
     failure.value = null
     panel.value = ''
+
     try {
       if (!await game.start(code)) return false
+
+      // Reset discoveries and assistance only after the replacement board is ready.
       planning.value = level.value.planning === true
       assisted.value = false
       revealed.value = []
@@ -95,13 +126,18 @@ export function useGameController () {
       notice.value = ''
       fallbackText.value = ''
       activeCode.value = code
+
+      // Publish the active code before navigation so the route watcher can reuse this session.
       if (navigate) await router.push(puzzleLocation(code, guidance.value))
+
       window.scrollTo(0, 0)
       focusBoard()
+
       return true
     } catch (error) {
       failure.value = { key: error.code === 'MAP_LOAD_FAILED' ? 'errorMap' : 'errorLevel', code }
       console.error('Puzzle preparation failed', error)
+
       return false
     }
   }
@@ -113,7 +149,10 @@ export function useGameController () {
   function cancelGeneration () {
     game.cancel()
     failure.value = null
+
+    // A cancelled direct link has no matching board to show at its current URL.
     if (view.value === 'puzzle' && route.params.code !== activeCode.value) router.replace({ name: 'home' })
+
     nextTick(() => {
       if (view.value === 'puzzle') focusBoard()
       else document.querySelector('.start-game')?.focus({ preventScroll: true })
@@ -133,35 +172,58 @@ export function useGameController () {
 
   function showPanel (name) {
     if (game.loading.value || boardTransitioning.value || !['pause', 'options', 'credits'].includes(name)) return
+
     panel.value = name
   }
 
   function closePanel () {
     if (panel.value) {
+      // In-game options and credits return to Pause; closing Pause returns to the board.
       panel.value = panel.value !== 'pause' && view.value === 'puzzle' ? 'pause' : ''
       if (!panel.value) focusBoard()
       return
     }
+
+    // Standalone panel routes return home without sending the player to an unrelated history entry.
     if (router.options.history.state.back === panelReturn) router.back()
     else router.replace(panelReturn)
   }
 
+  function hasDeliveredFlag (goal) {
+    // A destination is complete only when occupied by its own country's flag.
+    return state.value.boxes.some(box => box.country === goal.country && box.position === goal.position)
+  }
+
   function step (direction) {
-    if (view.value !== 'puzzle' || activeCode.value !== route.params.code || boardTransitioning.value || panel.value) return
-    const before = new Set(level.value.goals.filter(goal => state.value.boxes.some(box => box.country === goal.country && box.position === goal.position)).map(goal => goal.country))
+    // During navigation the route can name a board that has not replaced the old session yet.
+    if (view.value !== 'puzzle' || activeCode.value !== route.params.code) return
+    if (boardTransitioning.value || panel.value) return
+
+    const deliveredCountries = level.value.goals.filter(hasDeliveredFlag).map(goal => goal.country)
+    const previouslyDelivered = new Set(deliveredCountries)
     if (!game.step(direction)) return
+
     notice.value = ''
     fallbackText.value = ''
-    const arrived = level.value.goals.find(goal => !before.has(goal.country) && state.value.boxes.some(box => box.country === goal.country && box.position === goal.position))
+
+    // Reveal facts only for a new arrival, not for flags already resting on their destinations.
+    const arrived = level.value.goals.find(goal => !previouslyDelivered.has(goal.country) && hasDeliveredFlag(goal))
+
     if (arrived) {
       factCountry.value = arrived.country
       revealed.value = [...new Set([...revealed.value, arrived.country])]
     }
-    if (solved.value && chapter.value) completed.value = [...new Set([...completed.value, level.value.id.replace(/-P$/, '')])]
+
+    if (solved.value && chapter.value) {
+      // Hard and non-Hard versions count toward the same story chapter.
+      const storyId = level.value.id.replace(/-P$/, '')
+      completed.value = [...new Set([...completed.value, storyId])]
+    }
   }
 
   function undo () {
     if (boardTransitioning.value) return
+
     game.undo()
     factCountry.value = ''
     notice.value = ''
@@ -170,6 +232,7 @@ export function useGameController () {
 
   function restart () {
     if (boardTransitioning.value) return
+
     game.restart()
     help.clearHint()
     factCountry.value = ''
@@ -179,9 +242,24 @@ export function useGameController () {
   }
 
   function key (event) {
-    if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing || event.target.closest('input, select, textarea, [contenteditable=true]')) return
-    const keys = { ArrowUp: 'up', ArrowRight: 'right', ArrowDown: 'down', ArrowLeft: 'left', w: 'up', d: 'right', s: 'down', a: 'left' }
+    // Leave shortcuts, composed text and editing controls to the browser or focused field.
+    if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return
+
+    const editingField = event.target.closest('input, select, textarea, [contenteditable=true]')
+    if (editingField) return
+
+    const keys = {
+      ArrowUp: 'up',
+      ArrowRight: 'right',
+      ArrowDown: 'down',
+      ArrowLeft: 'left',
+      w: 'up',
+      d: 'right',
+      s: 'down',
+      a: 'left'
+    }
     const direction = keys[event.key] ?? keys[event.key.toLowerCase()]
+
     if (direction) {
       event.preventDefault()
       step(direction)
@@ -202,6 +280,8 @@ export function useGameController () {
 
   function selectDestination (country) {
     requested.value = country
+
+    // In Remember mode, asking for a hidden destination is not itself permission to reveal it.
     if (guidance.value === 'learn' || revealed.value.includes(country)) {
       selected.value = country
       factCountry.value = country
@@ -223,6 +303,7 @@ export function useGameController () {
 
   function setGuidance (value) {
     if (guidance.value === value) return
+
     if (view.value === 'puzzle') assisted.value = true
     guidance.value = value
     if (view.value === 'puzzle') router.replace(puzzleLocation(level.value.id, value))
@@ -230,6 +311,7 @@ export function useGameController () {
 
   function setChallenge (value) {
     if (!CHALLENGES.includes(value)) return
+
     const settings = challengeSettings(value)
     guidance.value = settings.guidance
     planning.value = settings.planning
@@ -241,24 +323,34 @@ export function useGameController () {
       notice.value = t('copied')
       fallbackText.value = ''
     } catch {
+      // Keep the exact text available for manual copying when clipboard access fails.
       fallbackText.value = text
       notice.value = t('copyFallback')
     }
   }
 
   async function share () {
-    const text = t('shareResult', { moves: state.value.moves, challenge: t('challenge' + challengeName(guidance.value, level.value.planning === true)), help: t(assisted.value ? 'assisted' : 'unassisted') })
+    const moves = state.value.moves
+    // Report the loaded board's planning mode, not a preference selected for a future puzzle.
+    const challengeLabel = t('challenge' + challengeName(guidance.value, level.value.planning === true))
+    const assistanceLabel = t(assisted.value ? 'assisted' : 'unassisted')
+    const text = t('shareResult', { moves, challenge: challengeLabel, help: assistanceLabel })
     const result = await shareResult({ title: 'GeoSokoban', text, url: puzzleURL() })
+
     if (result.status === 'fallback') fallbackText.value = result.text
   }
 
   function nextPuzzle () {
     if (game.loading.value || boardTransitioning.value) return
+
     if (chapter.value === STORY_COUNT) {
       home()
       return
     }
-    const code = withPlanning(chapter.value ? storyCode(chapter.value + 1) : newCode(), level.value.planning === true)
+
+    // Continue the story when applicable; otherwise draw a new seed and keep the current planning mode.
+    const nextCode = chapter.value ? storyCode(chapter.value + 1) : newCode()
+    const code = withPlanning(nextCode, level.value.planning === true)
     open(code)
   }
 
@@ -268,41 +360,61 @@ export function useGameController () {
   }
 
   watch(() => route.fullPath, async () => {
+    // Route changes supersede pending preparation even when the new route is not a puzzle.
     game.cancel()
     panel.value = ''
     failure.value = null
     notice.value = ''
+
     if (route.name !== 'puzzle') {
       boardTransitioning.value = false
       return
     }
+
     const code = normalizeCode(route.params.code)
+
     if (!code) {
       failure.value = { key: 'errorCode', code: null }
       return
     }
-    guidance.value = code.endsWith('-P') || route.query.g === 'remember' ? 'remember' : 'learn'
+
+    // Hard always hides destinations; other boards take guidance from the shareable query parameter.
+    const rememberTargets = code.endsWith('-P') || route.query.g === 'remember'
+    guidance.value = rememberTargets ? 'remember' : 'learn'
+
+    // A guidance-only URL change must not restart the current puzzle or discard its history.
     if (activeCode.value === code) {
       focusBoard()
       return
     }
+
     await activate(code, false)
   }, { immediate: true })
 
   watch([locale, completed, reduced, guidance, planning], () => {
-    savePreferences({ locale: locale.value, completed: completed.value, reduced: reduced.value, guidance: guidance.value, planning: planning.value })
+    savePreferences({
+      locale: locale.value,
+      completed: completed.value,
+      reduced: reduced.value,
+      guidance: guidance.value,
+      planning: planning.value
+    })
     document.documentElement.lang = locale.value
   })
+
   watch(locale, () => {
     notice.value = ''
   })
+
   onMounted(() => {
     document.documentElement.lang = locale.value
     mediaQuery.addEventListener('change', motionChanged)
   })
 
   let noticeTimer
+
   watch(notice, value => {
+    // Replace the old expiry so a previous notice cannot erase a newer one early.
     clearTimeout(noticeTimer)
     if (value && view.value === 'puzzle') {
       noticeTimer = setTimeout(() => {
@@ -310,8 +422,10 @@ export function useGameController () {
       }, 2800)
     }
   })
+
   onUnmounted(() => {
-    clearTimeout(noticeTimer); mediaQuery.removeEventListener('change', motionChanged)
+    clearTimeout(noticeTimer)
+    mediaQuery.removeEventListener('change', motionChanged)
   })
 
   return {

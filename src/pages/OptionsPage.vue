@@ -1,6 +1,7 @@
 <script setup>
 import { useGameContext } from '../ui/game-context.js'
 import OptionsView from '../ui/OptionsView.vue'
+
 const app = useGameContext()
 </script>
 

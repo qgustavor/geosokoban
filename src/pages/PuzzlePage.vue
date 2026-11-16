@@ -1,6 +1,8 @@
 <script setup>
 import { useGameContext } from '../ui/game-context.js'
 import PlayView from '../ui/PlayView.vue'
+
+// The controller owns route loading; keep the pending page separate from a ready board.
 const app = useGameContext()
 </script>
 

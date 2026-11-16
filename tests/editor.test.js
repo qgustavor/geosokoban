@@ -10,7 +10,14 @@ const levels = JSON.parse(readFileSync(new URL('../src/content/story-levels.json
 test('all 42 story boards round-trip through the Tiled format', () => {
   for (const level of Object.values(levels)) {
     const imported = fromTiled(toTiled(level))
-    for (const key of ['width', 'height', 'region', 'sea', 'player', 'boxes', 'floors', 'obstacles', 'planning', 'cut', 'gates']) assert.deepEqual(imported[key], level[key], `${level.id}:${key}`)
+    const preservedFields = [
+      'width', 'height', 'region', 'sea', 'player', 'boxes', 'floors', 'obstacles', 'planning', 'cut', 'gates'
+    ]
+
+    for (const key of preservedFields) {
+      assert.deepEqual(imported[key], level[key], `${level.id}:${key}`)
+    }
+
     assert.equal(isSolved(imported, replay(imported, level.solution).state), true)
   }
 })

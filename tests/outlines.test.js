@@ -25,7 +25,9 @@ test('menu preview and all fixed boards have country paths before geography load
       assert.match(region.path, /^M/)
       assert.doesNotMatch(region.path, /NaN|Infinity|undefined/)
     }
-    for (const goal of level.goals) assert.ok(paths.some(region => region.id === goal.country), `${level.id}:${goal.country}`)
+    for (const goal of level.goals) {
+      assert.ok(paths.some(region => region.id === goal.country), `${level.id}:${goal.country}`)
+    }
   }
   assert.throws(() => getGeography(), /Geography must be loaded/)
 })
@@ -57,7 +59,10 @@ test('the atlas covers the eight existing projections and contains only renderin
 })
 
 test('the committed atlas is reproducible from the bundled world and projection code', () => {
-  const output = execFileSync(process.execPath, ['scripts/build-map-outlines.js', '--check'], { cwd: root, encoding: 'utf8' })
+  const output = execFileSync(process.execPath, ['scripts/build-map-outlines.js', '--check'], {
+    cwd: root,
+    encoding: 'utf8'
+  })
   assert.match(output, /Map outlines match/)
   assert.throws(() => getGeography(), /Geography must be loaded/)
 })
@@ -132,7 +137,8 @@ test('pixelated outlines use the same projection as generated maps at every thre
       const map = atlas.regions[result.id]
       const margin = Math.max(map.width, map.height) * 3
       const bounds = [-margin, -margin, map.width + margin, map.height + margin].map(value => value * MAP_TILE_SIZE)
-      const pixelated = result.regions.map(({ id, path }) => ({ id, path: mosaicPath(path, bounds) })).filter(region => region.path)
+      const paths = result.regions.map(({ id, path }) => ({ id, path: mosaicPath(path, bounds) }))
+      const pixelated = paths.filter(region => region.path)
       assert.deepEqual(pixelated, map.regions, `${result.id}:${result.threshold}`)
     }
   } finally {

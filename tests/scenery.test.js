@@ -11,8 +11,13 @@ import { REGIONS, CARIBBEAN } from '../src/content/regions.js'
 
 // Constructed geometry tests lookup behavior; these polygons are not geographic source data.
 function feature (id, name, biome, coordinates, type = 'Polygon') {
-  return { type: 'Feature', properties: { ECO_ID: id, ECO_NAME: name, BIOME_NUM: biome, REALM: 'test' }, geometry: { type, coordinates } }
+  return {
+    type: 'Feature',
+    properties: { ECO_ID: id, ECO_NAME: name, BIOME_NUM: biome, REALM: 'test' },
+    geometry: { type, coordinates }
+  }
 }
+
 const ring = (west, south, east, north) => [[west, south], [east, south], [east, north], [west, north], [west, south]]
 const collection = features => ({ type: 'FeatureCollection', features })
 const fakeAtlas = (level, record, coverage = 1) => ({
@@ -20,7 +25,9 @@ const fakeAtlas = (level, record, coverage = 1) => ({
   ecoregions: { 1: record },
   regions: {
     [level.region]: {
-      width: level.width, height: level.height, cells: Array.from({ length: level.width * level.height }, () => [1, null, coverage, 1])
+      width: level.width,
+      height: level.height,
+      cells: Array.from({ length: level.width * level.height }, () => [1, null, coverage, 1])
     }
   }
 })
@@ -38,20 +45,30 @@ test('biome lookup respects holes and disjoint polygons', () => {
 })
 
 test('antimeridian polygons do not cover the opposite hemisphere', () => {
-  const lookup = createBiomeLookup(collection([feature(7, 'Test Pacific', 1, [[[179, -2], [-179, -2], [-179, 2], [179, 2], [179, -2]]])]))
+  // The narrow strip crosses +/-180 degrees, rather than spanning most of the globe.
+  const pacificRing = [[179, -2], [-179, -2], [-179, 2], [179, 2], [179, -2]]
+  const lookup = createBiomeLookup(collection([feature(7, 'Test Pacific', 1, [pacificRing])]))
   assert.equal(lookup.at(179.5, 0), 7)
   assert.equal(lookup.at(-179.5, 0), 7)
   assert.equal(lookup.at(0, 0), null)
 })
 
 test('invalid source and missing attributes fail rather than manufacturing biomes', () => {
-  for (const data of [null, collection([]), collection([{ properties: {}, geometry: {} }])]) assert.throws(() => createBiomeLookup(data))
+  const invalidSources = [null, collection([]), collection([{ properties: {}, geometry: {} }])]
+
+  for (const data of invalidSources) assert.throws(() => createBiomeLookup(data))
 })
 
 test('the inverse projection round-trips all eight boards including the Pacific', () => {
   for (const definition of [...REGIONS, CARIBBEAN]) {
     const { project, unproject } = projectionFor(definition)
-    for (const point of [[1.5, 1.5], [definition.width / 2, definition.height / 2], [definition.width - 1.5, definition.height - 1.5]]) {
+    const points = [
+      [1.5, 1.5],
+      [definition.width / 2, definition.height / 2],
+      [definition.width - 1.5, definition.height - 1.5]
+    ]
+
+    for (const point of points) {
       const result = project(unproject(point))
       assert.ok(Math.abs(result[0] - point[0]) < 1e-10, definition.id)
       assert.ok(Math.abs(result[1] - point[1]) < 1e-10, definition.id)
@@ -79,7 +96,13 @@ test('Caatinga gets its specific art rule, while unrelated dry regions do not ge
 
 test('unknown or stale biome grids stay neutral', () => {
   const level = stories['G2-SA-S3']
-  for (const data of [{}, { ...fakeAtlas(level, { name: 'Caatinga', biome: 13 }), mapVersion: 'stale' }, fakeAtlas(level, { name: 'Caatinga', biome: 13 }, 0.1)]) {
+  const incompatibleAtlases = [
+    {},
+    { ...fakeAtlas(level, { name: 'Caatinga', biome: 13 }), mapVersion: 'stale' },
+    fakeAtlas(level, { name: 'Caatinga', biome: 13 }, 0.1)
+  ]
+
+  for (const data of incompatibleAtlases) {
     const scene = createScenery(level, data)
     assert.ok([...scene.tiles.values()].every(tile => tile.palette === 'neutral'))
     assert.ok(scene.obstacles.every(obstacle => obstacle.kind === 'boulder'))

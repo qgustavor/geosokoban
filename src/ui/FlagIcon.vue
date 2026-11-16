@@ -4,7 +4,12 @@ import countries from '../data/countries.json' with { type: 'json' }
 import { flagUrls } from '../assets/flags.js'
 
 const props = defineProps({ country: { type: String, required: true } })
-const url = computed(() => flagUrls[countries[props.country]?.iso2] ?? flagUrls.xx)
+
+const url = computed(() => {
+  // Game content uses three-letter country codes; the flag manifest uses two-letter codes.
+  const iso2 = countries[props.country]?.iso2
+  return flagUrls[iso2] ?? flagUrls.xx
+})
 </script>
 
 <template>

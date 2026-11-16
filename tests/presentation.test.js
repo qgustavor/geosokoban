@@ -41,7 +41,8 @@ test('share uses a visible-dialog fallback on unsupported or rejected native sha
       throw new Error('Unavailable')
     }
   }]) {
-    assert.deepEqual(await shareResult(data, platform), { status: 'fallback', text: 'A result\nhttps://example.test/#/puzzle/test' })
+    const result = await shareResult(data, platform)
+    assert.deepEqual(result, { status: 'fallback', text: 'A result\nhttps://example.test/#/puzzle/test' })
   }
   assert.deepEqual(await shareResult(data, { share: async () => {} }), { status: 'shared' })
   assert.deepEqual(await shareResult(data, {
@@ -60,7 +61,7 @@ test('play is an ocean overlay interface, without explanatory captions, sidebar 
   assert.doesNotMatch(app, /<footer/)
   assert.match(play, /OverlayDialog/)
   assert.match(play, /top-overlay deadlock-warning/)
-  assert.match(source('../src/ui/GameBoard.vue'), /class="goal-number">\?<\/text>/)
+  assert.match(source('../src/ui/GameBoard.vue'), /class="goal-number"\s*>\s*\?\s*<\/text>/)
 })
 
 test('the globe has directional views, no legs and no step-spin animation', () => {

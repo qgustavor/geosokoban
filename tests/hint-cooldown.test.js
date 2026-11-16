@@ -8,10 +8,12 @@ function clock () {
   let time = 0
   let id = 0
   const pending = new Map()
+
   return {
     now: () => time,
     schedule (callback, delay) {
-      pending.set(++id, { at: time + delay, callback }); return id
+      pending.set(++id, { at: time + delay, callback })
+      return id
     },
     clear (key) {
       pending.delete(key)
@@ -19,13 +21,16 @@ function clock () {
     get pending () {
       return pending.size
     },
+    // Jump advances wall time without dispatching timers, like a throttled background tab.
     jump (ms) {
       time += ms
     },
     advance (ms) {
       const target = time + ms
       for (;;) {
-        const next = [...pending].filter(([, task]) => task.at <= target).sort((a, b) => a[1].at - b[1].at)[0]
+        const due = [...pending].filter(([, task]) => task.at <= target)
+        due.sort((a, b) => a[1].at - b[1].at)
+        const next = due[0]
         if (!next) break
         time = Math.max(time, next[1].at)
         pending.delete(next[0])

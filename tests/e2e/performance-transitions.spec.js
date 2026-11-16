@@ -3,7 +3,9 @@ import stories from '../../src/content/story-levels.json' with { type: 'json' }
 import templates from '../../src/content/fallback-levels-v5.json' with { type: 'json' }
 
 async function preferences (page, reduced = false) {
-  await page.addInitScript(reduced => localStorage.setItem('geosokoban.prototype.v2', JSON.stringify({ locale: 'en', reduced })), reduced)
+  await page.addInitScript(reduced => {
+    localStorage.setItem('geosokoban.prototype.v2', JSON.stringify({ locale: 'en', reduced }))
+  }, reduced)
 }
 
 test('same-region and cross-region navigation dismantle the old board before building the next', async ({ page }) => {
@@ -68,12 +70,13 @@ test('generated boards use memory and persistent caches; different codes share a
         if (!String(url).includes('generate')) return new NativeWorker(url, options)
         window.generationWorkers++
       }
-
       postMessage (message) {
         window.generationMessages.push({ code: message.code, geography: !!message.geography })
-        queueMicrotask(() => this.onmessage?.({ data: { type: 'complete', level: { ...level, id: message.code } } }))
+        // Real workers never reply in the caller's stack; retain that asynchronous boundary.
+        queueMicrotask(() => this.onmessage?.({
+          data: { type: 'complete', level: { ...level, id: message.code } }
+        }))
       }
-
       terminate () {}
     }
   }, fixture)
@@ -103,13 +106,17 @@ for (const code of ['G2-SA-S1', 'G2-WE-S1', 'G2-OC-S1']) {
     await preferences(page, true)
     let requests = 0
     await page.route(/world.*geojson/, route => {
-      requests++; return route.abort()
+      requests++
+      return route.abort()
     })
     await page.goto(`./#/puzzle/${code}`)
     await expect(page.locator('.map-outline')).toHaveAttribute('data-pixels-per-cell', '4')
-    const shapes = await page.locator('.map-outline path, .country-borders path').evaluateAll(paths => paths.map(path => ({
-      d: path.getAttribute('d'), rendering: getComputedStyle(path).shapeRendering
-    })))
+    const shapes = await page.locator('.map-outline path, .country-borders path').evaluateAll(paths => {
+      return paths.map(path => ({
+        d: path.getAttribute('d'),
+        rendering: getComputedStyle(path).shapeRendering
+      }))
+    })
     expect(shapes.length).toBeGreaterThan(0)
     for (const { d, rendering } of shapes) {
       expect(rendering).toBe('crispedges')

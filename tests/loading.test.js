@@ -5,7 +5,7 @@ import { gunzipSync } from 'node:zlib'
 import { createLoadingFeedback, LOADER_DELAY_MS, LOADER_FINISH_MS } from '../src/core/loading-feedback.js'
 import { generationTask } from '../src/core/generation-task.js'
 import { fallbackLevel, prepareLevel } from '../src/core/prepare-level.js'
-import { generate, GenerationExhausted } from '../src/core/generate.js'
+import { GenerationExhausted } from '../src/core/generate.js'
 import { setGeography } from '../src/geo/world.js'
 import { isSolved, replay, validateLevel } from '../src/core/engine.js'
 import { benchmarkCodes, summarize } from '../scripts/benchmark-utils.js'
@@ -14,16 +14,22 @@ function clock () {
   let time = 0
   let serial = 0
   const jobs = new Map()
+
   return {
     now: () => time,
     schedule (callback, delay) {
-      const id = ++serial; jobs.set(id, { at: time + delay, callback }); return id
+      const id = ++serial
+      jobs.set(id, { at: time + delay, callback })
+      return id
     },
     unschedule: id => jobs.delete(id),
     advance (ms) {
       const end = time + ms
       while (true) {
-        const next = [...jobs.entries()].filter(([, job]) => job.at <= end).sort((a, b) => a[1].at - b[1].at || a[0] - b[0])[0]
+        // Equal deadlines run in registration order, including work scheduled by a prior callback.
+        const due = [...jobs.entries()].filter(([, job]) => job.at <= end)
+        due.sort((a, b) => a[1].at - b[1].at || a[0] - b[0])
+        const next = due[0]
         if (!next) break
         jobs.delete(next[0])
         time = next[1].at
@@ -204,7 +210,10 @@ test('worker failures are errors rather than invented successful boards', async 
 test('all internal regions have deterministic, replay-verified fallback boards in both difficulties', () => {
   for (const region of ['SA', 'NA', 'CAR', 'EE', 'WE', 'AF', 'AS', 'OC']) {
     for (const planning of [false, true]) {
-      const request = { code: `G2-${region === 'CAR' ? 'NA' : region}-0123456789${planning ? '-P' : ''}`, region, planning }
+      // Caribbean is an internal fallback region; its public request codes use North America.
+      const codeRegion = region === 'CAR' ? 'NA' : region
+      const code = `G2-${codeRegion}-0123456789${planning ? '-P' : ''}`
+      const request = { code, region, planning }
       const level = fallbackLevel(request)
       assert.deepEqual(level, fallbackLevel(request))
       assert.equal(level.region, region)

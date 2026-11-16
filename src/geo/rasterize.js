@@ -4,102 +4,198 @@ import { regionById } from '../content/regions.js'
 import { DIRECTIONS, neighbor } from '../core/engine.js'
 
 export const MAP_VERSION = 'world-fixture-v2'
+
+// Coverage samples belong to a region; playable floors also depend on its requested threshold.
 const cache = new Map()
 const sampled = new Map()
 let geographySource
 
 function pointInRing (x, y, ring) {
   let inside = false
+
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
     const [xi, yi] = ring[i]
     const [xj, yj] = ring[j]
-    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside
+
+    // A horizontal ray toggles membership at each crossing. This half-open test counts a vertex
+    // only once and skips horizontal edges before dividing by their vertical span.
+    const crossesRow = (yi > y) !== (yj > y)
+    if (!crossesRow) continue
+
+    const crossingX = (xj - xi) * (y - yi) / (yj - yi) + xi
+    if (x < crossingX) inside = !inside
   }
+
   return inside
 }
 
 export function countryAt (map, x, y) {
-  return map.regions.find(region => region.polygons.some(polygon =>
-    pointInRing(x, y, polygon[0]) && !polygon.slice(1).some(ring => pointInRing(x, y, ring))
-  ))?.id ?? null
+  // Feature order breaks any overlaps: the first containing country wins.
+  const country = map.regions.find(region => region.polygons.some(polygon => {
+    const insideOutline = pointInRing(x, y, polygon[0])
+    if (!insideOutline) return false
+
+    // GeoJSON rings after the outer boundary are holes, not additional pieces of land.
+    const insideHole = polygon.slice(1).some(ring => pointInRing(x, y, ring))
+
+    return !insideHole
+  }))
+
+  return country?.id ?? null
 }
 
 export function largestComponent (shape, candidates) {
   let largest = []
   const seen = new Set()
+
   for (const start of candidates) {
     if (seen.has(start)) continue
+
     const component = [start]
     seen.add(start)
+
+    // The growing component doubles as the queue. Only orthogonal steps can connect playable cells.
     for (let index = 0; index < component.length; index++) {
       for (const direction of DIRECTIONS) {
         const next = neighbor(shape, component[index], direction)
+
         if (candidates.has(next) && !seen.has(next)) {
           seen.add(next)
           component.push(next)
         }
       }
     }
+
+    // Keep the first component on ties; changing that choice would change seeded boards.
     if (component.length > largest.length) largest = component
   }
+
+  // Floor indices have a stable row-major order regardless of the flood-fill traversal.
   return largest.sort((a, b) => a - b)
 }
 
 function projectedMap (definition) {
   const { width, height } = definition
   const { project } = projectionFor(definition)
-  const regions = getGeography().features.filter(feature =>
-    definition.countries ? definition.countries.includes(feature.properties.id) : feature.properties.continent === definition.continent || definition.extraCountries?.includes(feature.properties.id)
-  ).map(feature => {
+
+  const features = getGeography().features.filter(feature => {
+    // An explicit country list replaces continent selection rather than adding to it.
+    if (definition.countries) return definition.countries.includes(feature.properties.id)
+
+    return feature.properties.continent === definition.continent ||
+      definition.extraCountries?.includes(feature.properties.id)
+  })
+
+  const projectedRegions = features.map(feature => {
     const geometry = feature.geometry
-    const polygons = (geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates)
-      .map(polygon => polygon.map(ring => ring.map(project)))
-      .filter(polygon => polygon[0].some(([x, y]) => x >= 0 && x <= width && y >= 0 && y <= height))
-    const path = polygons.flatMap(polygon => polygon.map(ring =>
-      ring.map(([x, y], index) => `${index ? 'L' : 'M'}${(x * 40).toFixed(2)},${(y * 40).toFixed(2)}`).join(' ') + 'Z'
-    )).join(' ')
+    const sourcePolygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates
+    const projectedPolygons = sourcePolygons.map(polygon => polygon.map(ring => ring.map(project)))
+
+    // This is a coarse vertex-in-bounds check, not polygon clipping; retain its boundary-inclusive rule.
+    const polygons = projectedPolygons.filter(polygon => polygon[0].some(([x, y]) => {
+      const insideWidth = x >= 0 && x <= width
+
+      return insideWidth && y >= 0 && y <= height
+    }))
+
+    const ringPaths = polygons.flatMap(polygon => polygon.map(ring => {
+      const vertices = ring.map(([x, y], index) => {
+        const command = index ? 'L' : 'M'
+        // Sampling uses cell coordinates; the outline renderer uses 40 SVG units per gameplay cell.
+        const svgX = (x * 40).toFixed(2)
+        const svgY = (y * 40).toFixed(2)
+
+        return `${command}${svgX},${svgY}`
+      })
+
+      return vertices.join(' ') + 'Z'
+    }))
+    const path = ringPaths.join(' ')
+
     return { id: feature.properties.id, polygons, path }
-  }).filter(region => region.polygons.length)
+  })
+
+  const regions = projectedRegions.filter(region => region.polygons.length)
+
   return { width, height, regions, definition }
 }
 
 export function rasterize (regionId = 'SA', threshold = 0.36) {
   // A warm worker may receive a different fixture (or an updated map).
   const source = getGeography()
+
   if (source !== geographySource) {
     cache.clear()
     sampled.clear()
     geographySource = source
   }
+
   const key = `${regionId}:${threshold}`
   if (cache.has(key)) return cache.get(key)
+
   const definition = regionById(regionId)
   if (!definition) throw new Error('Unknown region')
+
   let sample = sampled.get(regionId)
+
   if (!sample) {
     const map = projectedMap(definition)
     const cells = []
+
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
         let land = 0
+
+        // A fixed 4x4 set of subcell centers estimates coverage without sampling on subcell edges.
         for (let sy = 0; sy < 4; sy++) {
           for (let sx = 0; sx < 4; sx++) {
-            if (countryAt(map, x + (sx + 0.5) / 4, y + (sy + 0.5) / 4)) land++
+            const sampleX = x + (sx + 0.5) / 4
+            const sampleY = y + (sy + 0.5) / 4
+
+            if (countryAt(map, sampleX, sampleY)) land++
           }
         }
-        cells.push({ position: y * map.width + x, coverage: land / 16, country: countryAt(map, x + 0.5, y + 0.5) })
+
+        const position = y * map.width + x
+        const coverage = land / 16
+        // Country ownership uses the cell center, not whichever country supplied most coverage samples.
+        const country = countryAt(map, x + 0.5, y + 0.5)
+
+        cells.push({ position, coverage, country })
       }
     }
+
     sample = { map, cells }
     sampled.set(regionId, sample)
   }
+
   // Threshold retries reuse projection and the expensive polygon sampling.
   const { map, cells } = sample
-  // Sea puzzles keep a navigable border around islands, rather than inventing land bridges.
-  const candidates = new Set(cells.filter(cell => definition.sea
-    ? cell.country === null && cell.coverage < threshold && cell.position % map.width > 0 && cell.position % map.width < map.width - 1 && cell.position >= map.width && cell.position < map.width * (map.height - 1)
-    : cell.coverage >= threshold).map(cell => cell.position))
-  const result = { ...map, cells, floors: largestComponent(map, candidates), threshold, sea: definition.sea === true }
+  const playableCells = cells.filter(cell => {
+    if (!definition.sea) return cell.coverage >= threshold
+
+    // Sea puzzles navigate water around islands rather than connecting the islands with invented land.
+    // Require both a water center and low land coverage; a coast-straddling cell can satisfy only one.
+    const isWater = cell.country === null && cell.coverage < threshold
+    if (!isWater) return false
+
+    // Keep the outermost row and column non-playable even when they are water.
+    const column = cell.position % map.width
+    const insideColumns = column > 0 && column < map.width - 1
+    if (!insideColumns) return false
+
+    return cell.position >= map.width && cell.position < map.width * (map.height - 1)
+  })
+  const candidates = new Set(playableCells.map(cell => cell.position))
+
+  const result = {
+    ...map,
+    cells,
+    floors: largestComponent(map, candidates),
+    threshold,
+    sea: definition.sea === true
+  }
   cache.set(key, result)
+
   return result
 }

@@ -11,13 +11,17 @@ import { toTiled, fromTiled } from '../src/core/tiled.js'
 
 const storyPath = new URL('../src/content/story-levels.json', import.meta.url)
 const stories = JSON.parse(await readFile(storyPath, 'utf8'))
-setGeography(JSON.parse(gunzipSync(await readFile(new URL('../src/data/world.geojson.gz', import.meta.url)))))
+const worldBytes = await readFile(new URL('../src/data/world.geojson.gz', import.meta.url))
+setGeography(JSON.parse(gunzipSync(worldBytes)))
+
 const [operation, input, option] = process.argv.slice(2)
 
 try {
   if (operation === 'export') {
     const code = normalizeCode(input)
     if (!code) throw new Error('Supply a valid G2 puzzle code')
+
+    // Preserve curated story boards; only codes without stored content invoke generation.
     const level = stories[code] ?? generate(code)
     const output = resolve(option ?? `levels/editable/${code}.tmj`)
     await mkdir(dirname(output), { recursive: true })
@@ -27,17 +31,36 @@ try {
   } else if (operation === 'import') {
     const level = fromTiled(JSON.parse(await readFile(resolve(input), 'utf8')))
     if (!normalizeCode(level.id)) throw new Error('Invalid puzzle code in map properties')
+
     const map = rasterize(level.region, level.threshold)
     if (level.width !== map.width || level.height !== map.height) throw new Error('Preserve the region dimensions')
+
+    // Tiled uses cell positions; country containment is tested at each cell's center.
     for (const goal of level.goals) {
       const x = goal.position % level.width + 0.5
       const y = Math.floor(goal.position / level.width) + 0.5
       if (!level.sea && countryAt(map, x, y) !== goal.country) throw new Error(`Target is outside ${goal.country}`)
-      if (level.sea && (countryAt(map, x, y) || !goal.anchor || Math.hypot(x - goal.anchor[0], y - goal.anchor[1]) > 2.8)) throw new Error(`Invalid offshore dock for ${goal.country}`)
+      if (level.sea) {
+        // Offshore goals need a nearby country anchor, but must themselves remain on water.
+        const invalidDock = countryAt(map, x, y) || !goal.anchor ||
+          Math.hypot(x - goal.anchor[0], y - goal.anchor[1]) > 2.8
+
+        if (invalidDock) throw new Error(`Invalid offshore dock for ${goal.country}`)
+      }
     }
+
     const result = solve(level, initialState(level), 50000)
-    if (result.status !== 'solved') throw new Error(result.status === 'unsolvable' ? 'The edited puzzle is unsolvable' : 'No solution found within the search budget; solvability is unknown')
+    if (result.status !== 'solved') {
+      // Budget exhaustion is not proof that an edited puzzle has no solution.
+      const reason = result.status === 'unsolvable'
+        ? 'The edited puzzle is unsolvable'
+        : 'No solution found within the search budget; solvability is unknown'
+
+      throw new Error(reason)
+    }
+
     const certified = { ...level, solution: result.moves }
+
     if (option === '--story') {
       if (!stories[level.id]) throw new Error('Use an existing story code when replacing a chapter')
       stories[level.id] = certified

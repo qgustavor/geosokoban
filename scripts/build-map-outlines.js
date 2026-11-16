@@ -16,7 +16,13 @@ const regions = Object.fromEntries([...REGIONS, CARIBBEAN].map(definition => {
   const map = rasterize(definition.id)
   const margin = Math.max(map.width, map.height) * 3
   const bounds = [-margin, -margin, map.width + margin, map.height + margin].map(value => value * MAP_TILE_SIZE)
-  const pixels = regions => regions.map(({ id, path }) => ({ id, path: mosaicPath(path, bounds) })).filter(region => region.path)
+
+  const pixels = regions => {
+    const paths = regions.map(({ id, path }) => ({ id, path: mosaicPath(path, bounds) }))
+    // Clipping can erase an entire polygon; omit it rather than emitting an empty SVG path.
+    return paths.filter(region => region.path)
+  }
+
   return [definition.id, {
     width: map.width,
     height: map.height,
@@ -24,10 +30,18 @@ const regions = Object.fromEntries([...REGIONS, CARIBBEAN].map(definition => {
     regions: pixels(map.regions)
   }]
 }))
-const serialized = JSON.stringify({ mapVersion: MAP_VERSION, tileSize: MAP_TILE_SIZE, pixelsPerCell: MAP_PIXELS_PER_CELL, regions }) + '\n'
+
+const atlas = {
+  mapVersion: MAP_VERSION,
+  tileSize: MAP_TILE_SIZE,
+  pixelsPerCell: MAP_PIXELS_PER_CELL,
+  regions
+}
+const serialized = JSON.stringify(atlas) + '\n'
 
 if (process.argv.includes('--check')) {
   const existing = await readFile(output, 'utf8').catch(() => '')
+  // Compare exact bytes so stale projections and changes to serialization are both detected.
   if (existing !== serialized) {
     console.error('Map outlines are stale or missing. Run npm run maps:outlines.')
     process.exitCode = 1
