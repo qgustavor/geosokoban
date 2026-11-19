@@ -80,28 +80,6 @@ provide(gameContext, app)
       @dismiss="app.closePanel"
     >
       <div v-if="app.panel === 'pause'" class="pause-actions">
-        <div class="puzzle-code">
-          <span>{{ app.t('codeLabel') }}</span>
-          <code>{{ app.activeCode }}</code>
-          <div class="puzzle-share-actions">
-            <button class="quiet" @click="app.sharePuzzle">
-              {{ app.t('sharePuzzle') }}
-            </button>
-            <button class="quiet" @click="app.copyText(app.puzzleURL())">
-              {{ app.t('copyLink') }}
-            </button>
-          </div>
-          <p v-if="app.notice" role="status">
-            {{ app.notice }}
-          </p>
-          <textarea
-            v-if="app.fallbackText"
-            :value="app.fallbackText"
-            :aria-label="app.t('copyFallback')"
-            readonly
-            @focus="$event.target.select()"
-          />
-        </div>
         <button class="button primary" @click="app.closePanel">
           {{ app.t('resume') }}
         </button>
