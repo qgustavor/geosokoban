@@ -1,6 +1,6 @@
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { puzzleLocation } from '../router/locations.js'
+import { puzzleLocation, guardedPuzzleLocation } from '../router/locations.js'
 import { shareResult } from '../core/share.js'
 import { useStoryDialogue } from './useStoryDialogue.js'
 import { resumeStory, storyProgressCode } from '../content/story.js'
@@ -8,12 +8,15 @@ import { useSession } from './useSession.js'
 import { useAssistance } from './useAssistance.js'
 import { useGameAudio } from './useGameAudio.js'
 import { movementSound } from '../audio/score.js'
-import { normalizeCode, newCode, isPlanningCode } from '../core/seed.js'
-import { CHALLENGES, challengeSettings, challengeName, withPlanning } from '../core/challenge.js'
+import { normalizeCode, puzzleDate, isPlanningCode } from '../core/seed.js'
+import { CHALLENGES, challengeSettings, challengeName } from '../core/challenge.js'
 import { storyCode, storyIndex, STORY_COUNT } from '../content/regions.js'
 import relations from '../content/relations.json' with { type: 'json' }
 import { translate, countryName } from '../data/i18n.js'
 import { readPreferences, savePreferences } from '../ui/storage.js'
+import { createRun, finishRunLevel, reopenRunLevel, elapsedRun, formatElapsed, runTotals } from '../core/run.js'
+import { utcDay } from '../core/dates.js'
+import { useGameplayGestures } from './useGameplayGestures.js'
 
 export function useGameController () {
   const router = useRouter()
@@ -27,13 +30,29 @@ export function useGameController () {
   const locale = ref(saved.locale ?? detected)
   const completed = ref(saved.completed)
   const pendingStory = ref(saved.pendingStory)
+  const speedrun = ref(saved.speedrun)
+  const storyRun = ref(saved.storyRun)
+  const activeRun = ref(null)
+  const storyFinished = ref(false)
+  const now = ref(Date.now())
+  const elapsed = computed(() => elapsedRun(activeRun.value, now.value))
+  const timerText = computed(() => elapsed.value === null ? '' : formatElapsed(elapsed.value))
+  const totals = computed(() => runTotals(activeRun.value))
+
+  function updateRun (value) {
+    activeRun.value = value
+    if (value?.kind === 'story') storyRun.value = value
+    now.value = Date.now()
+  }
   const dialogue = useStoryDialogue(locale)
   const reduced = ref(saved.reduced)
   const panel = ref('')
+  // Menu preferences are independent of a story's teaching rules or a shared link's difficulty.
+  const mode = ref(saved.mode)
+  const challenge = ref(saved.challenge)
   const guidance = ref(saved.guidance)
-  const planning = ref(saved.planning)
-  const challenge = computed(() => challengeName(guidance.value, planning.value))
   const view = computed(() => route.name)
+  useGameplayGestures(computed(() => view.value === 'puzzle'))
 
   const activeCode = ref('')
   const failure = ref(null)
@@ -96,7 +115,7 @@ export function useGameController () {
   }
 
   function puzzleURL () {
-    const resolved = router.resolve(puzzleLocation(level.value.id, guidance.value))
+    const resolved = router.resolve(puzzleLocation(chapter.value ? storyCode(1) : level.value.id, guidance.value))
 
     return new URL(resolved.href, window.location.href).href
   }
@@ -104,13 +123,12 @@ export function useGameController () {
   async function activate (input, navigate = true) {
     if (game.loading.value) game.cancel()
 
-    const code = normalizeCode(input)
-
-    if (!code) {
-      notice.value = t('errorCode')
-      if (!navigate) failure.value = { key: 'errorCode', code: null }
+    const destination = guardedPuzzleLocation(input, guidance.value)
+    if (destination.name === 'home') {
+      await router.replace({ name: 'home' })
       return false
     }
+    const code = destination.params.code
 
     failure.value = null
     panel.value = ''
@@ -121,7 +139,17 @@ export function useGameController () {
       if (!await game.start(code)) return false
 
       // Reset discoveries and assistance only after the replacement board is ready.
-      planning.value = level.value.planning === true
+      if (storyIndex(code)) {
+        guidance.value = 'learn'
+        if (!storyRun.value || (storyIndex(code) === 1 &&
+          (storyRun.value.finishedAt !== null || storyIndex(storyRun.value.code) !== 1))) {
+          storyRun.value = createRun(code, speedrun.value)
+        }
+        updateRun(storyRun.value)
+      } else {
+        updateRun(createRun(code, speedrun.value))
+      }
+      storyFinished.value = false
       assisted.value = false
       revealed.value = []
       selected.value = guidance.value === 'learn' ? level.value.goals[0].country : ''
@@ -143,6 +171,8 @@ export function useGameController () {
         if (resumingDialogue) {
           // The puzzle was solved before leaving. Resume its unread scene, then travel on.
           playAfterStory(code)
+        } else if (storyIndex(code) === STORY_COUNT && activeRun.value?.finishedAt !== null && activeRun.value?.levels[code]) {
+          storyFinished.value = true
         } else {
           dialogue.start(code, 'before', focusBoard)
         }
@@ -160,9 +190,13 @@ export function useGameController () {
   }
 
   function open (code) {
+    // Only an explicit menu launch uses the preferred difficulty. Deep links keep their own settings.
+    if (!storyIndex(code)) guidance.value = challengeSettings(challenge.value).guidance
+
     // Starting a completed campaign begins a fresh three-tour journey.
     if (storyIndex(code) === 1 && completed.value.length === STORY_COUNT && !pendingStory.value) {
       completed.value = []
+      storyRun.value = null
     }
 
     return activate(code)
@@ -228,7 +262,7 @@ export function useGameController () {
   function step (direction) {
     // During navigation the route can name a board that has not replaced the old session yet.
     if (view.value !== 'puzzle' || activeCode.value !== route.params.code) return
-    if (boardTransitioning.value || panel.value || dialogue.scene.value) return
+    if (boardTransitioning.value || panel.value || dialogue.scene.value || storyFinished.value) return
     if (game.loading.value || solved.value) return
 
     const previousState = state.value
@@ -253,30 +287,37 @@ export function useGameController () {
       revealed.value = [...new Set([...revealed.value, arrived.country])]
     }
 
-    if (solved.value && chapter.value) {
-      // Hard and non-Hard versions count toward the same story chapter.
-      const storyId = storyProgressCode(level.value.id)
-      completed.value = [...new Set([...completed.value, storyId])]
-      // Save this separately from puzzle completion so the closing scene survives a reload.
-      pendingStory.value = level.value.id
-    }
+    if (solved.value) recordCompletion()
+  }
+
+  function recordCompletion () {
+    updateRun(finishRunLevel(activeRun.value, level.value.id, state.value, assisted.value))
+    if (!chapter.value) return
+    const storyId = storyProgressCode(level.value.id)
+    completed.value = [...new Set([...completed.value, storyId])]
+    // Save separately so an unread scene, including the ending, survives a reload.
+    pendingStory.value = storyId
   }
 
   function undo () {
-    if (boardTransitioning.value || dialogue.scene.value) return
+    if (boardTransitioning.value || dialogue.scene.value || storyFinished.value) return
 
-    if (game.undo()) audio.play('undo')
-    clearUndoneCheckpoint()
+    if (game.undo()) {
+      audio.play('undo')
+      clearUndoneCheckpoint()
+    }
     factCountry.value = ''
     notice.value = ''
     focusBoard()
   }
 
   function restart () {
-    if (boardTransitioning.value || dialogue.scene.value) return
+    if (boardTransitioning.value || dialogue.scene.value || storyFinished.value) return
 
-    if (game.restart()) audio.play('restart')
-    clearUndoneCheckpoint()
+    if (game.restart()) {
+      audio.play('restart')
+      clearUndoneCheckpoint()
+    }
     help.clearHint()
     factCountry.value = ''
     notice.value = ''
@@ -347,6 +388,7 @@ export function useGameController () {
   }
 
   function setGuidance (value) {
+    if (chapter.value && view.value === 'puzzle') return
     if (guidance.value === value) return
 
     if (view.value === 'puzzle') assisted.value = true
@@ -354,12 +396,12 @@ export function useGameController () {
     if (view.value === 'puzzle') router.replace(puzzleLocation(level.value.id, value))
   }
 
-  function setChallenge (value) {
-    if (!CHALLENGES.includes(value)) return
+  function setMode (value) {
+    if (['story', 'daily', 'archive'].includes(value)) mode.value = value
+  }
 
-    const settings = challengeSettings(value)
-    guidance.value = settings.guidance
-    planning.value = settings.planning
+  function setChallenge (value) {
+    if (CHALLENGES.includes(value)) challenge.value = value
   }
 
   async function copyText (text) {
@@ -405,17 +447,34 @@ export function useGameController () {
   }
 
   async function share () {
-    const moves = state.value.moves
-    // Report the loaded board's planning mode, not a preference selected for a future puzzle.
+    if (chapter.value && !storyFinished.value) return
+    const result = totals.value
+    const helpLabel = t((chapter.value ? result.assisted : assisted.value) ? 'assisted' : 'unassisted')
     const challengeLabel = t('challenge' + challengeName(guidance.value, level.value.planning === true))
-    const assistanceLabel = t(assisted.value ? 'assisted' : 'unassisted')
-    const resultText = t('shareResult', { moves, challenge: challengeLabel, help: assistanceLabel })
-    const text = `${resultText}\n${level.value.id}`
-
+    const completeJourney = result.levels === STORY_COUNT
+    let text = chapter.value
+      ? t(completeJourney ? 'shareStoryResult' : 'shareStoryPartial', {
+          moves: result.moves, levels: result.levels, help: helpLabel
+        })
+      : t('shareDatedResult', {
+          date: puzzleDate(level.value.id) ?? '', moves: state.value.moves, challenge: challengeLabel, help: helpLabel
+        })
+    if (timerText.value && (!chapter.value || completeJourney)) text += `\n${t('speedrun')}: ${timerText.value}`
     return sendShare({ title: 'GeoSokoban', text, url: puzzleURL() })
   }
 
   function clearUndoneCheckpoint () {
+    // Restart is undoable: restoring a solved snapshot must finish the clock again.
+    if (solved.value) {
+      recordCompletion()
+      return
+    }
+    if (!solved.value) {
+      storyFinished.value = false
+      updateRun(reopenRunLevel(activeRun.value, level.value.id))
+      const current = storyProgressCode(level.value.id)
+      if (current) completed.value = completed.value.filter(code => code !== current)
+    }
     // Undo/restart after solving is a return to play, not a pending departure.
     if (!solved.value && storyProgressCode(pendingStory.value) === storyProgressCode(level.value.id)) {
       pendingStory.value = ''
@@ -429,11 +488,11 @@ export function useGameController () {
     pendingStory.value = ''
 
     if (index === STORY_COUNT) {
-      home()
+      storyFinished.value = true
       return
     }
 
-    open(withPlanning(storyCode(index + 1), isPlanningCode(code)))
+    open(storyCode(index + 1))
   }
 
   function playAfterStory (code) {
@@ -451,12 +510,14 @@ export function useGameController () {
       return
     }
 
-    open(withPlanning(newCode(), level.value.planning === true))
+    setMode('archive')
+    router.push({ name: 'home', query: { date: puzzleDate(level.value.id) ?? utcDay() } })
   }
 
   function clearProgress () {
     completed.value = []
     pendingStory.value = ''
+    storyRun.value = null
   }
 
   function retry () {
@@ -478,20 +539,23 @@ export function useGameController () {
       return
     }
 
-    const code = normalizeCode(route.params.code)
-
-    if (!code) {
+    const destination = guardedPuzzleLocation(route.params.code, route.query.g)
+    if (destination.name === 'home') {
       dialogue.cancel()
-      failure.value = { key: 'errorCode', code: null }
+      await router.replace({ name: 'home' })
       return
     }
+    const code = normalizeCode(destination.params.code)
 
     // Hard always hides destinations; other boards take guidance from the shareable query parameter.
-    const rememberTargets = isPlanningCode(code) || route.query.g === 'remember'
+    const rememberTargets = !storyIndex(code) && (isPlanningCode(code) || route.query.g === 'remember')
     guidance.value = rememberTargets ? 'remember' : 'learn'
 
     // A guidance-only URL change must not restart the current puzzle or discard its history.
     if (activeCode.value === code) {
+      if (pendingStory.value && storyProgressCode(pendingStory.value) === storyProgressCode(code)) {
+        playAfterStory(code)
+      }
       focusBoard()
       return
     }
@@ -507,16 +571,19 @@ export function useGameController () {
 
   // Audio choices share the existing save so they survive reloads without erasing story progress.
   watch([
-    locale, completed, pendingStory, reduced, guidance, planning,
+    locale, completed, pendingStory, reduced, mode, challenge, speedrun, storyRun,
     () => audio.music, () => audio.sfx, () => audio.musicVolume, () => audio.sfxVolume
   ], () => {
     savePreferences({
       locale: locale.value,
       completed: completed.value,
       pendingStory: pendingStory.value,
+      speedrun: speedrun.value,
+      storyRun: storyRun.value,
       reduced: reduced.value,
-      guidance: guidance.value,
-      planning: planning.value,
+      mode: mode.value,
+      challenge: challenge.value,
+      ...challengeSettings(challenge.value),
       music: audio.music,
       sfx: audio.sfx,
       musicVolume: audio.musicVolume,
@@ -529,7 +596,11 @@ export function useGameController () {
     notice.value = ''
   })
 
+  let clockTimer
   onMounted(() => {
+    clockTimer = setInterval(() => {
+      now.value = Date.now()
+    }, 200)
     document.documentElement.lang = locale.value
     mediaQuery.addEventListener('change', motionChanged)
   })
@@ -548,18 +619,24 @@ export function useGameController () {
 
   onUnmounted(() => {
     clearTimeout(noticeTimer)
+    clearInterval(clockTimer)
     dialogue.cancel()
     mediaQuery.removeEventListener('change', motionChanged)
   })
 
   return {
     audio,
+    speedrun,
+    timerText,
+    totals,
+    storyFinished,
     view,
     locale,
     completed,
     reduced,
     panel,
     guidance,
+    mode,
     challenge,
     notice,
     fallbackText,
@@ -595,6 +672,7 @@ export function useGameController () {
     reveal,
     revealAll,
     setGuidance,
+    setMode,
     setChallenge,
     nextPuzzle,
     share,

@@ -80,6 +80,7 @@ provide(gameContext, app)
       @dismiss="app.closePanel"
     >
       <div v-if="app.panel === 'pause'" class="pause-actions">
+        <p class="gesture-help">{{ app.t('gestureHelp') }}</p>
         <button class="button primary" @click="app.closePanel">
           {{ app.t('resume') }}
         </button>
@@ -99,6 +100,7 @@ provide(gameContext, app)
         :t="app.t"
         :locale="app.locale"
         :reduced="app.reduced"
+        :speedrun="app.speedrun"
         :music="app.audio.music"
         :sfx="app.audio.sfx"
         :music-volume="app.audio.musicVolume"
@@ -106,6 +108,7 @@ provide(gameContext, app)
         @back="app.closePanel"
         @locale="app.locale = $event"
         @reduced="app.reduced = $event"
+        @speedrun="app.speedrun = $event"
         @music="app.audio.music = $event"
         @sfx="app.audio.sfx = $event"
         @music-volume="app.audio.musicVolume = $event"
@@ -123,6 +126,8 @@ provide(gameContext, app)
 </template>
 
 <style scoped>
+.gesture-help { margin: 0 0 4px; font-size: 13px; line-height: 1.6; color: #547477; }
+
 .pause-actions { display: grid; gap: 12px; }
 
 .puzzle-code { display: grid; gap: 6px; margin-bottom: 10px; }

@@ -1,5 +1,6 @@
 import { storyProgressCode } from '../content/story.js'
-import { normalizeCode } from '../core/seed.js'
+import { restoreStoryRun } from '../core/run.js'
+import { CHALLENGES, challengeName, challengeSettings } from '../core/challenge.js'
 import { audioSettings } from '../audio/settings.js'
 
 const KEY = 'geosokoban.prototype.v2'
@@ -15,22 +16,33 @@ export function readPreferences () {
       ? [...new Set(data.completed.map(storyProgressCode).filter(Boolean))]
       : []
 
+    const challenge = CHALLENGES.includes(data?.challenge)
+      ? data.challenge
+      : challengeName(data?.guidance, data?.planning === true)
+
     return {
       ...audioSettings(data),
+      mode: ['story', 'daily', 'archive'].includes(data?.mode) ? data.mode : 'daily',
+      challenge,
       locale,
       completed,
-      pendingStory: storyProgressCode(data?.pendingStory) ? normalizeCode(data.pendingStory) : '',
+      pendingStory: storyProgressCode(data?.pendingStory),
+      speedrun: data?.speedrun === true,
+      storyRun: restoreStoryRun(data?.storyRun),
       reduced: data?.reduced === true,
-      guidance: data?.guidance === 'remember' ? 'remember' : 'learn',
-      planning: data?.planning === true
+      ...challengeSettings(challenge)
     }
   } catch {
     // Invalid JSON and unavailable storage must not prevent a new session from starting.
     return {
       ...audioSettings(),
+      mode: 'daily',
+      challenge: 'easy',
       locale: null,
       completed: [],
       pendingStory: '',
+      speedrun: false,
+      storyRun: null,
       reduced: false,
       guidance: 'learn',
       planning: false

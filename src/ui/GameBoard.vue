@@ -1,9 +1,10 @@
 <script setup>
-import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
-import { boardViewport, labelPlacement, coastlineEdges } from '../core/presentation.js'
+import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { labelPlacement, coastlineEdges } from '../core/presentation.js'
 import { tileTransitionStyle, TILE_ENTER_MS, TILE_LEAVE_MS } from '../core/board-transition.js'
 import { outlinesForLevel, contextForLevel, UNDERLAY_PIXELS_PER_CELL } from '../geo/outlines.js'
-import { createSwipeInput } from '../core/swipe.js'
+import { createBoardInput } from '../core/board-input.js'
+import { initialCamera, clampCamera, cameraViewport, transformCamera, followPlayer } from '../core/board-camera.js'
 import { createScenery } from '../scenery/scene.js'
 import TerrainArt from './TerrainArt.vue'
 import GroundDetail from './GroundDetail.vue'
@@ -23,27 +24,57 @@ const props = defineProps({
   overlay: { type: Object, default: () => ({ boxId: null, pushes: [], route: [] }) }
 })
 
-const emit = defineEmits(['inspect', 'key', 'destination', 'step'])
+const emit = defineEmits(['inspect', 'key', 'destination', 'step', 'overview'])
 const board = ref(null)
 const stage = ref(null)
 // The initial size supplies a viewport before the first ResizeObserver notification.
 const size = ref({ width: 800, height: 800 })
+const camera = ref(initialCamera(props.level, size.value, props.state.player, !props.preview))
+let measured = false
 let resizeObserver
 
 onMounted(() => {
   resizeObserver = new ResizeObserver(([entry]) => {
+    if (!entry.contentRect.width || !entry.contentRect.height) return
+    resetInput()
     size.value = { width: entry.contentRect.width, height: entry.contentRect.height }
+    camera.value = measured
+      ? clampCamera(props.level, size.value, camera.value)
+      : initialCamera(props.level, size.value, props.state.player, !props.preview)
+    measured = true
   })
   resizeObserver.observe(stage.value)
+  window.addEventListener('blur', resetInput)
+  document.addEventListener('visibilitychange', resetInput)
 })
 
-onBeforeUnmount(() => resizeObserver?.disconnect())
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  window.removeEventListener('blur', resetInput)
+  document.removeEventListener('visibilitychange', resetInput)
+  resetInput()
+})
 
-const viewport = computed(() => boardViewport(props.level, size.value))
+watch(() => props.state.player, player => {
+  camera.value = followPlayer(props.level, size.value, camera.value, player)
+})
+
+const viewport = computed(() => cameraViewport(props.level, size.value, camera.value))
 const viewBox = computed(() => {
   const { x, y, width, height } = viewport.value
   return [x, y, width, height].join(' ')
 })
+
+function toggleOverview () {
+  resetInput()
+  camera.value = camera.value.zoom > 1.01
+    ? initialCamera(props.level, size.value, props.state.player, false)
+    : clampCamera(props.level, size.value, {
+        ...initialCamera(props.level, size.value, props.state.player),
+        zoom: Math.max(2, initialCamera(props.level, size.value, props.state.player).zoom)
+      })
+  board.value.focus({ preventScroll: true })
+}
 
 const coastlines = computed(() => {
   const floors = new Set(props.level.floors)
@@ -58,52 +89,89 @@ const coastlines = computed(() => {
 const tileDelay = position => tileTransitionStyle(props.level, position)
 const labelStyle = label => labelPlacement(props.level, label.position, viewport.value, size.value)
 
-const gesture = createSwipeInput(direction => emit('step', direction))
-let pointer = null
-let suppressClick = false
+let pinchOrigin = null
+let pinchRevision = -1
+const input = createBoardInput(direction => emit('step', direction), change => {
+  if (change.gesture !== pinchRevision) {
+    pinchOrigin = camera.value
+    pinchRevision = change.gesture
+  }
+  camera.value = transformCamera(props.level, size.value, pinchOrigin, change)
+})
+
+function point (event) {
+  const rect = stage.value.getBoundingClientRect()
+  return { x: event.clientX - rect.left, y: event.clientY - rect.top }
+}
+
+function capturePointers () {
+  if (!input.captured) return
+  for (const id of input.ids) {
+    if (board.value.hasPointerCapture(id)) continue
+    // A pointer can be cancelled by the OS between dispatch and capture.
+    try {
+      board.value.setPointerCapture(id)
+    } catch {
+      // Already released.
+    }
+  }
+}
 
 function pointerDown (event) {
-  if (props.preview || event.button !== 0) return
-
-  // A second touch belongs to a multi-touch gesture, not another movement command.
-  if (!event.isPrimary) {
-    gesture.cancel()
-    pointer = null
-    return
-  }
-
-  pointer = event.pointerId
-  suppressClick = false
-  gesture.start(pointer, event.clientX, event.clientY)
+  if (props.preview || event.button !== 0 || event.target.closest('button')) return
+  const { x, y } = point(event)
+  input.down(event.pointerId, x, y)
+  capturePointers()
   board.value.focus({ preventScroll: true })
 }
 
 function pointerMove (event) {
-  if (pointer !== event.pointerId) return
-
-  if (gesture.move(event.pointerId, event.clientX, event.clientY)) {
-    // Capture only after a swipe has actually stepped; a tap must still inspect the flag.
-    suppressClick = true
-    if (event.type === 'pointermove') event.currentTarget.setPointerCapture(pointer)
-  }
+  const { x, y } = point(event)
+  input.move(event.pointerId, x, y)
+  capturePointers()
 }
 
 function pointerEnd (event) {
-  if (pointer !== event.pointerId) return
+  if (event.type === 'lostpointercapture' && event.target !== board.value) return
+  const { x, y } = point(event)
+  input.up(event.pointerId, x, y, event.type !== 'pointerup')
+}
 
-  // Include the release position, which may be newer than the last pointermove event.
-  if (event.type === 'pointerup') pointerMove(event)
-  suppressClick = gesture.end(event.pointerId) || suppressClick
-  pointer = null
+function pointerLeave (event) {
+  if (!board.value.hasPointerCapture(event.pointerId)) {
+    const { x, y } = point(event)
+    input.up(event.pointerId, x, y, true)
+  }
+}
+
+function resetInput () {
+  pinchOrigin = null
+  pinchRevision = -1
+  const ids = input.ids
+  input.reset()
+  for (const id of ids) {
+    if (board.value?.hasPointerCapture(id)) board.value.releasePointerCapture(id)
+  }
 }
 
 function click (event) {
-  if (!suppressClick) return
-
-  // Consume the synthetic click after a swipe so movement does not also inspect a destination.
+  if (event.target.closest('button') || !input.consumeClick()) return
+  // Neither swipes nor pinches may also inspect the flag under the release position.
   event.preventDefault()
   event.stopPropagation()
-  suppressClick = false
+}
+
+function wheel (event) {
+  if (props.preview) return
+  event.preventDefault()
+  resetInput()
+  const from = point(event)
+  const pixels = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? size.value.height : 1
+  // Trackpad pinching is delivered as Ctrl+wheel; an ordinary two-finger scroll pans.
+  const change = event.ctrlKey
+    ? { from, to: from, scale: Math.exp(-Math.max(-200, Math.min(200, event.deltaY * pixels)) * 0.01) }
+    : { from, to: { x: from.x - event.deltaX * pixels, y: from.y - event.deltaY * pixels }, scale: 1 }
+  camera.value = transformCamera(props.level, size.value, camera.value, change)
 }
 
 const regions = computed(() => outlinesForLevel(props.level))
@@ -122,6 +190,14 @@ const route = computed(() => {
   const centers = props.overlay.route.map(position => `${x(position) + 20},${y(position) + 20}`)
   return centers.join(' ')
 })
+
+// Notify parent whenever zoom crosses the overview threshold:
+const isOverview = computed(() => camera.value.zoom <= 1.01)
+watch(isOverview, value => emit('overview', value), { immediate: true })
+
+defineExpose({
+  toggleOverview
+})
 </script>
 
 <template>
@@ -129,6 +205,7 @@ const route = computed(() => {
     ref="board"
     class="board-wrap"
     :data-level="level.id"
+    :data-zoom="camera.zoom"
     :class="{ 'board-preview': preview }"
     :style="{ '--tile-enter-duration': `${TILE_ENTER_MS}ms`, '--tile-leave-duration': `${TILE_LEAVE_MS}ms` }"
     :tabindex="preview ? -1 : 0"
@@ -139,7 +216,10 @@ const route = computed(() => {
     @pointermove="pointerMove"
     @pointerup="pointerEnd"
     @pointercancel="pointerEnd"
+    @pointerleave="pointerLeave"
     @lostpointercapture="pointerEnd"
+    @wheel="wheel"
+    @contextmenu.prevent
     @click.capture="click"
   >
     <div ref="stage" class="board-stage">
@@ -362,21 +442,71 @@ const route = computed(() => {
 </template>
 
 <style scoped>
-.board-wrap:focus-visible { outline-offset: -6px; outline-color: #f5d39f; }
+.board-wrap {
+  position: relative;
+  background: transparent;
+  height: 100dvh;
+  width: 100%;
+  touch-action: none;
+  overscroll-behavior: contain;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
 
-.board-svg { width: 100%; height: 100%; overflow: hidden; display: block; }
+.board-wrap:focus-visible {
+  outline-offset: -6px;
+  outline-color: #f5d39f;
+}
 
-.tile-surface { stroke: #657f60; stroke-opacity: .12; stroke-width: .65; }
+/* Reserve space for the HUD and controls, including device safe areas, before fitting the map. */
+.board-stage {
+  position: absolute;
+  inset: max(76px, calc(env(safe-area-inset-top) + 52px)) 0 max(80px, calc(env(safe-area-inset-bottom) + 64px));
+}
 
-.water-tile { stroke: #d6efeb; stroke-opacity: .12; stroke-width: .55; }
+.board-svg {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: block;
+}
 
-.coast-edge { fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; stroke-opacity: .65; }
+.tile-surface {
+  stroke: #657f60;
+  stroke-opacity: 0.12;
+  stroke-width: 0.65;
+}
 
-.map-outline { pointer-events: none; shape-rendering: crispEdges; }
+.water-tile {
+  stroke: #d6efeb;
+  stroke-opacity: 0.12;
+  stroke-width: 0.55;
+}
 
-.map-outline path { fill: #a5bca0; stroke: none; opacity: .3; }
+.coast-edge {
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-opacity: 0.65;
+}
 
-.country-borders { pointer-events: none; shape-rendering: crispEdges; }
+.map-outline {
+  pointer-events: none;
+  shape-rendering: crispEdges;
+}
+
+.map-outline path {
+  fill: #a5bca0;
+  stroke: none;
+  opacity: 0.3;
+}
+
+.country-borders {
+  pointer-events: none;
+  shape-rendering: crispEdges;
+}
 
 .country-borders path {
   fill: none;
@@ -386,30 +516,33 @@ const route = computed(() => {
   stroke-linecap: butt;
 }
 
-.goal { stroke: #ad6547; stroke-width: 2; fill: #fff6e9; stroke-dasharray: 4 2; }
-
-.solved-goal { fill: #adcda0; stroke: #3c7952; stroke-dasharray: none; }
-
-.goal-number { text-anchor: middle; fill: #81482e; font-size: 21px; font-weight: 750; }
-
-.box-actor, .player-actor { transition: transform .12s ease-out; }
-
-.box-actor { cursor: pointer; }
-
-.board-wrap {
-  position: relative;
-  background: transparent;
-  height: 100dvh;
-  width: 100%;
-  touch-action: pinch-zoom;
-  user-select: none;
-  -webkit-user-select: none;
+.goal {
+  stroke: #ad6547;
+  stroke-width: 2;
+  fill: #fff6e9;
+  stroke-dasharray: 4 2;
 }
 
-/* Reserve space for the HUD and controls, including device safe areas, before fitting the map. */
-.board-stage {
-  position: absolute;
-  inset: max(48px, env(safe-area-inset-top)) 0 max(80px, env(safe-area-inset-bottom));
+.solved-goal {
+  fill: #adcda0;
+  stroke: #3c7952;
+  stroke-dasharray: none;
+}
+
+.goal-number {
+  text-anchor: middle;
+  fill: #81482e;
+  font-size: 21px;
+  font-weight: 750;
+}
+
+.box-actor,
+.player-actor {
+  transition: transform 0.12s ease-out;
+}
+
+.box-actor {
+  cursor: pointer;
 }
 
 .flag-label {
@@ -434,7 +567,7 @@ const route = computed(() => {
   line-height: 1.3;
   box-shadow: 0 3px 0 #1a485333;
   text-wrap: balance;
-  animation: label-appear .2s ease-out both;
+  animation: label-appear 0.2s ease-out both;
 }
 
 .flag-label span::after {
@@ -448,29 +581,53 @@ const route = computed(() => {
   transform: translateX(-50%) rotate(45deg);
 }
 
-@keyframes label-appear { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.board-preview {
+  height: 100%;
+}
 
-.board-preview { height: 100%; }
+.board-preview .board-stage {
+  inset: 0;
+}
 
-.board-preview .board-stage { inset: 0; }
+.islands path {
+  opacity: 0.75;
+  fill: #dbe2af;
+}
 
-.board-svg { overflow: hidden; }
+.target {
+  cursor: pointer;
+}
 
-.islands path { opacity: .75; fill: #dbe2af; }
+.target-flag {
+  opacity: 0.4;
+  pointer-events: none;
+}
 
-.target { cursor: pointer; }
+.delivered-mark {
+  font-size: 16px;
+  fill: #21513c;
+}
 
-.target-flag { opacity: .4; pointer-events: none; }
+.land-tile,
+.tile-pop,
+.piece-reveal {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
 
-.delivered-mark { font-size: 16px; fill: #21513c; }
+.tile-underface {
+  opacity: 0;
+}
 
-.land-tile, .tile-pop, .piece-reveal { transform-box: fill-box; transform-origin: center bottom; }
+.board-swap-enter-active,
+.board-swap-leave-active {
+  pointer-events: none;
+}
 
-.tile-underface { opacity: 0; }
-
-.board-swap-enter-active, .board-swap-leave-active { pointer-events: none; }
-
-.board-swap-enter-active .tile-underface, .board-swap-leave-active .tile-underface { opacity: 1; }
+.board-swap-enter-active .tile-underface,
+.board-swap-leave-active .tile-underface {
+  opacity: 1;
+}
 
 /* Build and dismantle share tile delays with the JavaScript transition duration. */
 .board-swap-enter-active .land-tile,
@@ -478,7 +635,7 @@ const route = computed(() => {
 .board-swap-enter-active .piece-reveal {
   animation-name: tile-build;
   animation-duration: var(--tile-enter-duration);
-  animation-timing-function: cubic-bezier(.16,.75,.25,1);
+  animation-timing-function: cubic-bezier(0.16, 0.75, 0.25, 1);
   animation-fill-mode: both;
   will-change: transform, opacity;
 }
@@ -489,20 +646,28 @@ const route = computed(() => {
   animation-name: tile-dismantle;
   animation-duration: var(--tile-leave-duration);
   animation-delay: var(--tile-leave-delay) !important;
-  animation-timing-function: cubic-bezier(.55,0,.85,.35);
+  animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.35);
   animation-fill-mode: both;
   will-change: transform, opacity;
 }
 
 /* Explicit keyframes also fade on first mount. A transition to opacity: 0 can
    otherwise miss its starting frame when Vue attaches the leave classes. */
-.board-swap-enter-active .map-outline { animation: underlay-arrive .52s .08s both; }
+.board-swap-enter-active .map-outline {
+  animation: underlay-arrive 0.52s 0.08s both;
+}
 
-.board-swap-leave-active .map-outline { animation: underlay-depart .34s both; }
+.board-swap-leave-active .map-outline {
+  animation: underlay-depart 0.34s both;
+}
 
-.board-swap-enter-active .country-borders { animation: underlay-arrive .3s .5s both; }
+.board-swap-enter-active .country-borders {
+  animation: underlay-arrive 0.3s 0.5s both;
+}
 
-.board-swap-leave-active .country-borders { animation: underlay-depart .2s both; }
+.board-swap-leave-active .country-borders {
+  animation: underlay-depart 0.2s both;
+}
 
 .board-swap-leave-active .hint-route,
 .board-swap-leave-active .push-marker,
@@ -510,13 +675,31 @@ const route = computed(() => {
   visibility: hidden;
 }
 
-.hint-box { fill: none; stroke: #c35021; stroke-width: 3; stroke-dasharray: 5 3; }
+.hint-box {
+  fill: none;
+  stroke: #c35021;
+  stroke-width: 3;
+  stroke-dasharray: 5 3;
+}
 
-.hint-route { stroke: #a94620; stroke-width: 4; stroke-dasharray: 5 5; fill: none; opacity: .9; pointer-events: none; }
+.hint-route {
+  stroke: #a94620;
+  stroke-width: 4;
+  stroke-dasharray: 5 5;
+  fill: none;
+  opacity: 0.9;
+  pointer-events: none;
+}
 
-.push-marker { pointer-events: none; }
+.push-marker {
+  pointer-events: none;
+}
 
-.push-marker rect { fill: #ffdf9b55; stroke: #a94620; stroke-width: 2; }
+.push-marker rect {
+  fill: #ffdf9b55;
+  stroke: #a94620;
+  stroke-width: 2;
+}
 
 .push-marker text {
   font-size: 11px;
@@ -527,26 +710,76 @@ const route = computed(() => {
   stroke-width: 3;
 }
 
+@keyframes label-appear {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @keyframes tile-build {
-  0% { opacity: 0; transform: translateY(52px) scale(.86,.12); }
-  22% { opacity: 1; }
-  72% { opacity: 1; transform: translateY(-5px) scale(1,1.025); }
-  100% { opacity: 1; transform: none; }
+  0% {
+    opacity: 0;
+    transform: translateY(52px) scale(0.86, 0.12);
+  }
+  22% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1, 1.025);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @keyframes tile-dismantle {
-  0% { opacity: 1; transform: none; }
-  25% { opacity: 1; transform: translateY(-4px) scale(1,1.025); }
-  100% { opacity: 0; transform: translateY(48px) scale(.86,.12); }
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1, 1.025);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(48px) scale(0.86, 0.12);
+  }
 }
 
-@keyframes underlay-arrive { from { opacity: 0; } to { opacity: 1; } }
+@keyframes underlay-arrive {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
-@keyframes underlay-depart { from { opacity: 1; } to { opacity: 0; } }
+@keyframes underlay-depart {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .tile-underface { display: none; }
+  .tile-underface {
+    display: none;
+  }
 }
 
-:global(.reduced-motion) .tile-underface { display: none; }
+:global(.reduced-motion) .tile-underface {
+  display: none;
+}
 </style>
+

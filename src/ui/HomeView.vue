@@ -1,9 +1,10 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { challengeSettings, withPlanning } from '../core/challenge.js'
 import { REGIONS, storyCode, storyIndex, storyStop, STORY_COUNT, STORY_TOURS } from '../content/regions.js'
 import { storyProgressCode } from '../content/story.js'
-import { dailyCode, newCode } from '../core/seed.js'
+import { dailyCode } from '../core/seed.js'
+import { utcDay, shiftDay, isAvailableDay } from '../core/dates.js'
 import ChallengePicker from './ChallengePicker.vue'
 
 const props = defineProps({
@@ -11,11 +12,27 @@ const props = defineProps({
   completed: { type: Array, required: true },
   resumeCode: { type: String, required: true },
   challenge: { type: String, required: true },
-  notice: { type: String, default: '' }
+  notice: { type: String, default: '' },
+  mode: { type: String, required: true },
+  initialDate: { type: String, default: '' }
 })
-const emit = defineEmits(['start', 'challenge'])
-const mode = ref('daily')
-const modes = ['story', 'daily', 'random']
+const emit = defineEmits(['start', 'challenge', 'mode'])
+const modes = ['story', 'daily', 'archive']
+const today = ref(utcDay())
+const archiveDate = ref(isAvailableDay(props.initialDate) ? props.initialDate : shiftDay(today.value, -1))
+const validDate = computed(() => isAvailableDay(archiveDate.value, today.value))
+let dayTimer
+onMounted(() => {
+  dayTimer = setInterval(() => {
+    today.value = utcDay()
+  }, 1000)
+})
+onBeforeUnmount(() => clearInterval(dayTimer))
+
+function changeDay (offset) {
+  const day = shiftDay(archiveDate.value, offset)
+  if (isAvailableDay(day, today.value)) archiveDate.value = day
+}
 const symbols = ['↗', '◷', '⤨']
 const finished = computed(() => new Set(props.completed.map(storyProgressCode).filter(Boolean)))
 const nextStop = computed(() => storyStop(storyIndex(props.resumeCode)))
@@ -26,20 +43,20 @@ const tours = computed(() => Array.from({ length: STORY_TOURS }, (_, offset) => 
   return { number: offset + 1, completed: stops.filter(Boolean).length }
 }))
 const playLabel = computed(() => {
-  if (mode.value !== 'story') return props.t('playNow')
+  if (props.mode !== 'story') return props.t('playNow')
   if (finished.value.size === STORY_COUNT && storyIndex(props.resumeCode) === 1) return props.t('replayJourney')
 
   return props.t(finished.value.size ? 'continueJourney' : 'beginJourney')
 })
 
 function play () {
-  // Draw daily/random seeds on activation, never as a side effect of rendering the menu.
-  let selectedCode
-
-  if (mode.value === 'story') selectedCode = props.resumeCode
-  else if (mode.value === 'daily') selectedCode = dailyCode()
-  else selectedCode = newCode()
-
+  // Story always uses its authored route, regardless of the last daily difficulty.
+  if (props.mode === 'story') {
+    emit('start', props.resumeCode)
+    return
+  }
+  if (props.mode === 'archive' && !validDate.value) return
+  const selectedCode = props.mode === 'daily' ? dailyCode() : archiveDate.value
   const { planning } = challengeSettings(props.challenge)
   emit('start', withPlanning(selectedCode, planning))
 }
@@ -60,11 +77,12 @@ function play () {
           :class="{ active: mode === choice }"
         >
           <input
-            v-model="mode"
+            :checked="mode === choice"
             type="radio"
             name="game-mode"
             :value="choice"
             class="sr-only"
+            @change="$emit('mode', choice)"
           >
           <span class="mode-symbol" aria-hidden="true">{{ symbols[index] }}</span>
           <strong>{{ t(choice) }}</strong>
@@ -89,9 +107,47 @@ function play () {
           {{ t('nextDestination', { region: t(nextStop.region.name) }) }}
         </p>
       </section>
-      <ChallengePicker :value="challenge" :t="t" @change="$emit('challenge', $event)" />
+      <div v-if="mode === 'archive'" class="archive-picker">
+        <label for="archive-date" class="sr-only">{{ t('puzzleDate') }}</label>
+        <div class="date-controls">
+          <button
+            class="date-arrow"
+            :aria-label="t('previousDay')"
+            :disabled="!validDate || !isAvailableDay(shiftDay(archiveDate, -1), today)"
+            @click="changeDay(-1)"
+          >
+            ←
+          </button>
+          <input
+            id="archive-date"
+            v-model="archiveDate"
+            type="date"
+            :max="today"
+            required
+            :aria-label="t('puzzleDate')"
+          >
+          <button
+            class="date-arrow"
+            :aria-label="t('nextDay')"
+            :disabled="!validDate || archiveDate >= today"
+            @click="changeDay(1)"
+          >
+            →
+          </button>
+        </div>
+      </div>
+      <ChallengePicker
+        v-if="mode !== 'story'"
+        :value="challenge"
+        :t="t"
+        @change="$emit('challenge', $event)"
+      />
       <div class="departure-footer">
-        <button class="button primary start-game" @click="play">
+        <button
+          class="button primary start-game"
+          :disabled="mode === 'archive' && !validDate"
+          @click="play"
+        >
           {{ playLabel }} <span aria-hidden="true">→</span>
         </button>
       </div>
@@ -103,6 +159,12 @@ function play () {
 </template>
 
 <style scoped>
+.archive-picker { margin-top: 24px; }
+.archive-picker label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 700; }
+.date-controls { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.date-controls input { min-width: 0; width: 180px; font-size: 16px; text-align: center; color-scheme: light; }
+.date-arrow { width: 44px; height: 44px; flex: none; border: 1px solid #b4c4b1; background: #e9ecda; color: #254c59; font-size: 22px; }
+
 .level-selection {
   width: min(800px, calc(100vw - 36px));
   margin: 20px auto 0;

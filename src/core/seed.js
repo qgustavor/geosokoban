@@ -1,3 +1,4 @@
+import { utcDay, isCalendarDay } from './dates.js'
 import { REGIONS } from '../content/regions.js'
 
 // Short, familiar words are easier to dictate than a string of ambiguous letters.
@@ -49,11 +50,22 @@ export function randomFrom (seed) {
 }
 
 export function dailyCode (date = new Date()) {
-  // Keep UTC as the shared daily boundary, with a date a person can actually read.
-  const day = date.toISOString().slice(0, 10)
-  const region = REGIONS[hashSeed(day.replaceAll('-', '')) % REGIONS.length]
+  return utcDay(date)
+}
 
-  return `${region.slug}-${day}`
+/** Dates, not viewport dimensions, choose the region and generated board. */
+export function dateRegion (day) {
+  return REGIONS[hashSeed(day.replaceAll('-', '')) % REGIONS.length]
+}
+
+/** Also recognizes old date fixtures so a future-day link cannot bypass the route guard. */
+export function puzzleDate (value) {
+  if (typeof value !== 'string') return null
+  const dated = /(?:^|-)(\d{4}-\d{2}-\d{2})(?:-hard)?$/i.exec(value)
+  if (dated && isCalendarDay(dated[1])) return dated[1]
+  const fixture = /-D(\d{4})(\d{2})(\d{2})(?:-P)?$/i.exec(value)
+  const day = fixture ? `${fixture[1]}-${fixture[2]}-${fixture[3]}` : ''
+  return isCalendarDay(day) ? day : null
 }
 
 export function newCode (region = null) {
@@ -81,6 +93,12 @@ export function parseCode (value) {
   if (typeof value !== 'string') return null
 
   const input = value.trim()
+  const dated = /^(\d{4}-\d{2}-\d{2})(-hard)?$/i.exec(input)
+  if (dated) {
+    const day = dated[1]
+    if (!isCalendarDay(day)) return null
+    return { code: input.toLowerCase(), region: dateRegion(day).id, planning: !!dated[2], tour: 0 }
+  }
   const legacy = /^G2-(SA|NA|EE|WE|AF|AS|OC)-([^-]+)(-P)?$/i.exec(input)
 
   // Retain the frozen asset/test codes without imposing a version on new share codes.

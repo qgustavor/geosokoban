@@ -91,9 +91,10 @@ test('a request slower than 20 seconds remains cancellable, without an error', a
   await expect(page.locator('.load-error')).toHaveCount(0)
 })
 
-test('random setup offers mode and challenge, not a region selector', async ({ page }) => {
+test('archive setup offers a date and challenge, not a region selector', async ({ page }) => {
   await setup(page)
-  await page.locator('label:has(input[name="game-mode"][value="random"])').click()
+  await page.locator('label:has(input[name="game-mode"][value="archive"])').click()
+  await expect(page.locator('#archive-date')).toHaveAttribute('max', '2026-11-14')
   await expect(page.locator('.region-picker')).toHaveCount(0)
   await expect(page.locator('input[name="challenge"]')).toHaveCount(3)
 })

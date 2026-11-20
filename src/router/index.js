@@ -1,6 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import { normalizeCode, isPlanningCode } from '../core/seed.js'
-import { puzzleLocation } from './locations.js'
+import { guardedPuzzleLocation } from './locations.js'
 import MenuPage from '../pages/MenuPage.vue'
 import PuzzlePage from '../pages/PuzzlePage.vue'
 import OptionsPage from '../pages/OptionsPage.vue'
@@ -32,20 +31,12 @@ export function createAppRouter () {
   router.beforeEach(to => {
     if (to.name !== 'puzzle') return true
 
-    const code = normalizeCode(to.params.code)
+    const destination = guardedPuzzleLocation(to.params.code, to.query.g)
+    if (destination.name === 'home') return { ...destination, replace: true }
 
-    // Let the puzzle view report invalid codes rather than replacing them with a different puzzle.
-    if (!code) return true
-
-    // The code selects the board; g controls destination visibility. Hard requires hidden targets.
-    const needsCanonicalLocation = to.params.code !== code ||
-      !['learn', 'remember'].includes(to.query.g) ||
-      (isPlanningCode(code) && to.query.g !== 'remember')
-
-    if (needsCanonicalLocation) {
-      // Correct deep links without leaving an extra malformed entry in the browser's Back history.
-      return { ...puzzleLocation(code, to.query.g), replace: true }
-    }
+    const needsCanonicalLocation = to.params.code !== destination.params.code ||
+      JSON.stringify(to.query) !== JSON.stringify(destination.query)
+    if (needsCanonicalLocation) return { ...destination, replace: true }
 
     return true
   })

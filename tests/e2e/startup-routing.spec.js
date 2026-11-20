@@ -1,3 +1,4 @@
+import { storyCode, storyIndex } from '../../src/content/regions.js'
 import { test, expect } from '@playwright/test'
 import { readFileSync } from 'node:fs'
 import { skipStory } from './story-helpers.js'
@@ -80,9 +81,10 @@ test('a map failure leaves the menu available and retries without reloading the 
 
 test('refresh uses a hash route and in-game options do not navigate or lose an undo stack', async ({ page }) => {
   await page.goto('./#/puzzle/G2-SA-S2?g=remember')
-  await expect(page.locator('.target-flag')).toHaveCount(0)
+  // Story ignores difficulty parameters and keeps its teaching cues visible.
+  await expect(page.locator('.target-flag')).toHaveCount(2)
   await page.reload()
-  await expect(page.locator('.play-page')).toHaveAttribute('data-code', 'G2-SA-S2')
+  await expect(page.locator('.play-page')).toHaveAttribute('data-code', 'south-america-tour-2')
   await skipStory(page)
   await page.locator('.board-wrap').focus()
   await page.keyboard.press(keys[stories['G2-SA-S2'].solution[0]])
@@ -90,7 +92,7 @@ test('refresh uses a hash route and in-game options do not navigate or lose an u
   await page.getByRole('button', { name: 'Menu', exact: true }).click()
   await page.getByRole('button', { name: 'Options', exact: true }).first().click()
   await expect(page).not.toHaveURL(/#\/options$/)
-  await expect(page).toHaveURL(/#\/puzzle\/G2-SA-S2\?g=remember$/)
+  await expect(page).toHaveURL(/#\/puzzle\/south-america-tour-2$/)
   await expect(page.locator('.move-counter b')).toHaveText('1')
   await expect(page.locator('.options-page')).toBeVisible()
   await page.locator('.options-page > button').click()
@@ -110,7 +112,8 @@ test('unknown routes and invalid puzzle codes do not request a map', async ({ pa
   await page.goto('./#/missing')
   await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible()
   await page.goto('./#/puzzle/not-a-code')
-  await expect(page.locator('.load-error')).toContainText('That code is not recognized.')
+  await expect(page.locator('.level-selection')).toBeVisible()
+  await expect(page).toHaveURL(/#\/$/)
   expect(requests).toBe(0)
 })
 
@@ -125,7 +128,7 @@ for (const code of ['G2-SA-S1', 'G2-NA-S1', 'G2-NA-S3', 'G2-EE-S1', 'G2-WE-S1', 
         return route.abort()
       })
       await page.goto(`./#/puzzle/${code}${suffix}?g=learn`)
-      await expect(page.locator('.play-page')).toHaveAttribute('data-code', code + suffix)
+      await expect(page.locator('.play-page')).toHaveAttribute('data-code', storyCode(storyIndex(code)))
       await expect(page.locator('.board-wrap:not(.board-preview) .country-borders path').first()).toBeVisible()
       await expect(page.locator('.map-outline path').first()).toHaveAttribute('d', /^M/)
       await expect(page.locator('.generation-loading')).toHaveCount(0)

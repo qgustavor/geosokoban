@@ -163,3 +163,9 @@ h1, h2, h3 { font-family: inherit; font-weight: 750; }
   .header-tools .quiet { font-size: 12px; }
   .language-picker select { max-width: 105px; padding: 5px; }
 }
+
+/* Disallow browser pinch/double-tap zoom in play without disabling menu zoom. */
+.gameplay-active { overscroll-behavior: none; }
+.gameplay-active body { overscroll-behavior: none; }
+.gameplay-active .app-shell { touch-action: pan-x pan-y; }
+.gameplay-active .play-page, .gameplay-active .play-page button { touch-action: none; }

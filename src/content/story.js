@@ -1,17 +1,15 @@
 import levels from './story-levels.json' with { type: 'json' }
 import { storyCode, storyIndex, storyStop, STORY_COUNT } from './regions.js'
-import { isPlanningCode } from '../core/seed.js'
 
 /** Reuse the certified boards; readable route names need not be their frozen JSON keys. */
 export function storyLevel (code) {
   const chapter = storyStop(storyIndex(code))
   if (!chapter) return null
 
-  const suffix = isPlanningCode(code) ? '-P' : ''
-  const assetKey = `G2-${chapter.region.id}-S${chapter.tour}${suffix}`
+  const assetKey = `G2-${chapter.region.id}-S${chapter.tour}`
   const level = levels[assetKey]
 
-  return level ? { ...level, id: code } : null
+  return level ? { ...level, id: storyCode(chapter.index) } : null
 }
 
 export function storyProgressCode (code) {
@@ -24,7 +22,7 @@ export function resumeStory (completed, pending = '') {
   // A solved puzzle may still have unread dialogue, including the final reveal.
   // Prefer that checkpoint so closing the tab cannot silently skip the ending.
   const checkpoint = storyProgressCode(pending)
-  if (checkpoint) return pending
+  if (checkpoint) return checkpoint
 
   const finished = new Set(completed.map(storyProgressCode))
 

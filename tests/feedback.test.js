@@ -80,9 +80,11 @@ test('coast outlines omit internal joins and do not wrap at board edges', () => 
   assert.equal(coastlineEdges(hole, 1).split('M').length - 1, 2)
 })
 
-test('daily is the default, options are in-place panels and hints have a non-skippable request cooldown', () => {
+test('saved mode defaults to daily, options are in-place panels and hints have a non-skippable request cooldown', () => {
   const source = name => readFileSync(new URL('../src/' + name, import.meta.url), 'utf8')
-  assert.match(source('ui/HomeView.vue'), /const mode = ref\('daily'\)/)
+  assert.match(source('ui/storage.js'), /mode: 'daily'/)
+  assert.match(source('composables/useGameController.js'), /const mode = ref\(saved.mode\)/)
+  assert.match(source('ui/HomeView.vue'), /:checked="mode === choice"/)
   assert.match(source('ui/App.vue'), /OptionsView\s+v-else-if="app.panel === 'options'"\s+embedded(?:\s|>)/)
   assert.doesNotMatch(source('ui/HintPanel.vue'), /showNow|skipDelay/i)
   assert.doesNotMatch(source('composables/useAssistance.js'), /skipDelay/)

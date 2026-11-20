@@ -20,6 +20,7 @@ test('home offers modes and difficulty without a level selector or a seed-entry 
   await expect(page.locator('.challenge-card')).toHaveCount(3)
   await page.locator('label:has(input[value="story"])').click()
   await expect(page.locator('.tour-stamps li')).toHaveCount(3)
+  await expect(page.locator('.challenge-card')).toHaveCount(0)
   await expect(page.locator('.level-selection details, .level-selection form')).toHaveCount(0)
   await expect(page.locator('.journey-picker, .code-entry')).toHaveCount(0)
 })
@@ -44,7 +45,7 @@ test('solving the first puzzle leads to North America, not another South America
   await page.goto('./#/puzzle/south-america-tour-1')
   await skipStory(page)
   for (const direction of stories['G2-SA-S1'].solution) await page.keyboard.press(keys[direction])
-  await page.getByRole('button', { name: 'Next stop', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Share your result', exact: true })).toHaveCount(0)
   await expect(page.locator('.story-line')).toContainText('trail goes north')
   await page.locator('.story-skip').click()
   await expect(page.locator('.play-page')).toHaveAttribute('data-code', 'north-america-tour-1')
@@ -68,7 +69,7 @@ for (const tour of [1, 2]) {
   })
 }
 
-test('an unread ending survives leaving and reloading; its completion returns home', async ({ page }) => {
+test('an unread ending survives leaving and reloading; its completion opens one final summary', async ({ page }) => {
   const completed = Array.from({ length: STORY_COUNT }, (_, index) => storyCode(index + 1))
   await page.goto('./')
   await page.evaluate(completed => {
@@ -85,6 +86,8 @@ test('an unread ending survives leaving and reloading; its completion returns ho
   for (let line = 0; line < 3; line++) await page.locator('.story-advance').click()
   await expect(page.locator('.story-line')).toContainText('with a friend')
   await page.locator('.story-advance').click()
+  await expect(page.locator('.result-title')).toHaveText('Journey complete!')
+  await page.getByRole('button', { name: 'Return to main menu', exact: true }).click()
   await expect(page.locator('.level-selection')).toBeVisible()
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('geosokoban.prototype.v2')).pendingStory)).toBe('')
 })

@@ -23,7 +23,7 @@ test('each of three tours visits all seven regions before returning to South Ame
   assert.equal(storyCode(15), 'south-america-tour-3')
 })
 
-test('story routes preserve every certified board, including the Caribbean on tour three', () => {
+test('story uses only the authored non-hard boards, including the Caribbean on tour three', () => {
   for (let index = 1; index <= STORY_COUNT; index++) {
     const stop = storyStop(index)
     for (const hard of [false, true]) {
@@ -31,7 +31,7 @@ test('story routes preserve every certified board, including the Caribbean on to
       const key = `G2-${stop.region.id}-S${stop.tour}${hard ? '-P' : ''}`
       assert.equal(storyIndex(code), index)
       assert.equal(storyIndex(key), index)
-      assert.deepEqual(storyLevel(code), { ...levels[key], id: code })
+      assert.deepEqual(storyLevel(code), { ...levels[`G2-${stop.region.id}-S${stop.tour}`], id: storyCode(index) })
       assert.equal(storyProgressCode(code), storyCode(index))
       assert.equal(storyProgressCode(key), storyCode(index))
     }
@@ -54,7 +54,7 @@ test('resume prioritizes unread dialogue, even after the final puzzle is complet
   assert.equal(resumeStory(codes.slice(0, 7)), codes[7])
   assert.equal(resumeStory(['G2-SA-S1']), codes[1])
   assert.equal(resumeStory(codes), codes[0])
-  assert.equal(resumeStory(codes, withPlanning(codes.at(-1), true)), withPlanning(codes.at(-1), true))
+  assert.equal(resumeStory(codes, withPlanning(codes.at(-1), true)), codes.at(-1))
   assert.equal(resumeStory(codes.slice(0, 7), codes[6]), codes[6])
 })
 
@@ -139,7 +139,7 @@ test('preferences preserve unread ending checkpoints and canonicalize old comple
   try {
     const read = readPreferences()
     assert.deepEqual(read.completed, ['south-america-tour-1'])
-    assert.equal(read.pendingStory, 'oceania-tour-3-hard')
+    assert.equal(read.pendingStory, 'oceania-tour-3')
     savePreferences(read)
     assert.deepEqual(readPreferences(), read)
     saved = '{invalid'

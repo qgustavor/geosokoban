@@ -48,21 +48,25 @@ These Node scripts need no installed npm libraries. Run once with source-data ac
 
 ## Modes and difficulties
 
-The selector offers Daily / Random / Story, with no region setting. Daily region selection is date-based; random selection uses the shareable seed. The story itinerary covers South America, North America/Caribbean, Eastern Europe, Western Europe, Africa, Asia and Oceania. Its 21 stops each have two fixed layout variants: 42 boards, not 42 chapters. They remain generated drafts for human editing.
+The selector offers Story / Daily / Past puzzles, with no seed or region controls. It remembers the last chosen mode and difficulty. Past puzzles has day arrows and a styled native date field, bounded by today's UTC date. Forced future puzzle routes return directly to the menu. Daily and archived puzzles use the date and difficulty, never the viewport, to choose their board.
 
-| Difficulty | Targets | Daily/random layout |
+Story follows the 21 fixed standard boards across South America, North America/Caribbean, Eastern Europe, Western Europe, Africa, Asia and Oceania. There is no story difficulty picker, no procedural story generation and no per-level share dialog: dialogue leads to the next stop, with one aggregate result after the ending. Existing layouts and dialogue are unchanged; the unused hard story variants remain in the editing assets. Playing story does not overwrite the player's preferred daily/archive difficulty.
+
+| Difficulty | Targets | Daily/archive layout |
 | --- | --- | --- |
 | Easy | Small faded flags | Delivery-order puzzles |
 | Medium | Question marks | Same layouts as Easy |
 | Hard | Question marks | Delivery order and stronger repositioning filters |
 
-All retain unlimited undo, zero-count restart, geography clues and progressive hints. Restart is undoable. Deadlock checks remain silent unless impossibility is proven. Keyboard and swipe input are available; Undo, Restart, Hint and Menu form the discreet HUD. There is **no elapsed gameplay timer, score, account, telemetry, ranking or server**. Native sharing has a visible in-app fallback.
+All retain unlimited undo, zero-count restart, geography clues and progressive hints. Restart is undoable. Deadlock checks remain silent unless impossibility is proven. Keyboard and swipe input are available; Undo, Restart, Hint and Menu form the discreet HUD. An optional **Speedrun** setting times new runs and adds elapsed time to shared results. Story keeps one clock from the first board to the final solve, including dialogue, pauses and time away; its saved clock and aggregate results survive reloads. Restart and undo do not reset an active run's clock. There is no account, telemetry, ranking or server. Native sharing has a visible in-app fallback.
 
-Portuguese, English and Spanish are included. Options contains language and reduced motion. Hint requests have a non-skippable ten-second cooldown; opening or hiding the hint panel does not reset it. The globe's facing animation and plane artwork are preserved; level changes use tile transitions.
+Portuguese, English and Spanish are included. Options contains language, reduced motion, audio and the optional Speedrun setting. Hint requests have a non-skippable ten-second cooldown; opening or hiding the hint panel does not reset it. The globe's facing animation and plane artwork are preserved; level changes use tile transitions.
+
+Single-finger swipes move the character. Two-finger pinches and drags operate the board camera, not the page or HUD. Large maps start closer on narrow screens, with a Full map / Closer view button; the next movement brings the player into view. Menu browser zoom remains available. See `docs/MODES_TOUCH_TESTING.md` for timing rules, verification and remaining checks.
 
 ## Loading and generation
 
-The selector and fixed story boards open without loading world geography. Daily/random preparation requests it on demand and accepts both raw gzip and HTTP-decoded JSON. A loader appears only after 500 ms without a completed board, including map download. Fast completion has no display hold; a visible bar finishes over 400 ms. Story mode does not use generation feedback.
+The selector and fixed story boards open without loading world geography. Daily/archive preparation requests it on demand and accepts both raw gzip and HTTP-decoded JSON. A loader appears only after 500 ms without a completed board, including map download. Fast completion has no display hold; a visible bar finishes over 400 ms. Story mode does not use generation feedback.
 
 Deterministic candidate/state budgets select a validated fallback when exhausted, not an error caused by elapsed time. Slower devices do not receive easier boards. Previously generated codes are read from the versioned cache before requesting geography or a worker. Successful workers stay warm; cancellation terminates active work. Fresh searches use smaller deterministic work budgets and the new varied certified pool. See `docs/LOADING.md` and `docs/BENCHMARKS.md`.
 
@@ -70,7 +74,7 @@ Generator algorithm version 5 and fallback version 5 are included. Existing `G2`
 
 ## Routes and hosting
 
-Vue Router uses hash history. A puzzle link looks like `#/puzzle/G2-SA-S1-P?g=remember`. The selector is `#/`; standalone `#/options` and `#/credits` routes also exist for direct entry. In-game and selector buttons use dialogs, not navigation. Active session state is owned above routed components; full page reload restores the puzzle start, not saved move history.
+Vue Router uses hash history. A puzzle link looks like `#/puzzle/2026-11-19-hard?g=remember`; story uses names such as `#/puzzle/south-america-tour-1`. The selector is `#/`; standalone `#/options` and `#/credits` routes also exist for direct entry. In-game and selector buttons use dialogs, not navigation. Active session state is owned above routed components; full page reload restores the puzzle start, not saved move history.
 
 Publish `dist/` using the manual GitHub Pages workflow. No server rewrite rules, custom headers, cross-origin isolation or standalone export are needed. Module workers exchange normal messages. The workflow and live deployment remain unverified here.
 

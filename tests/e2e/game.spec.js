@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { storyIndex, storyCode } from '../../src/content/regions.js'
 import { skipStory } from './story-helpers.js'
 import stories from '../../src/content/story-levels.json' with { type: 'json' }
 
@@ -12,7 +13,7 @@ test.beforeEach(async ({ page }) => {
 
 async function open (page, code = 'G2-SA-S2', guidance = 'learn') {
   await page.goto(`./#/puzzle/${code}?g=${guidance}`)
-  await expect(page.locator('.play-page')).toHaveAttribute('data-code', code)
+  await expect(page.locator('.play-page')).toHaveAttribute('data-code', storyIndex(code) ? storyCode(storyIndex(code)) : code)
   await skipStory(page)
 }
 
@@ -58,13 +59,11 @@ test('hints progress only on request, at least ten seconds apart', async ({ page
   await expect(page.locator('.hint-route')).toHaveCount(1)
 })
 
-test('unknown destinations show question marks and reveal only on request', async ({ page }) => {
+test('story deep links ignore difficulty and retain the authored visible destinations', async ({ page }) => {
   await open(page, 'G2-SA-S2', 'remember')
-  await expect(page.locator('.target-flag')).toHaveCount(0)
-  await expect(page.locator('.goal-number')).toHaveText(['?', '?'])
-  await page.locator('.target').first().click()
-  await page.locator('.geography-popover button').click()
-  await expect(page.locator('.target-flag')).toHaveCount(1)
+  await expect(page.locator('.target-flag')).toHaveCount(2)
+  await expect(page.locator('.goal-number')).toHaveCount(0)
+  await expect(page).not.toHaveURL(/remember|hard/)
 })
 
 test('a swipe moves in the requested direction without also inspecting a flag', async ({ page }) => {
@@ -80,38 +79,28 @@ test('a swipe moves in the requested direction without also inspecting a flag', 
   await expect(page.locator('.geography-popover')).toHaveCount(0)
 })
 
-test('delivery labels precede clear and results; share falls back visibly without an undo action', async ({ page }) => {
-  await page.addInitScript(() => {
-    Object.defineProperty(navigator, 'share', { value: undefined, configurable: true })
-    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true })
-  })
+test('story delivery labels and clear lead directly to dialogue, without a result-sharing stop', async ({ page }) => {
   await open(page, 'G2-SA-S1')
   await page.locator('.board-wrap').focus()
   for (const direction of stories['G2-SA-S1'].solution) await page.keyboard.press(keys[direction])
   await expect(page.locator('.flag-label')).toBeVisible()
-  await expect(page.locator('.game-dialog')).toHaveCount(0)
   await expect(page.locator('.clear-announcement')).toBeVisible()
-  await expect(page.locator('.game-dialog')).toBeVisible()
-  await expect(page.getByRole('dialog').getByRole('button', { name: 'Undo', exact: true })).toHaveCount(0)
-  await page.getByRole('button', { name: 'Share your result', exact: true }).click()
-  await expect(page.locator('.share-text')).toHaveValue(/#/)
-  await page.getByRole('button', { name: 'Close', exact: true }).click()
-  await page.getByRole('dialog').getByRole('button', { name: 'Return to main menu', exact: true }).click()
-  await expect(page.locator('.level-selection')).toBeVisible()
+  await expect(page.locator('.story-dialog')).toBeVisible()
+  await expect(page.locator('.result-title, .share-text')).toHaveCount(0)
+  await page.locator('.story-skip').click()
+  await expect(page.locator('.play-page')).toHaveAttribute('data-code', 'north-america-tour-1')
 })
 
-test('three difficulty choices set target visibility and the layout variant', async ({ page }) => {
-  for (const [choice, planning, recall] of [['easy', false, false], ['medium', false, true], ['hard', true, true]]) {
+test('story ignores the previously selected daily difficulty', async ({ page }) => {
+  for (const choice of ['easy', 'medium', 'hard']) {
     await page.goto('./')
-    await expect(page.locator('input[name="challenge"]')).toHaveCount(3)
-    await expect(page.locator('input[name="game-mode"][value="daily"]')).toBeChecked()
-    await page.locator('label:has(input[name="game-mode"][value="story"])').click()
     await page.locator(`label:has(input[name="challenge"][value="${choice}"])`).click()
+    await page.locator('label:has(input[name="game-mode"][value="story"])').click()
+    await expect(page.locator('input[name="challenge"]')).toHaveCount(0)
     await page.locator('.start-game').click()
-    const expectedCode = `south-america-tour-1${planning ? '-hard' : ''}`
-    await expect(page.locator('.play-page')).toHaveAttribute('data-code', expectedCode)
-    await expect(page.locator('.target-flag')).toHaveCount(recall ? 0 : 1)
-    await expect(page.locator('.box-actor')).toHaveCount(planning ? 3 : 1)
+    await expect(page.locator('.play-page')).toHaveAttribute('data-code', 'south-america-tour-1')
+    await expect(page.locator('.target-flag')).toHaveCount(1)
+    await expect(page.locator('.box-actor')).toHaveCount(1)
   }
 })
 

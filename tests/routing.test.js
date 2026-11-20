@@ -9,8 +9,8 @@ test('named puzzle locations preserve the seed and both challenge settings', () 
   assert.deepEqual(puzzleLocation('g2-sa-0123456789-p', 'remember'), {
     name: 'puzzle', params: { code: 'G2-SA-0123456789-P' }, query: { g: 'remember' }
   })
-  assert.deepEqual(puzzleLocation('G2-SA-S1').query, { g: 'learn' })
-  assert.deepEqual(puzzleLocation('G2-SA-S1', 'unexpected').query, { g: 'learn' })
+  assert.deepEqual(puzzleLocation('G2-SA-S1').query, {})
+  assert.deepEqual(puzzleLocation('G2-SA-S1', 'unexpected').query, {})
 })
 
 test('invalid puzzle codes cannot become share locations', () => {
@@ -18,7 +18,7 @@ test('invalid puzzle codes cannot become share locations', () => {
 })
 
 test('hard puzzle routes always hide targets and do not carry a legacy redirect', () => {
-  assert.equal(puzzleLocation('G2-SA-S1-P', 'learn').query.g, 'remember')
+  assert.equal(puzzleLocation('2026-11-18-hard', 'learn').query.g, 'remember')
   assert.doesNotMatch(source('../src/router/index.js'), /legacyPuzzleLocation/)
 })
 

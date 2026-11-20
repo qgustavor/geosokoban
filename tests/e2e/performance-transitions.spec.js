@@ -11,10 +11,10 @@ async function preferences (page, reduced = false) {
 
 test('same-region and cross-region navigation dismantle the old board before building the next', async ({ page }) => {
   await preferences(page)
-  await page.goto('./#/puzzle/G2-SA-S1')
+  await page.goto('./#/puzzle/south-america-tour-1')
   await expect(page.locator('.play-page')).toHaveAttribute('aria-busy', 'false')
   await skipStory(page)
-  for (const [previous, next] of [['G2-SA-S1', 'G2-SA-S2'], ['G2-SA-S2', 'G2-NA-S1']]) {
+  for (const [previous, next] of [['south-america-tour-1', 'south-america-tour-2'], ['south-america-tour-2', 'north-america-tour-1']]) {
     await page.evaluate(code => {
       location.hash = `/puzzle/${code}`
     }, next)
@@ -33,11 +33,11 @@ test('same-region and cross-region navigation dismantle the old board before bui
 
 test('reduced motion swaps immediately and never leaves controls inert', async ({ page }) => {
   await preferences(page, true)
-  await page.goto('./#/puzzle/G2-SA-S1')
+  await page.goto('./#/puzzle/south-america-tour-1')
   await page.evaluate(() => {
-    location.hash = '/puzzle/G2-SA-S2'
+    location.hash = '/puzzle/south-america-tour-2'
   })
-  await expect(page.locator('.board-wrap')).toHaveAttribute('data-level', 'G2-SA-S2')
+  await expect(page.locator('.board-wrap')).toHaveAttribute('data-level', 'south-america-tour-2')
   await expect(page.locator('.play-page')).toHaveAttribute('aria-busy', 'false')
   await skipStory(page)
   await expect(page.locator('.board-swap-enter-active, .board-swap-leave-active')).toHaveCount(0)
@@ -49,17 +49,17 @@ test('reduced motion swaps immediately and never leaves controls inert', async (
 
 test('rapid navigation during a transition settles on the newest route', async ({ page }) => {
   await preferences(page)
-  await page.goto('./#/puzzle/G2-SA-S1')
+  await page.goto('./#/puzzle/south-america-tour-1')
   await expect(page.locator('.play-page')).toHaveAttribute('aria-busy', 'false')
   await skipStory(page)
   await page.evaluate(() => {
-    location.hash = '/puzzle/G2-SA-S2'
+    location.hash = '/puzzle/south-america-tour-2'
   })
   await expect(page.locator('.board-swap-leave-active')).toBeVisible()
   await page.evaluate(() => {
-    location.hash = '/puzzle/G2-SA-S3'
+    location.hash = '/puzzle/south-america-tour-3'
   })
-  await expect(page.locator('.board-wrap')).toHaveAttribute('data-level', 'G2-SA-S3')
+  await expect(page.locator('.board-wrap')).toHaveAttribute('data-level', 'south-america-tour-3')
   await expect(page.locator('.play-page')).toHaveAttribute('aria-busy', 'false')
   await skipStory(page)
 })
@@ -109,7 +109,7 @@ test('generated boards use memory and persistent caches; different codes share a
   await expect(page.locator('.generation-loading')).toHaveCount(0)
 })
 
-for (const code of ['G2-SA-S1', 'G2-WE-S1', 'G2-OC-S1']) {
+for (const code of ['south-america-tour-1', 'west-europe-tour-1', 'oceania-tour-1']) {
   test(`${code} renders quarter-cell pixel coastlines and borders without loading geography`, async ({ page }) => {
     await preferences(page, true)
     let requests = 0
@@ -137,7 +137,7 @@ for (const code of ['G2-SA-S1', 'G2-WE-S1', 'G2-OC-S1']) {
 
 test('clear lettering is staggered, hops above baseline, and is announced as one phrase', async ({ page }) => {
   await preferences(page)
-  await page.goto('./#/puzzle/G2-SA-S1')
+  await page.goto('./#/puzzle/south-america-tour-1')
   await expect(page.locator('.play-page')).toHaveAttribute('aria-busy', 'false')
   await skipStory(page)
   const keys = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' }

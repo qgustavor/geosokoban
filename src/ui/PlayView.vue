@@ -2,6 +2,8 @@
 import { computed, ref, watch, nextTick, onBeforeUnmount } from 'vue'
 import { regionById, storyStop, STORY_COUNT, STORY_TOURS } from '../content/regions.js'
 import { boardTransitionDuration } from '../core/board-transition.js'
+import { puzzleDate } from '../core/seed.js'
+import { utcDay } from '../core/dates.js'
 import { createCompletionSequence } from '../core/completion.js'
 import GameBoard from './GameBoard.vue'
 import LevelClear from './LevelClear.vue'
@@ -22,6 +24,9 @@ const props = defineProps({
   notice: { type: String, default: '' },
   fact: { type: String, default: '' },
   fallbackText: { type: String, default: '' },
+  timerText: { type: String, default: '' },
+  totals: { type: Object, default: () => ({ levels: 0, moves: 0 }) },
+  storyFinished: Boolean,
   assisted: Boolean,
   panelOpen: Boolean,
   reducedMotion: Boolean
@@ -31,6 +36,8 @@ const emit = defineEmits([
   'guidance', 'next', 'share', 'copy', 'dismissShare', 'panel', 'transition'
 ])
 
+const board = ref(null)
+const isOverview = ref(false)
 const transitioning = ref(false)
 const transitionDuration = computed(() => boardTransitionDuration(props.reducedMotion))
 
@@ -46,6 +53,10 @@ function finishTransition () {
   emit('transition', false)
 }
 
+function toggleOverview () {
+  board.value?.toggleOverview()
+}
+
 const visible = country => props.guidance === 'learn' || props.revealed.includes(country)
 const regionName = computed(() => props.t(regionById(props.game.level.region).name))
 const storyChapter = computed(() => storyStop(props.game.chapter))
@@ -57,6 +68,8 @@ const delivery = ref(null)
 // Completion owns the delay between solving, the clear banner, and the results dialog.
 const sequence = createCompletionSequence(value => {
   phase.value = value
+  // Story never stops at a per-level scoreboard: dialogue owns the next departure.
+  if (value === 'results' && props.game.chapter && !props.storyFinished) emit('next')
 })
 
 let labelTimer = null
@@ -162,8 +175,10 @@ const description = computed(() => {
   return [playerDescription, ...flagDescriptions, ...goalDescriptions].join(' ')
 })
 
-const showVictory = computed(() => props.game.solved &&
-  phase.value === 'results' &&
+const resultDate = computed(() => puzzleDate(props.game.level.id))
+const resultTitle = computed(() => props.game.chapter ? 'finish' : resultDate.value === utcDay() ? 'dailyComplete' : 'archiveComplete')
+const resultMoves = computed(() => props.game.chapter ? props.totals.moves : props.game.state.moves)
+const showVictory = computed(() => (props.storyFinished || (!props.game.chapter && props.game.solved && phase.value === 'results')) &&
   victoryOpen.value &&
   !props.fallbackText &&
   !props.panelOpen &&
@@ -225,6 +240,7 @@ onBeforeUnmount(() => {
       @leave-cancelled="finishTransition"
     >
       <GameBoard
+        ref="board"
         :key="game.level.id"
         :level="game.level"
         :state="game.state"
@@ -235,6 +251,7 @@ onBeforeUnmount(() => {
         :show-flags="guidance === 'learn'"
         :revealed="revealed"
         :overlay="help.overlay"
+        @overview="isOverview = $event"
         @key="boardKey"
         @step="$emit('step', $event)"
         @inspect="inspect"
@@ -248,7 +265,12 @@ onBeforeUnmount(() => {
         </p>
         <h1>{{ regionName }}</h1>
       </div>
-      <span class="move-counter">{{ t('moves') }} <b>{{ game.state.moves }}</b></span>
+      <div class="hud-stats">
+        <span class="move-counter">{{ t('moves') }} <b>{{ game.state.moves }}</b></span>
+        <span v-if="timerText" class="run-timer" :aria-label="t('speedrun')">
+          ◷ {{ timerText }}
+        </span>
+      </div>
     </header>
     <Transition name="warning">
       <section v-if="help.warning && !game.solved" class="top-overlay deadlock-warning" role="status">
@@ -287,68 +309,93 @@ onBeforeUnmount(() => {
         />
       </div>
     </Transition>
-    <nav v-show="!game.solved || phase === 'results'" class="play-controls" :aria-label="t('controls')">
-      <button
-        class="hud-button"
-        :title="`${t('undo')} (Z)`"
-        :aria-label="t('undo')"
-        aria-keyshortcuts="z"
-        :disabled="!game.historyCount"
-        @click="$emit('undo')"
+    <Transition name="hud">
+      <nav
+        v-show="!storyFinished && (!game.solved || (!game.chapter && phase === 'results'))"
+        class="play-controls"
+        :aria-label="t('controls')"
       >
-        <ControlIcon name="undo" />
-      </button>
-      <button
-        class="hud-button"
-        :title="`${t('restart')} (R)`"
-        :aria-label="t('restart')"
-        aria-keyshortcuts="r"
-        @click="$emit('restart')"
-      >
-        <ControlIcon name="restart" />
-      </button>
-      <button
-        class="hud-button"
-        :class="{ active: hintOpen }"
-        :title="t('hint')"
-        :aria-label="t('hint')"
-        :aria-pressed="hintOpen"
-        :disabled="game.solved"
-        @click="toggleHint"
-      >
-        <ControlIcon name="hint" />
-      </button>
-      <button
-        class="hud-button"
-        :title="`${t('menu')} (Esc)`"
-        :aria-label="t('menu')"
-        aria-keyshortcuts="Escape"
-        @click="$emit('panel', 'pause')"
-      >
-        <ControlIcon name="menu" />
-      </button>
-    </nav>
+        <button
+          class="hud-button"
+          :title="`${t('undo')} (Z)`"
+          :aria-label="t('undo')"
+          aria-keyshortcuts="z"
+          :disabled="!game.historyCount"
+          @click="$emit('undo')"
+        >
+          <ControlIcon name="undo" />
+        </button>
+        <button
+          class="hud-button"
+          :title="`${t('restart')} (R)`"
+          :aria-label="t('restart')"
+          aria-keyshortcuts="r"
+          @click="$emit('restart')"
+        >
+          <ControlIcon name="restart" />
+        </button>
+        <button
+          class="hud-button"
+          :class="{ active: !isOverview }"
+          :title="isOverview ? t('followPlayer') : t('mapOverview')"
+          :aria-label="isOverview ? t('followPlayer') : t('mapOverview')"
+          :aria-pressed="!isOverview"
+          @click="toggleOverview"
+        >
+          <ControlIcon :name="isOverview ? 'zoom-in' : 'zoom-out'" />
+        </button>
+        <button
+          class="hud-button"
+          :class="{ active: hintOpen }"
+          :title="t('hint')"
+          :aria-label="t('hint')"
+          :aria-pressed="hintOpen"
+          :disabled="game.solved"
+          @click="toggleHint"
+        >
+          <ControlIcon name="hint" />
+        </button>
+        <button
+          class="hud-button"
+          :title="`${t('menu')} (Esc)`"
+          :aria-label="t('menu')"
+          aria-keyshortcuts="Escape"
+          @click="$emit('panel', 'pause')"
+        >
+          <ControlIcon name="menu" />
+        </button>
+      </nav>
+    </Transition>
     <span class="sr-only" aria-live="polite">{{ description }}</span>
     <LevelClear v-if="phase === 'clear'" :text="t('levelClear')" :reduced-motion="reducedMotion" />
-    <OverlayDialog v-if="showVictory" :label="t('done')" @dismiss="victoryOpen = false">
-      <div class="victory-flags">
+    <OverlayDialog v-if="showVictory" :label="t(resultTitle)" @dismiss="victoryOpen = false">
+      <div v-if="!game.chapter" class="victory-flags">
         <FlagIcon v-for="goal in game.level.goals" :key="goal.country" :country="goal.country" />
       </div>
       <h2 class="result-title">
-        {{ t(game.chapter === STORY_COUNT ? 'finish' : 'done') }}
+        {{ t(resultTitle) }}
       </h2>
       <p class="result-moves">
-        {{ game.state.moves }} <small>{{ t('moves').toLowerCase() }}</small>
+        {{ resultMoves }} <small>{{ t('moves').toLowerCase() }}</small>
+      </p>
+      <p class="result-message">
+        {{ game.chapter ? t('journeyCompleteDesc') : resultDate === utcDay() ? t('dailyCompleteDesc') : t('archiveCompleteDesc') }}
+      </p>
+      <p v-if="game.chapter" class="result-progress">
+        {{ t(totals.levels === STORY_COUNT ? 'journeyTotals' : 'journeyPartialTotals', { levels: totals.levels }) }}
+      </p>
+      <p v-if="timerText && (!game.chapter || totals.levels === STORY_COUNT)" class="result-time">
+        {{ t('speedrun') }} <strong>{{ timerText }}</strong>
       </p>
       <p v-if="notice" class="result-notice" role="status">
         {{ notice }}
       </p>
       <div class="result-actions">
-        <button class="button primary" @click="$emit('next')">
-          {{ t(game.chapter === STORY_COUNT ? 'storyEnding' : game.chapter ? 'next' : 'another') }}
-        </button>
-        <button class="button secondary" @click="$emit('share')">
+        <button class="button primary" @click="$emit('share')">
           {{ t('share') }}
+        </button>
+        <button v-if="!game.chapter" class="button secondary" @click="$emit('next')">
+          {{ t('exploreArchive') }}
         </button>
         <button class="button secondary" @click="$emit('home')">
           {{ t('returnMenu') }}
@@ -356,7 +403,7 @@ onBeforeUnmount(() => {
       </div>
     </OverlayDialog>
     <button
-      v-if="game.solved && phase === 'results' && !victoryOpen"
+      v-if="(storyFinished || (!game.chapter && game.solved && phase === 'results')) && !victoryOpen"
       class="result-reopen button secondary"
       @click="victoryOpen = true"
     >
@@ -391,9 +438,11 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.is-changing .play-hud, .is-changing .play-controls { opacity: 0; pointer-events: none; }
-
-.play-page { position: relative; height: 100dvh; overflow: hidden; }
+.play-page {
+  position: relative;
+  height: 100dvh;
+  overflow: hidden;
+}
 
 /* Keep the HUD above the map without stealing pointer input from the board beneath it. */
 .play-hud {
@@ -409,13 +458,53 @@ onBeforeUnmount(() => {
   color: #eff3df;
 }
 
-.play-hud h1 { font-size: clamp(16px, 2vw, 22px); margin: 0; font-weight: 700; text-shadow: 0 1px 2px #163f4b44; }
+.play-hud h1 {
+  font-size: clamp(16px, 2vw, 22px);
+  margin: 0;
+  font-weight: 700;
+  text-shadow: 0 1px 2px #163f4b44;
+}
 
-.journey-hud { margin: 0 0 4px; font-size: 11px; letter-spacing: .04em; opacity: .85; }
+.hud-stats {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
 
-.move-counter { font-size: 12px; opacity: .9; white-space: nowrap; }
+.run-timer,
+.result-time strong {
+  font-variant-numeric: tabular-nums;
+}
 
-.move-counter b { font-size: 17px; margin-left: 5px; font-variant-numeric: tabular-nums; }
+.run-timer {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.journey-hud {
+  margin: 0 0 4px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+
+.move-counter {
+  font-size: 12px;
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+.move-counter b {
+  font-size: 17px;
+  margin-left: 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.is-changing .play-hud,
+.is-changing .play-controls {
+  opacity: 0;
+  pointer-events: none;
+}
 
 .play-controls {
   display: flex;
@@ -445,7 +534,14 @@ onBeforeUnmount(() => {
   box-shadow: 0 3px 0 #163f4b77;
 }
 
-.hud-button.active { background: #776b9d; }
+.hud-button.active {
+  background: #043b4ecc;
+}
+
+.hud-glyph {
+  font-size: 20px;
+  line-height: 1;
+}
 
 .top-overlay {
   position: absolute;
@@ -464,11 +560,24 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
-.deadlock-warning strong { display: block; font-size: clamp(20px, 3vw, 28px); margin-bottom: 12px; text-wrap: balance; }
+.deadlock-warning strong {
+  display: block;
+  font-size: clamp(20px, 3vw, 28px);
+  margin-bottom: 12px;
+  text-wrap: balance;
+}
 
-.recovery-actions { display: flex; justify-content: center; gap: 12px; }
+.recovery-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
 
-.recovery-actions .button { display: flex; align-items: center; gap: 8px; }
+.recovery-actions .button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
 kbd {
   font-family: inherit;
@@ -478,16 +587,40 @@ kbd {
   border: 1px solid currentColor;
   border-radius: 4px;
   padding: 2px 5px;
-  opacity: .65;
+  opacity: 0.65;
 }
 
-.warning-enter-active, .warning-leave-active { transition: transform .25s ease-out, opacity .25s ease-out; }
+.hud-enter-active,
+.hud-leave-active {
+  transition: opacity 0.18s;
+}
 
-.warning-enter-from, .warning-leave-to { opacity: 0; transform: translate(-50%, -16px); }
+.hud-enter-from,
+.hud-leave-to {
+  opacity: 0;
+}
 
-.hint-enter-active, .hint-leave-active { transition: transform .18s ease-out, opacity .18s; }
+.warning-enter-active,
+.warning-leave-active {
+  transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+}
 
-.hint-enter-from, .hint-leave-to { opacity: 0; transform: translateY(8px); }
+.warning-enter-from,
+.warning-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -16px);
+}
+
+.hint-enter-active,
+.hint-leave-active {
+  transition: transform 0.18s ease-out, opacity 0.18s;
+}
+
+.hint-enter-from,
+.hint-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
 
 .utility-notice {
   position: absolute;
@@ -515,26 +648,77 @@ kbd {
   box-shadow: 0 5px 20px #163e4933;
 }
 
-.geography-popover { position: absolute; right: 18px; top: 60px; z-index: 3; }
+.geography-popover {
+  position: absolute;
+  right: 18px;
+  top: 60px;
+  z-index: 3;
+}
 
-.victory-flags { display: flex; justify-content: center; gap: 12px; margin: 0 0 18px; }
+.victory-flags {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 0 0 18px;
+}
 
-.victory-flags svg { width: 57px; height: 45px; border: 3px solid white; box-shadow: 0 2px 8px rgba(0, 0, 0, 20%); }
+.victory-flags svg {
+  width: 57px;
+  height: 45px;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
 
-.result-title { text-wrap: balance; font-size: 28px; }
+.result-title {
+  text-wrap: balance;
+  font-size: 28px;
+}
 
-.result-moves { font-size: 32px; font-weight: 750; margin: 24px 0 28px; }
+.result-moves {
+  font-size: 32px;
+  font-weight: 750;
+  margin: 24px 0 28px;
+}
 
-.result-moves small { font-size: 14px; font-weight: 500; }
+.result-moves small {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.result-message {
+  color: #547477;
+  font-size: 15px;
+  text-wrap: balance;
+}
+
+.result-date,
+.result-progress {
+  color: #547477;
+  font-size: 13px;
+}
+
+.result-time {
+  font-size: 16px;
+}
+
+.result-time strong {
+  margin-left: 8px;
+}
 
 .result-notice {
   margin: 0 0 16px;
   font-size: 14px;
 }
 
-.result-actions { display: grid; gap: 12px; }
+.result-actions {
+  display: grid;
+  gap: 12px;
+}
 
-.result-actions .button { width: 100%; text-wrap: balance; }
+.result-actions .button {
+  width: 100%;
+  text-wrap: balance;
+}
 
 .share-text {
   width: 100%;
@@ -547,12 +731,27 @@ kbd {
   background: #fffcef;
 }
 
-.result-reopen { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); }
+.result-reopen {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+}
 
-@media (pointer: coarse) { kbd { display: none; } }
+@media (pointer: coarse) {
+  kbd {
+    display: none;
+  }
+}
 
 @media (max-width: 440px) {
-  .top-overlay { padding: 14px; }
-  .recovery-actions .button { font-size: 13px; padding: 10px; }
+  .top-overlay {
+    padding: 14px;
+  }
+
+  .recovery-actions .button {
+    font-size: 13px;
+    padding: 10px;
+  }
 }
 </style>

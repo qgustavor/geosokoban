@@ -5,13 +5,14 @@ defineProps({
   t: { type: Function, required: true },
   locale: { type: String, required: true },
   reduced: Boolean,
+  speedrun: Boolean,
   music: Boolean,
   sfx: { type: Boolean, default: true },
   musicVolume: { type: Number, default: 35 },
   sfxVolume: { type: Number, default: 65 },
   embedded: Boolean
 })
-defineEmits(['back', 'locale', 'reduced', 'music', 'sfx', 'musicVolume', 'sfxVolume'])
+defineEmits(['back', 'locale', 'reduced', 'speedrun', 'music', 'sfx', 'musicVolume', 'sfxVolume'])
 </script>
 
 <template>
@@ -30,6 +31,13 @@ defineEmits(['back', 'locale', 'reduced', 'music', 'sfx', 'musicVolume', 'sfxVol
     <label class="option-row">
       <span>{{ t('reduceMotion') }}</span>
       <input type="checkbox" :checked="reduced" @change="$emit('reduced', $event.target.checked)">
+    </label>
+
+    <label class="option-row speedrun-option">
+      <span>
+        {{ t('speedrun') }}
+      </span>
+      <input type="checkbox" :checked="speedrun" @change="$emit('speedrun', $event.target.checked)">
     </label>
 
     <AudioSettings
@@ -51,6 +59,7 @@ defineEmits(['back', 'locale', 'reduced', 'music', 'sfx', 'musicVolume', 'sfxVol
 </template>
 
 <style scoped>
+.speedrun-option small { display: block; margin-top: 7px; font-size: 12px; line-height: 1.5; opacity: .8; }
 .options-page { width: min(600px, calc(100vw - 36px)); margin: 45px auto 70px; }
 
 .options-page.embedded { width: 100%; margin: 0; text-align: left; }
