@@ -118,14 +118,10 @@ export function storyCode (index) {
 export function storyIndex (code) {
   if (typeof code !== 'string') return 0
 
-  // Frozen boards still have their original asset keys. Both forms identify the
-  // same chapter; their order is now tour-first instead of continent-first.
-  const legacy = /^G2-([A-Z]{2})-S([1-3])(?:-P)?$/.exec(code)
-  const readable = /^(.+)-tour-([1-3])(?:-hard)?$/.exec(code)
-  const match = legacy ?? readable
+  const match = /^(.+)-tour-([1-3])(?:-hard)?$/.exec(code)
   if (!match) return 0
 
-  const region = REGIONS.findIndex(item => legacy ? item.id === match[1] : item.slug === match[1])
+  const region = REGIONS.findIndex(item => item.slug === match[1])
 
   return region >= 0 ? (Number(match[2]) - 1) * REGIONS.length + region + 1 : 0
 }

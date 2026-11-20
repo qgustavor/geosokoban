@@ -4,6 +4,7 @@ import { gunzipSync } from 'node:zlib'
 import { generate, GenerationExhausted } from '../src/core/generate.js'
 import { setGeography } from '../src/geo/world.js'
 import { REGIONS } from '../src/content/regions.js'
+import { shiftDay } from '../src/core/dates.js'
 
 const worldBytes = readFileSync(new URL('../src/data/world.geojson.gz', import.meta.url))
 setGeography(JSON.parse(gunzipSync(worldBytes)))
@@ -25,7 +26,8 @@ for (const region of REGIONS) {
     // North America codes can generate Caribbean boards, which need their own fallback quota.
     const targets = region.id === 'NA' ? ['NA', 'CAR'] : [region.id]
     for (let seed = 0; seed < 800 && targets.some(id => (counts.get(`${id}:${planning}`) ?? 0) < wanted); seed++) {
-      const code = `G2-${region.id}-${String(seed).padStart(10, '0')}${planning ? '-P' : ''}`
+      const day = shiftDay('2000-01-01', seed)
+      const code = `${region.slug}-${day}${planning ? '-hard' : ''}`
       if (pool[code]) continue
 
       try {

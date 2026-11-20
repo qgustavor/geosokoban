@@ -2,7 +2,7 @@
 
 The included `.tmj` maps are finite, orthogonal JSON maps with 40-pixel tiles. Tiled's JSON format is documented at https://doc.mapeditor.org/en/stable/reference/json-map-format/ . This project's exporter/importer supports a deliberately small subset of that format, not arbitrary Tiled projects.
 
-`levels/editable/` contains 42 maps: 21 relaxed story boards and 21 `-P` variants. `terrain.svg` supplies the two editor tiles. The source of truth used by the game is `src/content/story-levels.json`; an edited `.tmj` does not change gameplay until it is imported.
+`levels/editable/` contains 42 maps: 21 relaxed story boards and 21 `-hard` authoring variants. `terrain.svg` supplies the two editor tiles. The source of truth used by the game is `src/content/story-levels.json`; an edited `.tmj` does not change gameplay until it is imported.
 
 ## Layers
 
@@ -10,14 +10,14 @@ The included `.tmj` maps are finite, orthogonal JSON maps with 40-pixel tiles. T
 
 Each flag has a stable `boxId` and a `country`; each target has a matching `country`. There is one flag per destination country. Initial flags and the player may not cover any target. For boat boards, targets also store `anchorX` and `anchorY` in grid coordinates, identifying the intended coastline.
 
-Keep the `id`, region, dimensions, map version and threshold properties. Country boundaries are part of the source geography, not something the tile editor may redraw. Mountain tiles are schematic obstacles. The `-P` suffix distinguishes more constrained variants in codes and sharing.
+Keep the `id`, region, dimensions, map version and threshold properties. Country boundaries are part of the source geography, not something the tile editor may redraw. Mountain tiles are schematic obstacles. The `-hard` suffix distinguishes more constrained authoring variants. Story play always uses the standard board; daily and random puzzles may use `-hard` in share codes.
 
 ## Commands
 
 ```sh
-npm run levels:export -- G2-SA-S2 levels/editable/G2-SA-S2.tmj
-npm run levels:import -- levels/editable/G2-SA-S2.tmj edited-level.json
-npm run levels:import -- levels/editable/G2-SA-S2.tmj --story
+npm run levels:export -- south-america-tour-2 levels/editable/south-america-tour-2.tmj
+npm run levels:import -- levels/editable/south-america-tour-2.tmj edited-level.json
+npm run levels:import -- levels/editable/south-america-tour-2.tmj --story
 ```
 
 Export accepts random/daily codes too, making them starting points for design exploration. `--story` only replaces an existing story ID; it does not silently add or renumber chapters. Without that option, import writes a certified level JSON file for inspection.

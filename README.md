@@ -10,21 +10,21 @@ Generation reuses warm workers, geographic samples and solver buffers. A version
 
 Level changes dismantle the outgoing board and assemble the next one tile by tile. The clear banner uses bold outlined letters with staggered scale, upward hop and landing squash. The first hint is immediate; subsequent requests require at least **10 seconds**, with a translated countdown. Map context and country borders use **4 × 4 logical pixels per gameplay cell**, aligned to the same grid origin and prebuilt into compact orthogonal SVG paths.
 
-**Verification:** 134 Node tests pass, including independent template certification, caching, hint cooldowns and pixel-map alignment. Isolated Chromium checks cover the banner's CSS in three languages and four viewport sizes. Dependency installation failed in this environment; the official lint, Vite build and Playwright application suite remain unverified. See `docs/V2_6_TESTING.md`, `docs/V2_6_CHANGES.md` and `docs/BENCHMARKS.md`.
+**Verification:** The test suite has been replaced with 24 behavior-focused Node tests and five Playwright journeys (desktop and mobile). Node tests pass; lint, the production build and browser execution remain unverified because dependency installation failed with npm registry DNS errors. See `docs/TESTING.md` for scope and commands. Earlier versioned verification reports are historical, not results for this suite.
 
 ## Develop
 
 Use Node 22.13+ on the Node 22 line, or Node 24+.
 
 ```sh
-npm install
+npm ci
 npm run dev
 ```
 
 This is a normal **Vue + Vite** application. Every interface component is a `.vue` single-file component using **`<script setup>`**. There is no standalone HTML export, alternate application, handwritten SFC compiler, runtime-template build, backend, or CDN dependency during play.
 
 ```sh
-npm test                       # Rules, geography, generation, optima, hints and workers
+npm test                       # Focused gameplay, content, persistence and worker checks
 npm run lint                   # Neostandard and Vue rules
 npm run build                  # Production assets in dist/
 npm run preview                # Local HTTP preview of dist/
@@ -33,18 +33,18 @@ npm run benchmark -- --samples 2
 npm run benchmark:browser -- --samples 2
 ```
 
-The patch adds no dependencies. Existing installations can retain node_modules and their lockfile. This source environment could not resolve the npm registry; no lockfile has been fabricated. For a new checkout, install, review and commit the generated lockfile before switching to `npm ci`.
+The cleanup adds no dependencies and leaves the committed lockfile unchanged. Use `npm ci` for a clean installation. Dependency installation could not complete in this environment because the npm registry did not resolve.
 
 ## Prepare scenery
 
-The distributed biome atlas is **unprepared** because the source service could not be reached here. Until preparation succeeds, land scenery uses neutral boulders and pebbles, not invented biome boundaries.
+The distributed biome atlas is **prepared** and validated during CI. Regenerate it only when intentionally updating scenery data:
 
 ```sh
 npm run biomes:prepare
 npm run biomes:verify
 ```
 
-These Node scripts need no installed npm libraries. Run once with source-data access, then commit `src/content/scenery-atlas.json`. A local RESOLVE GeoJSON export is supported; see `docs/SCENERY_AND_ART.md`. Players never download the source polygons. The publication workflow rejects an unprepared atlas. **The 0.2.5 → 0.2.6 patch does not modify an atlas you have already prepared.**
+These Node scripts need no installed npm libraries. Preparation needs source-data access; reproduction needs the cached source. Commit a reviewed `src/content/scenery-atlas.json` after changing it. A local RESOLVE GeoJSON export is supported; see `docs/SCENERY_AND_ART.md`. Players never download the source polygons. The publication workflow rejects an unprepared atlas and never regenerates it automatically.
 
 ## Modes and difficulties
 
@@ -70,13 +70,13 @@ The selector and fixed story boards open without loading world geography. Daily/
 
 Deterministic candidate/state budgets select a validated fallback when exhausted, not an error caused by elapsed time. Slower devices do not receive easier boards. Previously generated codes are read from the versioned cache before requesting geography or a worker. Successful workers stay warm; cancellation terminates active work. Fresh searches use smaller deterministic work budgets and the new varied certified pool. See `docs/LOADING.md` and `docs/BENCHMARKS.md`.
 
-Generator algorithm version 5 and fallback version 5 are included. Existing `G2` code syntax remains a prototype identifier, **not a promise that old seeds produce old layouts across releases**. No legacy generator is shipped. Compare scores only within the same source/content version. Raising the minimum move gap requires rebuilding and verifying the fallback pool as well as updating the generator.
+Generator algorithm version 5 and fallback version 5 are included. Puzzle codes use readable region names, dates or word pairs, with `-hard` for planning puzzles. This prototype has no compatibility layer for previous code or preference formats; obsolete codes are rejected rather than translated. Compare scores only within the same source/content version. Raising the minimum move gap requires rebuilding and verifying the fallback pool as well as updating the generator.
 
 ## Routes and hosting
 
 Vue Router uses hash history. A puzzle link looks like `#/puzzle/2026-11-19-hard?g=remember`; story uses names such as `#/puzzle/south-america-tour-1`. The selector is `#/`; standalone `#/options` and `#/credits` routes also exist for direct entry. In-game and selector buttons use dialogs, not navigation. Active session state is owned above routed components; full page reload restores the puzzle start, not saved move history.
 
-Publish `dist/` using the manual GitHub Pages workflow. No server rewrite rules, custom headers, cross-origin isolation or standalone export are needed. Module workers exchange normal messages. The workflow and live deployment remain unverified here.
+The **CI and Pages** workflow validates branch pushes, pull requests, and manual runs. After validation succeeds, pushes and manual runs on the repository's default branch publish the same `dist/` that the browser tests exercised. Other branches and pull requests never publish. See `docs/DEPLOYMENT.md` for the one-time Pages setup and required-check recommendation. No server rewrite rules, custom headers, cross-origin isolation or standalone export are needed. Module workers exchange normal messages. A GitHub-hosted workflow run and live deployment remain unverified here.
 
 ```sh
 BASE_PATH=/geosokoban-test/ npm run build
@@ -92,8 +92,8 @@ BASE_PATH=/geosokoban-test/ npm run test:e2e
 All 42 fixed layouts have Tiled maps in `levels/editable`.
 
 ```sh
-npm run levels:export -- G2-SA-S2 levels/editable/G2-SA-S2.tmj
-npm run levels:import -- levels/editable/G2-SA-S2.tmj --story
+npm run levels:export -- south-america-tour-2 levels/editable/south-america-tour-2.tmj
+npm run levels:import -- levels/editable/south-america-tour-2.tmj --story
 npm run fallbacks:prepare
 ```
 

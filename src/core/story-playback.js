@@ -28,3 +28,10 @@ export function createStoryPlayback (resolveScene, onChange) {
 
   return { start, finish, cancel }
 }
+
+/** Recompute stage directions from the start so Back restores the magnet as well as the words. */
+export function storyStage (scene, index) {
+  const stage = {}
+  for (const line of scene.lines.slice(0, index + 1)) Object.assign(stage, line.stage)
+  return stage
+}

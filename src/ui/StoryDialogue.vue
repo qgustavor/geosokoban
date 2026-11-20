@@ -1,7 +1,9 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import OverlayDialog from './OverlayDialog.vue'
 import GlobeIcon from './GlobeIcon.vue'
+import CompassIcon from './CompassIcon.vue'
+import { storyStage } from '../core/story-playback.js'
 
 const props = defineProps({
   scene: { type: Object, required: true },
@@ -9,6 +11,10 @@ const props = defineProps({
 })
 const emit = defineEmits(['finish'])
 const index = ref(0)
+watch(() => props.scene.id, () => {
+  index.value = 0
+})
+const stage = computed(() => storyStage(props.scene, index.value))
 const line = computed(() => props.scene.lines[index.value])
 const speaker = computed(() => props.scene.characters[line.value.speaker])
 const lastLine = computed(() => index.value === props.scene.lines.length - 1)
@@ -75,9 +81,7 @@ function portrait (id, character) {
         >
           <img v-if="portrait(id, character)" :src="portrait(id, character)" alt="">
           <GlobeIcon v-else-if="character.art === 'globe'" :uid="`story-${id}`" />
-          <div v-else class="visitor-portrait" :class="{ mystery: character.art === 'mystery' }">
-            <span>{{ character.art === 'mystery' ? '?' : '✦' }}</span>
-          </div>
+          <CompassIcon v-else-if="character.art === 'compass'" :appearance="stage[id]" />
         </div>
       </div>
       <!-- Whole lines are shown immediately: no timed reading or typewriter announcements. -->
@@ -180,21 +184,6 @@ function portrait (id, character) {
   object-fit: contain;
   object-position: bottom;
 }
-
-.visitor-portrait {
-  width: 85%;
-  aspect-ratio: 1;
-  border-radius: 45% 55% 42% 48%;
-  display: grid;
-  place-items: center;
-  background: #c9add3;
-  border: 3px solid #8d7ea7;
-  color: #fcf2cf;
-  font-size: clamp(38px, 8vw, 70px);
-  margin-bottom: 8px;
-}
-
-.visitor-portrait.mystery { background: #57747f; border-color: #466773; color: #d1dfce; }
 
 .story-text { padding: 20px 26px 8px; min-height: 140px; }
 

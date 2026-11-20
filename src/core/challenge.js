@@ -18,10 +18,9 @@ export function challengeName (guidance, planning) {
 }
 
 export function withPlanning (code, planning) {
-  const base = code.replace(/-P$|-hard$/, '')
-  const suffix = base.startsWith('G2-') ? '-P' : '-hard'
+  const base = code.replace(/-hard$/, '')
 
-  return base + (planning ? suffix : '')
+  return base + (planning ? '-hard' : '')
 }
 
 const coordinate = (level, position, axis) => axis === 'x' ? position % level.width : Math.floor(position / level.width)

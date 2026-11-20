@@ -8,7 +8,15 @@ Use Vue `.vue` single-file components with `<script setup>` for interface elemen
 
 Keep the default gentle and challenge presets optional. Do not add a gameplay timer to the prototype. Do not cap undo, charge for hints, penalize resetting, or call a budget-limited search a proven deadlock. Preserve country identity in every solver and generator check. Keep geography geometry distinct from the schematic puzzle terrain.
 
-Run `npm test`, `npm run lint` and `npm run build` before a release. Add a regression test for a rules bug. Preserve existing puzzle codes; version intentional generator/content changes. Commit a reviewed lockfile after installing dependencies. Keep third-party notices and map provenance current. No telemetry or new external requests without an explicit design decision.
+Install with `npm ci`. Run `npm test`, `npm run lint`, `npm run build` and `npm run test:e2e` before publishing a change; install Chromium with `npx playwright install chromium` before the first browser run. Add a regression test for a rules bug. Support only the current puzzle and preference formats; do not add compatibility aliases or save migrations. Version intentional generator/content changes to invalidate cached boards. Commit a reviewed lockfile when intentionally changing dependencies; do not regenerate it in CI. Keep third-party notices and map provenance current. No telemetry or new external requests without an explicit design decision.
+
+The default branch publishes automatically only after the **Validate** job passes. Keep heavyweight benchmarks and content regeneration out of that gate. See `docs/DEPLOYMENT.md` for workflow behavior and repository settings.
+
+## Tests
+
+Keep the suite small and focused on observable behavior. Test moves, results, routes, saved state and worker responses by executing the relevant APIs or the running application. Add a regression case when it protects a real gameplay failure; do not expand coverage solely to increase a count.
+
+Never inspect source files or compiled bundles with regular expressions, string matching or snapshots to prove behavior. Do not assert component structure, class names, CSS declarations, compiler output, exact generated layouts or benchmark timing thresholds. A refactor or a new visual/puzzle idea should not require rewriting tests unless its behavior changes. Reading level or geography data as fixtures is fine. Use `docs/TESTING.md` for the current commands and coverage.
 
 ## Coding Standards & Architecture Guidelines
 

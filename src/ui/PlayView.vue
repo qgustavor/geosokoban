@@ -3,6 +3,8 @@ import { computed, ref, watch, nextTick, onBeforeUnmount } from 'vue'
 import { regionById, storyStop, STORY_COUNT, STORY_TOURS } from '../content/regions.js'
 import { boardTransitionDuration } from '../core/board-transition.js'
 import { puzzleDate } from '../core/seed.js'
+import { storyRules } from '../content/story-rules.js'
+import { visibleGoals } from '../core/presentation.js'
 import { utcDay } from '../core/dates.js'
 import { createCompletionSequence } from '../core/completion.js'
 import GameBoard from './GameBoard.vue'
@@ -11,6 +13,7 @@ import HintPanel from './HintPanel.vue'
 import OverlayDialog from './OverlayDialog.vue'
 import FlagIcon from './FlagIcon.vue'
 import ControlIcon from './ControlIcon.vue'
+import GlobeIcon from './GlobeIcon.vue'
 
 const props = defineProps({
   game: { type: Object, required: true },
@@ -23,6 +26,7 @@ const props = defineProps({
   requested: { type: String, default: '' },
   notice: { type: String, default: '' },
   fact: { type: String, default: '' },
+  guideCountry: { type: String, default: '' },
   fallbackText: { type: String, default: '' },
   timerText: { type: String, default: '' },
   totals: { type: Object, default: () => ({ levels: 0, moves: 0 }) },
@@ -61,6 +65,12 @@ const visible = country => props.guidance === 'learn' || props.revealed.includes
 const regionName = computed(() => props.t(regionById(props.game.level.region).name))
 const storyChapter = computed(() => storyStop(props.game.chapter))
 const hintOpen = ref(false)
+const guideOpen = ref(false)
+const guide = ref(null)
+const hideTargets = computed(() => storyRules(props.game.level.id)?.hideTargets ?? false)
+const targets = computed(() => visibleGoals(props.game.level, props.game.state, {
+  hidden: hideTargets.value, revealed: props.revealed
+}))
 const victoryOpen = ref(true)
 const phase = ref(props.game.solved ? 'results' : 'playing')
 const delivery = ref(null)
@@ -96,11 +106,32 @@ function labelFlag (country) {
 
 function inspect (country) {
   labelFlag(country)
+  hintOpen.value = false
+  guideOpen.value = true
   emit('inspect', country)
+  nextTick(() => guide.value?.querySelector('button[aria-pressed="true"]')?.focus({ preventScroll: true }))
+}
+
+function closeGuide () {
+  guideOpen.value = false
+  nextTick(() => board.value?.$el.focus({ preventScroll: true }))
+}
+
+function revealGuide () {
+  const country = props.guideCountry
+  emit('reveal', country)
+  closeGuide()
+  nextTick(() => board.value?.showDestination(country))
+}
+
+function toggleGuide () {
+  if (guideOpen.value) closeGuide()
+  else inspect(props.guideCountry || props.game.level.goals[0].country)
 }
 
 watch(() => props.game.level.id, () => {
   hintOpen.value = false
+  guideOpen.value = false
   victoryOpen.value = true
   clearLabel()
   sequence.reset()
@@ -109,6 +140,7 @@ watch(() => props.game.level.id, () => {
 watch(() => props.game.solved, value => {
   if (value) {
     hintOpen.value = false
+    guideOpen.value = false
     victoryOpen.value = true
     sequence.start()
   } else {
@@ -160,10 +192,10 @@ const description = computed(() => {
 
   const playerDescription = props.t('position', at(state.player))
   const flagDescriptions = state.boxes.map(box => {
-    const country = visible(box.country) ? props.name(box.country) : props.t('unknownFlag')
+    const country = props.name(box.country)
     return props.t('flagPosition', { country, ...at(box.position) })
   })
-  const goalDescriptions = level.goals.map((goal, index) => {
+  const goalDescriptions = targets.value.map((goal, index) => {
     // Remember mode must conceal destinations in the spoken description as well as on the board.
     const country = visible(goal.country)
       ? props.name(goal.country)
@@ -172,7 +204,8 @@ const description = computed(() => {
     return props.t('goalPosition', { country, ...at(goal.position) })
   })
 
-  return [playerDescription, ...flagDescriptions, ...goalDescriptions].join(' ')
+  const hidden = targets.value.length < level.goals.length ? props.t('hiddenDestinations') : ''
+  return [playerDescription, ...flagDescriptions, ...goalDescriptions, hidden].filter(Boolean).join(' ')
 })
 
 const resultDate = computed(() => puzzleDate(props.game.level.id))
@@ -190,6 +223,7 @@ function closeHint () {
 }
 
 function toggleHint () {
+  guideOpen.value = false
   if (hintOpen.value) {
     closeHint()
   } else {
@@ -249,6 +283,7 @@ onBeforeUnmount(() => {
         :description="description"
         :labels="labels"
         :show-flags="guidance === 'learn'"
+        :hide-targets="hideTargets"
         :revealed="revealed"
         :overlay="help.overlay"
         @overview="isOverview = $event"
@@ -297,6 +332,44 @@ onBeforeUnmount(() => {
         {{ t('revealCountry') }}
       </button>
     </div>
+    <section
+      v-if="guideOpen && !game.solved && !panelOpen"
+      ref="guide"
+      class="guide-overlay"
+      :aria-label="t('travelGuide')"
+      @keydown.esc.stop.prevent="closeGuide"
+    >
+      <header class="guide-heading">
+        <strong>{{ t('travelGuide') }}</strong>
+        <button class="quiet" @click="closeGuide">
+          {{ t('close') }}
+        </button>
+      </header>
+      <div class="guide-countries" role="group" :aria-label="t('guideCountries')">
+        <button
+          v-for="goal in game.level.goals"
+          :key="goal.country"
+          class="button secondary"
+          :aria-pressed="guideCountry === goal.country"
+          @click="inspect(goal.country)"
+        >
+          <FlagIcon :country="goal.country" /> {{ name(goal.country) }}
+        </button>
+      </div>
+      <p class="guide-fact" aria-live="polite" aria-atomic="true">
+        {{ fact }}
+      </p>
+      <button
+        v-if="guideCountry && !visible(guideCountry)"
+        class="button primary guide-reveal"
+        @click="revealGuide"
+      >
+        {{ t('revealDestination') }}
+      </button>
+      <p v-else-if="hideTargets" class="guide-revealed" role="status">
+        {{ t('destinationRevealed') }}
+      </p>
+    </section>
     <Transition name="hint">
       <div v-if="hintOpen && !game.solved" class="hint-overlay">
         <HintPanel
@@ -343,6 +416,16 @@ onBeforeUnmount(() => {
           @click="toggleOverview"
         >
           <ControlIcon :name="isOverview ? 'zoom-in' : 'zoom-out'" />
+        </button>
+        <button
+          class="hud-button"
+          :class="{ active: guideOpen }"
+          :title="t('travelGuide')"
+          :aria-label="t('travelGuide')"
+          :aria-expanded="guideOpen"
+          @click="toggleGuide"
+        >
+          <GlobeIcon uid="guide-button-globe" class="guide-icon" />
         </button>
         <button
           class="hud-button"
@@ -649,6 +732,34 @@ kbd {
   box-shadow: 0 5px 20px #163e4933;
 }
 
+.guide-icon { width: 28px; height: 32px; }
+
+.guide-overlay {
+  position: absolute;
+  bottom: 88px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  width: min(480px, calc(100vw - 24px));
+  max-height: min(55dvh, 420px);
+  overflow: auto;
+  padding: 16px;
+  border: 2px solid #c1d6bd;
+  border-radius: 18px;
+  background: #f3efdbf5;
+  color: #244e58;
+  box-shadow: 0 5px 20px #163e4933;
+}
+
+.guide-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.guide-countries { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.guide-countries .button { display: flex; align-items: center; gap: 7px; padding: 8px 10px; font-size: 13px; }
+.guide-countries [aria-pressed="true"] { outline: 2px solid #527477; outline-offset: 1px; }
+.guide-countries svg { width: 22px; height: 17px; }
+.guide-fact { line-height: 1.6; font-size: 15px; }
+.guide-reveal { width: 100%; }
+.guide-revealed { margin-bottom: 0; font-size: 13px; }
+
 .geography-popover {
   position: absolute;
   right: 18px;
@@ -746,6 +857,9 @@ kbd {
 }
 
 @media (max-width: 440px) {
+  .play-controls { gap: 6px; }
+  .hud-button { width: 40px; height: 44px; }
+
   .top-overlay {
     padding: 14px;
   }

@@ -1,15 +1,15 @@
-import { randomFrom } from '../src/core/seed.js'
+import { randomFrom, parseCode } from '../src/core/seed.js'
+import { shiftDay } from '../src/core/dates.js'
 import { REGIONS } from '../src/content/regions.js'
 
 export function benchmarkCodes (samples = 20) {
-  const alphabet = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'
-  const rng = randomFrom('generation-benchmark-v1')
+  const rng = randomFrom('generation-benchmark-v2')
   const codes = []
 
   // Reuse each seed across regions and both planning modes before randomizing execution order.
   for (let sample = 0; sample < samples; sample++) {
-    const seed = Array.from({ length: 10 }, () => alphabet[Math.floor(rng() * alphabet.length)]).join('')
-    for (const region of REGIONS) codes.push(`G2-${region.id}-${seed}`, `G2-${region.id}-${seed}-P`)
+    const day = shiftDay('2000-01-01', sample)
+    for (const region of REGIONS) codes.push(`${region.slug}-${day}`, `${region.slug}-${day}-hard`)
   }
 
   // Draw exactly one ordering value per code so the benchmark corpus stays reproducible.
@@ -54,7 +54,7 @@ export function summarize (rows) {
 export function report (rows, environment) {
   return {
     schema: 1,
-    corpus: 'generation-benchmark-v1',
+    corpus: 'generation-benchmark-v2',
     environment,
     summary: summarize(rows),
     byDifficulty: Object.fromEntries(['gentle', 'puzzle'].map(difficulty => {
@@ -64,7 +64,7 @@ export function report (rows, environment) {
     byRegionAndDifficulty: Object.fromEntries(REGIONS.flatMap(region => {
       return ['gentle', 'puzzle'].map(difficulty => {
         const matchingRows = rows.filter(row =>
-          row.code.split('-')[1] === region.id && row.difficulty === difficulty)
+          parseCode(row.code)?.region === region.id && row.difficulty === difficulty)
 
         return [`${region.id}/${difficulty}`, summarize(matchingRows)]
       })

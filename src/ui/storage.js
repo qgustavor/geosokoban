@@ -1,6 +1,6 @@
 import { storyProgressCode } from '../content/story.js'
 import { restoreStoryRun } from '../core/run.js'
-import { CHALLENGES, challengeName, challengeSettings } from '../core/challenge.js'
+import { CHALLENGES, challengeSettings } from '../core/challenge.js'
 import { audioSettings } from '../audio/settings.js'
 
 const KEY = 'geosokoban.prototype.v2'
@@ -9,16 +9,14 @@ export function readPreferences () {
   try {
     const data = JSON.parse(localStorage.getItem(KEY) ?? '{}')
 
-    // Storage may contain older or edited saves. Only current story codes count as completed stops.
+    // Stored preferences are untrusted. Only current story codes count as completed stops.
     // Keep the first occurrence order while removing duplicates.
     const locale = ['en', 'pt-BR', 'es'].includes(data?.locale) ? data.locale : null
     const completed = Array.isArray(data?.completed)
       ? [...new Set(data.completed.map(storyProgressCode).filter(Boolean))]
       : []
 
-    const challenge = CHALLENGES.includes(data?.challenge)
-      ? data.challenge
-      : challengeName(data?.guidance, data?.planning === true)
+    const challenge = CHALLENGES.includes(data?.challenge) ? data.challenge : 'easy'
 
     return {
       ...audioSettings(data),

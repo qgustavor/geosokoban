@@ -121,7 +121,7 @@ try {
       const ok = !!level && !validateLevel(level).length && checked.valid && isSolved(level, checked.state)
       rows.push({
         ...timing,
-        difficulty: code.endsWith('-P') ? 'puzzle' : 'gentle',
+        difficulty: code.endsWith('-hard') ? 'puzzle' : 'gentle',
         ok,
         region: level?.region ?? null,
         fallback: level?.generationSource === 'fallback'
@@ -145,7 +145,7 @@ try {
       // Retain watchdog failures in the denominator; dropping them would exaggerate fast-run rates.
       rows.push({
         code,
-        difficulty: code.endsWith('-P') ? 'puzzle' : 'gentle',
+        difficulty: code.endsWith('-hard') ? 'puzzle' : 'gentle',
         ok: false,
         fallback: false,
         ms: 120000,

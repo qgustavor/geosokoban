@@ -6,7 +6,15 @@ const baseURL = `http://127.0.0.1:4173${path}`
 
 export default defineConfig({
   testDir: './tests/e2e',
+  timeout: 45000,
+  expect: { timeout: 15000 },
   fullyParallel: true,
+  forbidOnly: Boolean(process.env.CI),
+  // Avoid concurrent game workers competing for the CI runner's CPU.
+  workers: process.env.CI ? 1 : undefined,
+  reporter: process.env.CI
+    ? [['github'], ['html', { open: 'never' }]]
+    : 'list',
   retries: process.env.CI ? 1 : 0,
   use: { baseURL, trace: 'retain-on-failure' },
   projects: [
