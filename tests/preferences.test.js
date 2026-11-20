@@ -28,9 +28,13 @@ test('every mode and difficulty persists independently of the current puzzle set
     for (const challenge of ['easy', 'medium', 'hard']) {
       storageFixture(null, () => {
         savePreferences({
-          ...readPreferences(), mode, challenge,
+          ...readPreferences(),
+          mode,
+          challenge,
           // Story's teaching rules or a linked puzzle must not overwrite the menu choice.
-          guidance: 'learn', planning: false, completed: ['south-america-tour-1']
+          guidance: 'learn',
+          planning: false,
+          completed: ['south-america-tour-1']
         })
         const restored = readPreferences()
         assert.equal(restored.mode, mode)

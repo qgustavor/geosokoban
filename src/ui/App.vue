@@ -80,7 +80,9 @@ provide(gameContext, app)
       @dismiss="app.closePanel"
     >
       <div v-if="app.panel === 'pause'" class="pause-actions">
-        <p class="gesture-help">{{ app.t('gestureHelp') }}</p>
+        <p class="gesture-help">
+          {{ app.t('gestureHelp') }}
+        </p>
         <button class="button primary" @click="app.closePanel">
           {{ app.t('resume') }}
         </button>

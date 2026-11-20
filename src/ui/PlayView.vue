@@ -379,7 +379,8 @@ onBeforeUnmount(() => {
         {{ resultMoves }} <small>{{ t('moves').toLowerCase() }}</small>
       </p>
       <p class="result-message">
-        {{ game.chapter ? t('journeyCompleteDesc') : resultDate === utcDay() ? t('dailyCompleteDesc') : t('archiveCompleteDesc') }}
+        {{ game.chapter ? t('journeyCompleteDesc') : resultDate === utcDay()
+          ? t('dailyCompleteDesc') : t('archiveCompleteDesc') }}
       </p>
       <p v-if="game.chapter" class="result-progress">
         {{ t(totals.levels === STORY_COUNT ? 'journeyTotals' : 'journeyPartialTotals', { levels: totals.levels }) }}

@@ -70,9 +70,9 @@ function toggleOverview () {
   camera.value = camera.value.zoom > 1.01
     ? initialCamera(props.level, size.value, props.state.player, false)
     : clampCamera(props.level, size.value, {
-        ...initialCamera(props.level, size.value, props.state.player),
-        zoom: Math.max(2, initialCamera(props.level, size.value, props.state.player).zoom)
-      })
+      ...initialCamera(props.level, size.value, props.state.player),
+      zoom: Math.max(2, initialCamera(props.level, size.value, props.state.player).zoom)
+    })
   board.value.focus({ preventScroll: true })
 }
 
@@ -782,4 +782,3 @@ defineExpose({
   display: none;
 }
 </style>
-

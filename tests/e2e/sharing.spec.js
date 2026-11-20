@@ -39,7 +39,6 @@ async function sharingPlatform (page, native = 'available', clipboard = 'availab
 async function openPuzzle (page) {
   await page.goto(`./#/puzzle/${code}?g=learn`)
   await expect(page.locator('.play-page')).toHaveAttribute('data-code', code)
-
 }
 
 async function finishPuzzle (page) {

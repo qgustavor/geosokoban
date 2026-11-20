@@ -61,12 +61,21 @@ export function restoreStoryRun (value) {
   if (!value.levels || typeof value.levels !== 'object' || Array.isArray(value.levels)) return null
   const levels = {}
   for (const [code, result] of Object.entries(value.levels)) {
-    if (!storyIndex(code) || !Number.isSafeInteger(result?.moves) || result.moves < 0 ||
-      !Number.isSafeInteger(result?.pushes) || result.pushes < 0) continue
-    levels[storyCode(storyIndex(code))] = { moves: result.moves, pushes: result.pushes, assisted: result.assisted === true }
+    if (
+      !storyIndex(code) ||
+      !Number.isSafeInteger(result?.moves) || result.moves < 0 ||
+      !Number.isSafeInteger(result?.pushes) || result.pushes < 0
+    ) continue
+
+    levels[storyCode(storyIndex(code))] = {
+      moves: result.moves,
+      pushes: result.pushes,
+      assisted: result.assisted === true
+    }
   }
   const startedAt = Number.isFinite(value.startedAt) && value.startedAt >= 0 ? value.startedAt : null
   const finishedAt = Number.isFinite(value.finishedAt) && value.finishedAt >= (startedAt ?? 0)
-    ? value.finishedAt : null
+    ? value.finishedAt
+    : null
   return { version: 1, kind: 'story', code: storyCode(storyIndex(value.code)), startedAt, finishedAt, levels }
 }

@@ -13,7 +13,10 @@ test('phones start with readable 32px tiles; desktops and previews retain the fu
   const viewport = cameraViewport(level, phone, camera)
   near(phone.width / viewport.width * 40, 32)
   assert.equal(initialCamera(level, desktop).zoom, 1)
-  assert.deepEqual(cameraViewport(level, phone, initialCamera(level, phone, level.player, false)), boardViewport(level, phone))
+  assert.deepEqual(
+    cameraViewport(level, phone, initialCamera(level, phone, level.player, false)),
+    boardViewport(level, phone)
+  )
   assert.deepEqual(level, { width: 29, height: 23, player: 333 })
 })
 

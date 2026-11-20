@@ -61,11 +61,14 @@ test('story has one persistent clock through every level, stopping at the final 
 test('restoring malformed storage never invents level totals or non-finite timers', () => {
   assert.equal(restoreStoryRun(null), null)
   assert.equal(restoreStoryRun({ kind: 'story', version: 1, code: storyCode(1), levels: [] }), null)
-  const run = restoreStoryRun({ ...createRun(storyCode(1), true, 1000), levels: {
-    [storyCode(1)]: { moves: -1, pushes: 0 },
-    [storyCode(2)]: { moves: 10, pushes: 2, assisted: true },
-    bad: { moves: 1, pushes: 1 }
-  } })
+  const run = restoreStoryRun({
+    ...createRun(storyCode(1), true, 1000),
+    levels: {
+      [storyCode(1)]: { moves: -1, pushes: 0 },
+      [storyCode(2)]: { moves: 10, pushes: 2, assisted: true },
+      bad: { moves: 1, pushes: 1 }
+    }
+  })
   assert.deepEqual(runTotals(run), { levels: 1, moves: 10, pushes: 2, assisted: true })
 })
 

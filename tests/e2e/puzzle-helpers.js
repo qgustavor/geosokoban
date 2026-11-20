@@ -5,12 +5,14 @@ import { parseCode } from '../../src/core/seed.js'
 /** Certified date fixtures exercise the real cache/session path without waiting for generation. */
 export async function cachePuzzles (page, codes) {
   let saved
-  const cache = createLevelCache({ storage: () => ({
-    getItem: () => null,
-    setItem: (key, value) => {
-      saved = value
-    }
-  }) })
+  const cache = createLevelCache({
+    storage: () => ({
+      getItem: () => null,
+      setItem: (key, value) => {
+        saved = value
+      }
+    })
+  })
   const levels = codes.map(code => fallbackLevel(parseCode(code)))
   for (const level of levels) {
     if (!cache.set(level)) throw new Error(`Invalid test fixture: ${level.id}`)

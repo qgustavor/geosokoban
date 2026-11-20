@@ -171,7 +171,11 @@ export function useGameController () {
         if (resumingDialogue) {
           // The puzzle was solved before leaving. Resume its unread scene, then travel on.
           playAfterStory(code)
-        } else if (storyIndex(code) === STORY_COUNT && activeRun.value?.finishedAt !== null && activeRun.value?.levels[code]) {
+        } else if (
+          storyIndex(code) === STORY_COUNT &&
+          activeRun.value?.finishedAt !== null &&
+          activeRun.value?.levels[code]
+        ) {
           storyFinished.value = true
         } else {
           dialogue.start(code, 'before', focusBoard)
@@ -454,11 +458,11 @@ export function useGameController () {
     const completeJourney = result.levels === STORY_COUNT
     let text = chapter.value
       ? t(completeJourney ? 'shareStoryResult' : 'shareStoryPartial', {
-          moves: result.moves, levels: result.levels, help: helpLabel
-        })
+        moves: result.moves, levels: result.levels, help: helpLabel
+      })
       : t('shareDatedResult', {
-          date: puzzleDate(level.value.id) ?? '', moves: state.value.moves, challenge: challengeLabel, help: helpLabel
-        })
+        date: puzzleDate(level.value.id) ?? '', moves: state.value.moves, challenge: challengeLabel, help: helpLabel
+      })
     if (timerText.value && (!chapter.value || completeJourney)) text += `\n${t('speedrun')}: ${timerText.value}`
     return sendShare({ title: 'GeoSokoban', text, url: puzzleURL() })
   }

@@ -159,11 +159,37 @@ function play () {
 </template>
 
 <style scoped>
-.archive-picker { margin-top: 24px; }
-.archive-picker label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 700; }
-.date-controls { display: flex; align-items: center; justify-content: center; gap: 10px; }
-.date-controls input { min-width: 0; width: 180px; font-size: 16px; text-align: center; color-scheme: light; }
-.date-arrow { width: 44px; height: 44px; flex: none; border: 1px solid #b4c4b1; background: #e9ecda; color: #254c59; font-size: 22px; }
+.archive-picker {
+  margin-top: 24px;
+}
+.archive-picker label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.date-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.date-controls input {
+  min-width: 0;
+  width: 180px;
+  font-size: 16px;
+  text-align: center;
+  color-scheme: light;
+}
+.date-arrow {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border: 1px solid #b4c4b1;
+  background: #e9ecda;
+  color: #254c59;
+  font-size: 22px;
+}
 
 .level-selection {
   width: min(800px, calc(100vw - 36px));
