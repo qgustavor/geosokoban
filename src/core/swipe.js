@@ -1,5 +1,5 @@
-/** A short swipe makes one move. A long drag can make more moves without a direction pad. */
-export function createSwipeInput (step, { threshold = 28, maxSteps = 3 } = {}) {
+/** A swipe in any direction makes exactly one move. Lift and swipe again to take another step. */
+export function createSwipeInput (step, { threshold = 32 } = {}) {
   let gesture = null
 
   return {
@@ -8,28 +8,26 @@ export function createSwipeInput (step, { threshold = 28, maxSteps = 3 } = {}) {
     },
 
     move (id, x, y) {
-      // Only the pointer that started the gesture can move it or end it.
+      // Only the pointer that started the gesture can move it.
       if (!gesture || gesture.id !== id) return false
+
+      // Once this swipe has triggered a step, ignore all further motion until the finger lifts.
+      if (gesture.moved) return true
 
       const dx = x - gesture.x
       const dy = y - gesture.y
-      // Choose one axis per event rather than making diagonal moves; ties use the vertical axis.
+
+      // Choose dominant axis; ties favor the vertical axis.
       const horizontal = Math.abs(dx) > Math.abs(dy)
       const distance = horizontal ? dx : dy
-      const thresholdCrossings = Math.floor(Math.abs(distance) / threshold)
-      const count = Math.min(maxSteps, thresholdCrossings)
-      if (!count) return false
 
-      let direction
-      if (horizontal) direction = distance > 0 ? 'right' : 'left'
-      else direction = distance > 0 ? 'down' : 'up'
+      if (Math.abs(distance) < threshold) return false
 
-      // The cap limits a single large pointer jump. Blocked moves still consume this gesture segment.
-      for (let index = 0; index < count; index++) step(direction)
+      const direction = horizontal
+        ? (distance > 0 ? 'right' : 'left')
+        : (distance > 0 ? 'down' : 'up')
 
-      // Restart at the current pointer position, discarding overshoot rather than queuing more moves.
-      gesture.x = x
-      gesture.y = y
+      step(direction)
       gesture.moved = true
 
       return true
@@ -38,7 +36,7 @@ export function createSwipeInput (step, { threshold = 28, maxSteps = 3 } = {}) {
     end (id) {
       if (!gesture || gesture.id !== id) return false
 
-      // Report whether the gesture requested movement, so the caller can distinguish it from a tap.
+      // Return whether this gesture moved, so pointerup knows to suppress click/inspect.
       const moved = gesture.moved
       gesture = null
 
