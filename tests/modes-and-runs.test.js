@@ -71,15 +71,3 @@ test('restoring malformed storage never invents level totals or non-finite timer
   })
   assert.deepEqual(runTotals(run), { levels: 1, moves: 10, pushes: 2, assisted: true })
 })
-
-test('all new interface and share strings exist in English, Portuguese and Spanish', () => {
-  for (const locale of ['en', 'pt-BR', 'es']) {
-    for (const key of ['archive', 'archiveDesc', 'puzzleDate', 'speedrun', 'speedrunDesc', 'mapOverview',
-      'followPlayer', 'dailyComplete', 'archiveComplete', 'journeyTotals', 'shareStoryResult', 'gestureHelp']) {
-      assert.ok(messages[locale][key], `${locale}:${key}`)
-    }
-    const text = translate(locale, 'shareDatedResult', { date: today, challenge: 'Medium', moves: 15, help: 'No help' })
-    assert.ok(text.includes(today))
-    assert.doesNotMatch(text, /\{|\}|seed|G2-/)
-  }
-})

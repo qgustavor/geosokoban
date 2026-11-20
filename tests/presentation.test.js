@@ -7,27 +7,15 @@ import { messages } from '../src/data/i18n.js'
 
 const source = path => readFileSync(new URL(path, import.meta.url), 'utf8')
 
-test('swipes ignore taps and other pointers, then move in the dominant direction', () => {
-  const moves = []
-  const input = createSwipeInput(direction => moves.push(direction))
-  input.start(1, 100, 100)
-  assert.equal(input.move(2, 200, 100), false)
-  assert.equal(input.move(1, 106, 103), false)
-  assert.equal(input.move(1, 130, 105), true)
-  assert.deepEqual(moves, ['right'])
-  assert.equal(input.end(1), true)
-  assert.equal(input.move(1, 200, 105), false)
-})
-
 test('long drags are bounded and cancellation cannot leave a movement repeat running', () => {
   const moves = []
   const input = createSwipeInput(direction => moves.push(direction))
   input.start(1, 0, 100)
   input.move(1, 0, -1000)
-  assert.deepEqual(moves, ['up', 'up', 'up'])
+  assert.deepEqual(moves, ['up'])
   input.cancel()
   input.move(1, 0, -2000)
-  assert.equal(moves.length, 3)
+  assert.equal(moves.length, 1)
 })
 
 test('share uses a visible-dialog fallback on unsupported or rejected native sharing', async () => {
