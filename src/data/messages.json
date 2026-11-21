@@ -197,12 +197,7 @@
     "shareDatedResult": "GeoSokoban · {date} · {challenge} · {moves} moves · {help}",
     "shareStoryResult": "GeoSokoban · Journey complete! · {levels} stops · {moves} moves · {help}",
     "shareStoryPartial": "GeoSokoban · Journey ending reached · {levels} stops recorded · {moves} moves · {help}",
-    "gestureHelp": "Swipe with one finger to move. Pinch to zoom the map, and drag with two fingers to look around.",
-    "travelGuide": "Travel guide",
-    "guideCountries": "Countries on this stop",
-    "revealDestination": "Reveal destination",
-    "destinationRevealed": "This destination is now marked on the map.",
-    "hiddenDestinations": "Some destinations are hidden. Travel guide offers country clues and optional reveals."
+    "gestureHelp": "Swipe with one finger to move. Pinch to zoom the map, and drag with two fingers to look around."
   },
   "pt-BR": {
     "audio": "Áudio",
@@ -402,12 +397,7 @@
     "shareDatedResult": "GeoSokoban · {date} · {challenge} · {moves} movimentos · {help}",
     "shareStoryResult": "GeoSokoban · Viagem concluída! · {levels} paradas · {moves} movimentos · {help}",
     "shareStoryPartial": "GeoSokoban · Final da viagem alcançado · {levels} paradas registradas · {moves} movimentos · {help}",
-    "gestureHelp": "Deslize com um dedo para mover. Use uma pinça para ampliar o mapa e arraste com dois dedos para olhar ao redor.",
-    "travelGuide": "Guia de viagem",
-    "guideCountries": "Países desta parada",
-    "revealDestination": "Revelar destino",
-    "destinationRevealed": "Este destino agora está marcado no mapa.",
-    "hiddenDestinations": "Alguns destinos estão escondidos. O Guia de viagem oferece pistas e a opção de revelá-los."
+    "gestureHelp": "Deslize com um dedo para mover. Use uma pinça para ampliar o mapa e arraste com dois dedos para olhar ao redor."
   },
   "es": {
     "audio": "Audio",
@@ -607,11 +597,6 @@
     "shareDatedResult": "GeoSokoban · {date} · {challenge} · {moves} movimientos · {help}",
     "shareStoryResult": "GeoSokoban · ¡Viaje completado! · {levels} paradas · {moves} movimientos · {help}",
     "shareStoryPartial": "GeoSokoban · Final del viaje alcanzado · {levels} paradas registradas · {moves} movimientos · {help}",
-    "gestureHelp": "Desliza con un dedo para moverte. Pellizca para ampliar el mapa y arrastra con dos dedos para mirar alrededor.",
-    "travelGuide": "Guía de viaje",
-    "guideCountries": "Países de esta parada",
-    "revealDestination": "Revelar destino",
-    "destinationRevealed": "Este destino ya está marcado en el mapa.",
-    "hiddenDestinations": "Algunos destinos están ocultos. La Guía de viaje ofrece pistas y la opción de revelarlos."
+    "gestureHelp": "Desliza con un dedo para moverte. Pellizca para ampliar el mapa y arrastra con dos dedos para mirar alrededor."
   }
 }

@@ -65,12 +65,3 @@ export function coastlineEdges (level, position, floors = new Set(level.floors))
 
   return edges.join(' ')
 }
-
-/** Hidden destinations do not render or announce coordinates until discovered or explicitly revealed. */
-export function visibleGoals (level, state, { hidden = false, revealed = [] } = {}) {
-  if (!hidden) return level.goals
-
-  return level.goals.filter(goal => revealed.includes(goal.country) || state.boxes.some(box =>
-    box.country === goal.country && box.position === goal.position
-  ))
-}

@@ -50,15 +50,15 @@ The application uses the official `vue-router` package, `createWebHashHistory()`
 | Fragment | Screen |
 | --- | --- |
 | `#/` | Main menu |
-| `#/puzzle/south-america-tour-1?g=learn` | Story board |
-| `#/puzzle/south-america-2026-11-14?g=learn` | A particular daily puzzle |
-| `#/puzzle/south-america-calm-bay-10-hard?g=remember` | Shared seed with both challenges |
+| `#/puzzle/G2-SA-S1?g=learn` | Story board |
+| `#/puzzle/G2-SA-D20261114?g=learn` | A particular daily puzzle |
+| `#/puzzle/G2-SA-0123456789-P?g=remember` | Shared seed with both challenges |
 | `#/options` | Options |
 | `#/credits` | Credits |
 
 The seed code still determines region, daily date or story stop and mechanical challenge. The query `g=learn` or `g=remember` determines geography guidance. No region selector is added. Refreshing a puzzle link reconstructs its starting position; it does not restore move-by-move session state after a full page reload.
 
-`router.resolve(puzzleLocation(...))` constructs share URLs. Existing links such as `#p=south-america-tour-1&g=learn` redirect to the equivalent named route. Invalid puzzle codes are not fed into generation; unknown routes show a translated not-found page.
+`router.resolve(puzzleLocation(...))` constructs share URLs. Existing links such as `#p=G2-SA-S1&g=learn` redirect to the equivalent named route. Invalid puzzle codes are not fed into generation; unknown routes show a translated not-found page.
 
 The root game controller owns the active session, including its unlimited undo history, independently of route components. Going to Options or Credits and returning to the same puzzle is designed to reuse that session rather than start it again. Returning to a different puzzle reconstructs that puzzle; this is not a cache of every board ever visited.
 

@@ -21,7 +21,6 @@ const app = useGameContext()
     :reduced-motion="app.reducedMotion"
     :notice="app.notice"
     :fact="app.fact"
-    :guide-country="app.guideCountry"
     :fallback-text="app.fallbackText"
     :assisted="app.assisted"
     :timer-text="app.timerText"

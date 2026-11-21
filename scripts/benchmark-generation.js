@@ -43,7 +43,7 @@ function measure (code) {
 
       resolve({
         code,
-        difficulty: code.endsWith('-hard') ? 'puzzle' : 'gentle',
+        difficulty: code.endsWith('-P') ? 'puzzle' : 'gentle',
         ms,
         ok: valid,
         fallback: level?.generationSource === 'fallback',

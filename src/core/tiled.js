@@ -73,7 +73,6 @@ export function toTiled (level) {
   const metadataProperties = metadata
     .filter(name => level[name] !== undefined)
     .map(name => property(name, level[name]))
-  if (level.obstacleArt) metadataProperties.push(property('obstacleArt', JSON.stringify(level.obstacleArt)))
 
   // Custom properties carry the barrier description alongside the editable layers.
   const gateProperties = level.cut
@@ -187,17 +186,6 @@ export function fromTiled (map) {
 
       return { country: data.country, position: goalPosition, anchor }
     })
-  }
-
-  if (level.obstacleArt) {
-    const art = JSON.parse(level.obstacleArt)
-    const kinds = new Set(['ridge', 'boulder', 'reef'])
-    if (!art || typeof art !== 'object' || Array.isArray(art) || Object.values(art).some(kind => !kinds.has(kind))) {
-      throw new Error('Invalid story obstacle art')
-    }
-    level.obstacleArt = Object.fromEntries(Object.entries(art).filter(([position]) =>
-      level.obstacles.includes(Number(position))
-    ))
   }
 
   // Reassemble the engine's barrier metadata from the editor's flat custom properties.

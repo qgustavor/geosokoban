@@ -11,8 +11,7 @@ import { movementSound } from '../audio/score.js'
 import { normalizeCode, puzzleDate, isPlanningCode } from '../core/seed.js'
 import { CHALLENGES, challengeSettings, challengeName } from '../core/challenge.js'
 import { storyCode, storyIndex, STORY_COUNT } from '../content/regions.js'
-import { countryClue, storyCountryGuide } from '../content/story-guide.js'
-import { storyRules } from '../content/story-rules.js'
+import relations from '../content/relations.json' with { type: 'json' }
 import { translate, countryName } from '../data/i18n.js'
 import { readPreferences, savePreferences } from '../ui/storage.js'
 import { createRun, finishRunLevel, reopenRunLevel, elapsedRun, formatElapsed, runTotals } from '../core/run.js'
@@ -90,9 +89,15 @@ export function useGameController () {
   const fact = computed(() => {
     if (!factCountry.value) return ''
 
-    return chapter.value
-      ? storyCountryGuide(factCountry.value, locale.value)
-      : countryClue(factCountry.value, locale.value)
+    const relation = relations[factCountry.value]
+    if (!relation) return t('findCountry', { country: name(factCountry.value) })
+
+    const country = name(factCountry.value)
+    const directionKey = 'geo' + relation[0][0].toUpperCase() + relation[0].slice(1)
+    const direction = t(directionKey)
+    const other = name(relation[1])
+
+    return t('relation', { country, direction, other })
   })
 
   function focusBoard () {
@@ -135,7 +140,7 @@ export function useGameController () {
 
       // Reset discoveries and assistance only after the replacement board is ready.
       if (storyIndex(code)) {
-        guidance.value = storyRules(code).guidance
+        guidance.value = 'learn'
         if (!storyRun.value || (storyIndex(code) === 1 &&
           (storyRun.value.finishedAt !== null || storyIndex(storyRun.value.code) !== 1))) {
           storyRun.value = createRun(code, speedrun.value)
@@ -360,7 +365,7 @@ export function useGameController () {
   function inspect (country) {
     requested.value = ''
     factCountry.value = country
-    if (!chapter.value && guidance.value === 'remember') assisted.value = true
+    if (guidance.value === 'remember') assisted.value = true
   }
 
   function selectDestination (country) {
@@ -546,10 +551,9 @@ export function useGameController () {
     }
     const code = normalizeCode(destination.params.code)
 
-    // Story owns its tour rules, including direct links and reloads.
-    const rules = storyRules(code)
-    const rememberTargets = isPlanningCode(code) || route.query.g === 'remember'
-    guidance.value = rules?.guidance ?? (rememberTargets ? 'remember' : 'learn')
+    // Hard always hides destinations; other boards take guidance from the shareable query parameter.
+    const rememberTargets = !storyIndex(code) && (isPlanningCode(code) || route.query.g === 'remember')
+    guidance.value = rememberTargets ? 'remember' : 'learn'
 
     // A guidance-only URL change must not restart the current puzzle or discard its history.
     if (activeCode.value === code) {
@@ -644,7 +648,6 @@ export function useGameController () {
     selected,
     requested,
     revealed,
-    guideCountry: factCountry,
     fact,
     reducedMotion,
     boardTransitioning,

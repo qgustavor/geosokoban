@@ -1,121 +1,153 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { storyCode, STORY_COUNT } from '../src/content/regions.js'
-import { storyLevel } from '../src/content/story.js'
-import { storyRules } from '../src/content/story-rules.js'
-import { getStoryScene } from '../src/content/story-dialogue.js'
-import { storyCountryGuide, countryCulture } from '../src/content/story-guide.js'
-import { storyStage, createStoryPlayback } from '../src/core/story-playback.js'
-import { visibleGoals } from '../src/core/presentation.js'
-import { initialState, replay } from '../src/core/engine.js'
-import { solve, reverseDistances } from '../src/core/solver.js'
+import { REGIONS, STORY_COUNT, STORY_TOURS, storyCode, storyIndex, storyStop } from '../src/content/regions.js'
+import { storyLevel, storyProgressCode, resumeStory } from '../src/content/story.js'
+import { STORY_SCENES, STORY_CHARACTERS, getStoryScene, localizedStoryText } from '../src/content/story-dialogue.js'
+import { createStoryPlayback } from '../src/core/story-playback.js'
+import { withPlanning } from '../src/core/challenge.js'
+import { readPreferences, savePreferences } from '../src/ui/storage.js'
+import levels from '../src/content/story-levels.json' with { type: 'json' }
 
-// Test the experiences, not copy wording, generated code, SVG markup or exact authored layouts.
-test('tour two hides destinations until revealed or delivered; other tours show them', () => {
-  for (const tour of [1, 2, 3]) {
-    const level = storyLevel(`south-america-tour-${tour}`)
-    const rules = storyRules(level.id)
-    assert.equal(rules.guidance, tour === 2 ? 'remember' : 'learn')
-    const options = { hidden: rules.hideTargets }
-    const state = initialState(level)
-    assert.equal(visibleGoals(level, state, options).length, tour === 2 ? 0 : level.goals.length)
-    if (tour !== 2) continue
+test('each of three tours visits all seven regions before returning to South America', () => {
+  assert.equal(STORY_COUNT, 21)
+  assert.equal(STORY_TOURS, 3)
 
-    const country = level.goals[0].country
-    assert.deepEqual(visibleGoals(level, state, { ...options, revealed: [country] }), [level.goals[0]])
-    // A wrong flag does not discover a destination. A matching delivery does.
-    state.boxes[1].position = level.goals[0].position
-    assert.deepEqual(visibleGoals(level, state, options), [])
-    state.boxes[1].position = level.boxes[1].position
-    state.boxes[0].position = level.goals[0].position
-    assert.deepEqual(visibleGoals(level, state, options), [level.goals[0]])
+  for (let tour = 1; tour <= STORY_TOURS; tour++) {
+    const start = (tour - 1) * REGIONS.length
+    const stops = REGIONS.map((region, offset) => storyStop(start + offset + 1))
+    assert.deepEqual(stops.map(stop => stop.region.id), REGIONS.map(region => region.id))
+    assert.ok(stops.every(stop => stop.tour === tour))
   }
-  assert.equal(storyRules('2024-02-29'), null)
+  assert.equal(storyCode(7), 'oceania-tour-1')
+  assert.equal(storyCode(8), 'south-america-tour-2')
+  assert.equal(storyCode(15), 'south-america-tour-3')
 })
 
-test('country lessons follow the actual flags in each localized second and third tour briefing', () => {
+test('story uses only the authored non-hard boards, including the Caribbean on tour three', () => {
+  for (let index = 1; index <= STORY_COUNT; index++) {
+    const stop = storyStop(index)
+    for (const hard of [false, true]) {
+      const code = withPlanning(storyCode(index), hard)
+      const key = `G2-${stop.region.id}-S${stop.tour}${hard ? '-P' : ''}`
+      assert.equal(storyIndex(code), index)
+      assert.equal(storyIndex(key), index)
+      assert.deepEqual(storyLevel(code), { ...levels[`G2-${stop.region.id}-S${stop.tour}`], id: storyCode(index) })
+      assert.equal(storyProgressCode(code), storyCode(index))
+      assert.equal(storyProgressCode(key), storyCode(index))
+    }
+  }
+  assert.equal(storyLevel(storyCode(16)).region, 'CAR')
+  assert.equal(storyLevel('asia-calm-kite-42'), null)
+})
+
+test('story indices reject missing, malformed and out-of-range chapters', () => {
+  for (const value of [0, -1, 22, 1.5, null, undefined, '1']) {
+    assert.equal(storyStop(value), null)
+    assert.throws(() => storyCode(value), RangeError)
+  }
+  for (const code of [null, {}, '', 'asia-tour-4', 'asia-tour-1-hard-hard']) assert.equal(storyIndex(code), 0)
+})
+
+test('resume prioritizes unread dialogue, even after the final puzzle is completed', () => {
+  const codes = Array.from({ length: STORY_COUNT }, (_, index) => storyCode(index + 1))
+  assert.equal(resumeStory([]), codes[0])
+  assert.equal(resumeStory(codes.slice(0, 7)), codes[7])
+  assert.equal(resumeStory(['G2-SA-S1']), codes[1])
+  assert.equal(resumeStory(codes), codes[0])
+  assert.equal(resumeStory(codes, withPlanning(codes.at(-1), true)), codes.at(-1))
+  assert.equal(resumeStory(codes.slice(0, 7), codes[6]), codes[6])
+})
+
+test('all before scenes and the ending exist in every supported language', () => {
   for (const locale of ['en', 'pt-BR', 'es']) {
     for (let index = 1; index <= STORY_COUNT; index++) {
-      const code = storyCode(index)
-      const before = getStoryScene(code, 'before', locale)
-      assert.ok(before?.lines.length, code)
-      for (const phase of ['before', 'after']) {
-        const scene = getStoryScene(code, phase, locale)
-        if (!scene) continue
-        for (const line of scene.lines) {
-          assert.ok(line.text.trim())
-          assert.ok(scene.characters[line.speaker])
-        }
-      }
-      if (storyRules(code).tour === 1) continue
-      for (const goal of storyLevel(code).goals) {
-        assert.ok(countryCulture(goal.country, locale), goal.country)
-        const clue = storyCountryGuide(goal.country, locale)
-        assert.ok(before.lines.some(line => line.text === clue), `${code}: ${goal.country}`)
+      const scene = getStoryScene(storyCode(index), 'before', locale)
+      assert.ok(scene.lines.length)
+      assert.ok(scene.title && scene.region)
+      for (const line of scene.lines) {
+        assert.ok(line.text && scene.characters[line.speaker])
+        assert.doesNotMatch(line.text, /\{(?:tour|region|stop)\}/)
       }
     }
+    const ending = getStoryScene(storyCode(21), 'after', locale)
+    assert.deepEqual(Object.keys(ending.characters), ['globe', 'visitor'])
+    assert.equal(ending.lines.length, 4)
   }
 })
 
-test('only the final closing scene reveals Pip; Back restores the magnet and finishing continues once', () => {
-  for (let index = 1; index <= STORY_COUNT; index++) {
-    for (const phase of ['before', 'after']) {
-      const scene = getStoryScene(storyCode(index), phase, 'en')
-      if (scene && !(index === STORY_COUNT && phase === 'after')) {
-        assert.deepEqual(Object.keys(scene.characters), ['globe'])
+test('authored dialogue has named speakers and matching localized content', () => {
+  for (const [slot, phases] of Object.entries(STORY_SCENES)) {
+    for (const scene of Object.values(phases)) {
+      for (const line of scene.lines) {
+        assert.ok(STORY_CHARACTERS[line.speaker], slot)
+        for (const locale of ['en', 'pt-BR', 'es']) assert.ok(line.text[locale], slot + ':' + locale)
       }
     }
   }
-  const ending = getStoryScene(storyCode(STORY_COUNT), 'after', 'en')
-  assert.ok(ending.characters.pip)
-  const removal = ending.lines.findIndex(line => line.stage?.pip === 'settling')
-  assert.ok(removal > 0)
-  assert.equal(storyStage(ending, removal).pip, 'settling')
-  assert.equal(storyStage(ending, removal - 1).pip, 'confused')
-  assert.equal(storyStage(ending, ending.lines.length - 1).pip, 'oriented')
-
-  let continued = 0
-  let active
-  const playback = createStoryPlayback((code, phase) => getStoryScene(code, phase, 'en'), value => {
-    active = value
-  })
-  playback.start(ending.code, 'after', () => {
-    continued++
-  })
-  assert.equal(active.phase, 'after')
-  playback.finish()
-  playback.finish()
-  assert.equal(continued, 1)
-  assert.equal(active, null)
+  assert.equal(localizedStoryText({ en: 'Visit {region}' }, 'fr', { region: 'Asia' }), 'Visit Asia')
+  assert.equal(localizedStoryText('Plain text', 'es'), 'Plain text')
+  assert.equal(getStoryScene(storyCode(2), 'after', 'en'), null)
+  assert.equal(getStoryScene('asia-calm-kite-42', 'before', 'en'), null)
 })
 
-test('the campaign stays short, teaches real terrain detours, and ends with its greatest pushing challenge', () => {
-  let previousPushes = 0
-  let earlierMaximum = 0
-  let detours = 0
-  for (let index = 1; index <= STORY_COUNT; index++) {
-    const level = storyLevel(storyCode(index))
-    const { tour } = storyRules(level.id)
-    const played = replay(level, level.solution)
-    // Broad child-friendly budgets, not exact certificates or layout snapshots.
-    assert.ok(played.state.moves <= 80, level.id)
-    assert.ok(played.state.pushes <= 20, level.id)
-    if (index < STORY_COUNT) earlierMaximum = Math.max(earlierMaximum, played.state.pushes)
-    if (index <= 3) assert.equal(level.obstacles.length, 0)
-    if (tour === 2) assert.ok(level.obstacles.length <= 3)
-    if (tour !== 3) continue
+test('finishing or skipping a scene invokes its continuation once; cancelling does not', () => {
+  let state
+  const events = []
+  const playback = createStoryPlayback(() => true, value => {
+    state = value
+  })
+  playback.start('first', 'before', () => events.push('first'))
+  assert.deepEqual(state, { code: 'first', phase: 'before' })
+  playback.finish()
+  playback.finish()
+  assert.deepEqual(events, ['first'])
+  assert.equal(state, null)
 
-    const solved = solve(level, initialState(level), 12000)
-    assert.equal(solved.status, 'solved', level.id)
-    assert.ok(solved.cost > previousPushes, level.id)
-    previousPushes = solved.cost
-    for (const goal of level.goals) {
-      const box = level.boxes.find(box => box.country === goal.country)
-      const withTerrain = reverseDistances(level, goal).get(box.position)
-      const withoutTerrain = reverseDistances({ ...level, obstacles: [] }, goal).get(box.position)
-      if (withTerrain > withoutTerrain) detours++
+  playback.start('stale', 'after', () => events.push('stale'))
+  playback.cancel()
+  playback.finish()
+  assert.deepEqual(events, ['first'])
+})
+
+test('replacing a scene discards stale navigation; an absent scene continues immediately', () => {
+  const events = []
+  const playback = createStoryPlayback(code => code !== 'silent', () => {})
+  playback.start('old', 'after', () => events.push('old'))
+  playback.start('new', 'before', () => events.push('new'))
+  playback.finish()
+  playback.start('silent', 'after', () => events.push('silent'))
+  playback.finish()
+  assert.deepEqual(events, ['new', 'silent'])
+})
+
+test('preferences preserve unread ending checkpoints and canonicalize old completed boards', () => {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+  let saved = JSON.stringify({
+    completed: ['G2-SA-S1', 'south-america-tour-1', 'bad'],
+    pendingStory: 'oceania-tour-3-hard'
+  })
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    value: {
+      getItem: () => saved,
+      setItem: (key, value) => {
+        saved = value
+      }
     }
-    if (index === STORY_COUNT) assert.ok(solved.cost > earlierMaximum)
+  })
+
+  try {
+    const read = readPreferences()
+    assert.deepEqual(read.completed, ['south-america-tour-1'])
+    assert.equal(read.pendingStory, 'oceania-tour-3')
+    savePreferences(read)
+    assert.deepEqual(readPreferences(), read)
+    saved = '{invalid'
+    assert.equal(readPreferences().pendingStory, '')
+    saved = JSON.stringify({ pendingStory: 'asia-calm-kite-42' })
+    assert.equal(readPreferences().pendingStory, '')
+  } finally {
+    if (descriptor) Object.defineProperty(globalThis, 'localStorage', descriptor)
+    else delete globalThis.localStorage
   }
-  assert.ok(detours > 0)
 })

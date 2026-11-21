@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
-import { labelPlacement, coastlineEdges, visibleGoals } from '../core/presentation.js'
+import { labelPlacement, coastlineEdges } from '../core/presentation.js'
 import { tileTransitionStyle, TILE_ENTER_MS, TILE_LEAVE_MS } from '../core/board-transition.js'
 import { outlinesForLevel, contextForLevel, UNDERLAY_PIXELS_PER_CELL } from '../geo/outlines.js'
 import { createBoardInput } from '../core/board-input.js'
@@ -20,14 +20,9 @@ const props = defineProps({
   label: { type: String, default: '' },
   description: { type: String, default: '' },
   showFlags: { type: Boolean, default: true },
-  hideTargets: Boolean,
   revealed: { type: Array, default: () => [] },
   overlay: { type: Object, default: () => ({ boxId: null, pushes: [], route: [] }) }
 })
-
-const targets = computed(() => visibleGoals(props.level, props.state, {
-  hidden: props.hideTargets, revealed: props.revealed
-}))
 
 const emit = defineEmits(['inspect', 'key', 'destination', 'step', 'overview'])
 const board = ref(null)
@@ -200,20 +195,9 @@ const route = computed(() => {
 const isOverview = computed(() => camera.value.zoom <= 1.01)
 watch(isOverview, value => emit('overview', value), { immediate: true })
 
-function showDestination (country) {
-  const goal = targets.value.find(goal => goal.country === country)
-  if (!goal) return
-
-  resetInput()
-  camera.value = clampCamera(props.level, size.value, {
-    ...camera.value,
-    x: x(goal.position) + 20,
-    y: y(goal.position) + 20
-  })
-  board.value.focus({ preventScroll: true })
-}
-
-defineExpose({ toggleOverview, showDestination })
+defineExpose({
+  toggleOverview
+})
 </script>
 
 <template>
@@ -316,10 +300,9 @@ defineExpose({ toggleOverview, showDestination })
           </g>
         </g>
         <g
-          v-for="goal in targets"
+          v-for="goal in level.goals"
           :key="goal.country"
           class="target tile-pop"
-          :data-country="goal.country"
           :style="tileDelay(goal.position)"
           @click="$emit('destination', goal.country)"
         >

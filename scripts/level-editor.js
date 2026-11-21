@@ -19,7 +19,7 @@ const [operation, input, option] = process.argv.slice(2)
 try {
   if (operation === 'export') {
     const code = normalizeCode(input)
-    if (!code) throw new Error('Supply a valid puzzle code')
+    if (!code) throw new Error('Supply a valid G2 puzzle code')
 
     // Preserve curated story boards; only codes without stored content invoke generation.
     const level = stories[code] ?? generate(code)

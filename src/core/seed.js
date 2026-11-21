@@ -58,11 +58,14 @@ export function dateRegion (day) {
   return REGIONS[hashSeed(day.replaceAll('-', '')) % REGIONS.length]
 }
 
-/** Extract the day from date-only or region-prefixed puzzle codes. */
+/** Also recognizes old date fixtures so a future-day link cannot bypass the route guard. */
 export function puzzleDate (value) {
   if (typeof value !== 'string') return null
   const dated = /(?:^|-)(\d{4}-\d{2}-\d{2})(?:-hard)?$/i.exec(value)
-  return dated && isCalendarDay(dated[1]) ? dated[1] : null
+  if (dated && isCalendarDay(dated[1])) return dated[1]
+  const fixture = /-D(\d{4})(\d{2})(\d{2})(?:-P)?$/i.exec(value)
+  const day = fixture ? `${fixture[1]}-${fixture[2]}-${fixture[3]}` : ''
+  return isCalendarDay(day) ? day : null
 }
 
 export function newCode (region = null) {
@@ -77,6 +80,14 @@ export function newCode (region = null) {
   return `${chosen.slug}-${adjective}-${noun}-${number}`
 }
 
+function calendarDate (year, month, day) {
+  const iso = `${year}-${month}-${day}`
+  const date = new Date(`${iso}T00:00:00Z`)
+
+  // JavaScript rolls some invalid days into the next month; require an exact round trip.
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === iso
+}
+
 /** Parse once, rather than making callers infer region and difficulty from hyphen positions. */
 export function parseCode (value) {
   if (typeof value !== 'string') return null
@@ -88,6 +99,26 @@ export function parseCode (value) {
     if (!isCalendarDay(day)) return null
     return { code: input.toLowerCase(), region: dateRegion(day).id, planning: !!dated[2], tour: 0 }
   }
+  const legacy = /^G2-(SA|NA|EE|WE|AF|AS|OC)-([^-]+)(-P)?$/i.exec(input)
+
+  // Retain the frozen asset/test codes without imposing a version on new share codes.
+  if (legacy) {
+    const token = legacy[2].toUpperCase()
+    const daily = /^D(\d{4})(\d{2})(\d{2})$/.exec(token)
+    const tour = /^S([1-3])$/.exec(token)
+    const valid = daily
+      ? calendarDate(daily[1], daily[2], daily[3])
+      : !!tour || /^[0-9A-HJKMNP-TV-Z]{10}$/.test(token)
+    if (!valid) return null
+
+    return {
+      code: input.toUpperCase(),
+      region: legacy[1].toUpperCase(),
+      planning: !!legacy[3],
+      tour: Number(tour?.[1] ?? 0)
+    }
+  }
+
   // Spaces and underscores are accepted when a code is copied from a note or dictated.
   const code = input.toLowerCase().replace(/[\s_]+/g, '-')
   const planning = code.endsWith('-hard')
@@ -100,7 +131,7 @@ export function parseCode (value) {
   const daily = /^(\d{4})-(\d{2})-(\d{2})$/.exec(token)
   const words = /^([a-z]+)-([a-z]+)-([1-9]\d)$/.exec(token)
   const validWords = words && ADJECTIVES.includes(words[1]) && NOUNS.includes(words[2])
-  const valid = daily ? isCalendarDay(token) : !!tour || validWords
+  const valid = daily ? calendarDate(daily[1], daily[2], daily[3]) : !!tour || validWords
   if (!valid) return null
 
   return { code, region: region.id, planning, tour: Number(tour?.[1] ?? 0) }

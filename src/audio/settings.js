@@ -11,7 +11,7 @@ function volume (value, fallback) {
   return Math.round(Math.max(0, Math.min(100, value)))
 }
 
-/** Missing or invalid preferences use safe defaults; music requires an explicit opt-in. */
+/** Older saves have no audio fields. Loading one must not opt the player into music. */
 export function audioSettings (data) {
   return {
     music: data?.music === true,

@@ -55,8 +55,7 @@ export function createScenery (level, data = atlas) {
 
     // Blocking artwork only decorates an existing obstacle; it never creates a gameplay barrier.
     if (obstacles.has(position)) {
-      const authored = level.obstacleArt?.[position]
-      const kind = authored ?? palette.obstacles[hash % palette.obstacles.length]
+      const kind = palette.obstacles[hash % palette.obstacles.length]
       const flip = (hash >>> 8) % 2 === 0
 
       props.push({ position, kind, flip })

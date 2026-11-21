@@ -1,9 +1,15 @@
 import levels from './story-levels.json' with { type: 'json' }
-import { storyCode, storyIndex, STORY_COUNT } from './regions.js'
+import { storyCode, storyIndex, storyStop, STORY_COUNT } from './regions.js'
 
-/** Story play always uses the standard curated board for a chapter. */
+/** Reuse the certified boards; readable route names need not be their frozen JSON keys. */
 export function storyLevel (code) {
-  return levels[storyProgressCode(code)] ?? null
+  const chapter = storyStop(storyIndex(code))
+  if (!chapter) return null
+
+  const assetKey = `G2-${chapter.region.id}-S${chapter.tour}`
+  const level = levels[assetKey]
+
+  return level ? { ...level, id: storyCode(chapter.index) } : null
 }
 
 export function storyProgressCode (code) {

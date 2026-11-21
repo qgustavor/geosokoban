@@ -57,7 +57,7 @@ There is no elapsed-play state, timer display, timer collection, score, server o
 
 ## Reproducibility and hosting
 
-Codes use a UTC date, or a readable region name followed by a word pair, date or fixed story stop, such as `south-america-calm-bay-10`, `south-america-2026-11-14` and `south-america-tour-1`. A final `-hard` selects the more constrained pushing layout. Daily dates change at midnight UTC, independently of the interface language or local timezone. Random codes use familiar words and a two-digit number.
+`G2` identifies this generator/content generation. Codes include a region and a random token, UTC date or fixed story stop, such as `G2-SA-0123456789`, `G2-SA-D20261114` and `G2-SA-S1`. A final `-P` selects the more constrained pushing layout. Daily dates change at midnight UTC, independently of the interface language or local timezone. Random tokens omit ambiguous letters.
 
 Geography guidance is independent of board generation and travels in the share link as `g=learn` or `g=remember`. Results describe the challenge and assistance, without awarding or subtracting points. Before a public release, changes to geography, PRNG, solver tie ordering, generation or frozen story content should increment the content version; this prototype does not promise legacy-link support.
 
