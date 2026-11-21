@@ -536,10 +536,6 @@ onBeforeUnmount(() => {
   background: #043b4ecc;
 }
 
-  font-size: 20px;
-  line-height: 1;
-}
-
 .top-overlay {
   position: absolute;
   top: max(58px, calc(env(safe-area-inset-top) + 48px));
