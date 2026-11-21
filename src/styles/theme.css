@@ -1,0 +1,114 @@
+/* UI theme: change roles here rather than adding colors to components. */
+
+:root {
+  /* Page and readable text. */
+  --color-page-bg: #397c89;
+  --color-page-text: #edf2df;
+  --color-ink: #254c59;
+  --color-text: #244e58;
+  --color-text-muted: #547477;
+  --color-link: #e9dda5;
+  --color-link-on-panel: #285c6b;
+  --color-focus: #f5d78b;
+  --color-focus-on-panel: #b47b32;
+  --color-rule: #a2cbc14d;
+  --color-control-accent: var(--color-page-bg);
+
+  /* Shared buttons and fields. */
+  --color-primary-bg: #f2db87;
+  --color-primary-border: #f9e8ab;
+  --color-primary-text: #234b5e;
+  --color-secondary-bg: #d8e8d6;
+  --color-secondary-border: #ebf1d9;
+  --color-input-bg: #f5f0db;
+  --color-input-border: #cbdccb;
+  --color-select-bg: #fffdf7;
+  --color-report-bg: #fffcef;
+  --color-report-border: #a8bdac;
+  --shadow-primary: 0 4px 0 #b49b5f;
+  --shadow-secondary: 0 3px 0 #90b29d;
+
+  /* Menu and choice controls. */
+  --color-panel-bg: #f3efdc;
+  --color-panel-border: #e2e7c8;
+  --color-choice-bg: #e9ecda;
+  --color-choice-border: #ced9c7;
+  --color-choice-hover: #8cae9f;
+  --color-mode-active: #285e69;
+  --color-mode-active-text: #f4f1d9;
+  --color-challenge-active: #d5e4cf;
+  --color-challenge-accent: #547b70;
+  --color-stamp-border: #b4c4b1;
+  --color-stamp-text: #6b837a;
+  --color-stamp-complete: #477967;
+  --color-panel-divider: #aabdaf;
+  --shadow-panel: 0 6px 0 #1c53684d, 0 18px 50px #183f4b26;
+
+  /* Application chrome. */
+  --color-badge-bg: #214b6277;
+  --color-badge-border: #add2ca66;
+  --color-badge-text: #e9ead6;
+  --color-error-bg: #214d62;
+  --shadow-brand: 0 3px 0 #1e5368;
+
+  /* Dialogs and play overlays. */
+  --color-dialog-bg: #f2efdb;
+  --color-dialog-border: #bfd4c3;
+  --color-backdrop: #123b4a55;
+  --color-overlay-bg: #f3efdbf5;
+  --color-notice-bg: #f3efdb;
+  --color-warning-border: #d9ba7c;
+  --color-hint-border: #c1d6bd;
+  --color-flag-border: #ffffff;
+  --shadow-dialog: 0 8px 0 #143e4744, 0 28px 90px #12384344;
+  --shadow-warning: 0 5px 0 #17445133;
+  --shadow-hint: 0 5px 20px #163e4933;
+  --shadow-flag: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+  /* Heads-up display. */
+  --color-hud-text: #eff3df;
+  --color-hud-tray: #1c536577;
+  --color-hud-button: #245b6ecc;
+  --color-hud-button-border: #b5d9d266;
+  --color-hud-button-text: #f1efdb;
+  --color-hud-button-active: #043b4ecc;
+  --shadow-hud-title: 0 1px 2px #163f4b44;
+  --shadow-hud-button: 0 3px 0 #163f4b77;
+
+  /* Story dialogue chrome (writing and portraits are unchanged). */
+  --color-story-border: #e1d2a5;
+  --color-story-tour: #527477;
+  --color-story-skip: #47666d;
+  --color-story-speaker: #3e6570;
+
+  /* Shared typography, spacing, shapes and interactive motion. */
+  --font-ui: ui-rounded, "Avenir Next Rounded", system-ui, -apple-system, sans-serif;
+  --font-display: Impact, 'Arial Black', 'Trebuchet MS', system-ui, sans-serif;
+  --font-size-caption: 12px;
+  --font-size-label: 13px;
+  --font-size-body: 14px;
+  --font-size-control: 15px;
+  --font-size-lead: 16px;
+  --font-weight-strong: 750;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --radius-control: 12px;
+  --radius-button: 14px;
+  --radius-choice: 16px;
+  --radius-overlay: 18px;
+  --radius-dialog: 22px;
+  --radius-panel: 26px;
+  --control-min-size: 44px;
+  --checkbox-size: 22px;
+  --focus-width: 3px;
+  --focus-offset: 4px;
+  --duration-control: 120ms;
+  --duration-choice: 160ms;
+  --duration-overlay: 180ms;
+  --duration-dialog: 220ms;
+  --duration-warning: 250ms;
+}

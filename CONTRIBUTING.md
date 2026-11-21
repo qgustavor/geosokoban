@@ -4,7 +4,7 @@ Keep this a small, independent exploration that is easy for the original GeoJogo
 
 Write source and project documentation in English. UI strings belong in the three dictionaries in `src/data/messages.json`; add matching keys and placeholders in every locale. Country facts need a recorded, reliable geography source. Do not put debugging or implementation explanations into player-facing messages.
 
-Use Vue `.vue` single-file components with `<script setup>` for interface elements. Keep movement, solving, generation and validation in framework-independent JavaScript. Keep shared styles small and component-specific styles with their components. Follow Neostandard's semicolon-free JavaScript style. Comments should explain the adjacent code or an invariant, not narrate a refactor.
+Use Vue `.vue` single-file components with `<script setup>` for interface elements. Keep movement, solving, generation and validation in framework-independent JavaScript. Keep component-specific styles inside the owning `.vue` file in `<style scoped>`. Keep document defaults and genuinely shared controls in `src/style.css`. Theme and illustration colors belong in the three palette files under `src/styles/`, not component CSS or SVG literals. See `docs/STYLING.md`. Follow Neostandard's semicolon-free JavaScript style. Comments should explain the adjacent code or an invariant, not narrate a refactor.
 
 Keep the default gentle and challenge presets optional. Keep Speedrun optional; do not introduce a compulsory timer or score pressure. Do not cap undo, charge for hints, penalize resetting, or call a budget-limited search a proven deadlock. Preserve country identity in every solver and generator check. Keep geography geometry distinct from the schematic puzzle terrain.
 
@@ -26,4 +26,4 @@ Run `npm run check` to apply available ESLint/Stylelint fixes and build, then pl
 - **Template Line Wrapping**: Never place more than 3 attributes on a single line. When a tag wraps, place each attribute on its own line.
 - **Component Decomposition**: If a component contains modal dialogs, HUD controls, or screen overlays, extract them into dedicated subcomponents instead of embedding their markup in the parent page.
 - **Composable Extraction**: State machines, delivery timers, and complex accessibility aggregations must be extracted into composables (`use...()`).
-- **CSS Hygiene**: NEVER write minified, single-line CSS rule sets. Every declaration belongs on its own line with 2-space indentation. Separate selectors with an empty line.
+- **CSS Hygiene**: NEVER write minified, single-line CSS rule sets. Every declaration belongs on its own line with 2-space indentation. Separate rule sets with an empty line. Keep component styles scoped and use named color tokens; do not copy control styles between pages.

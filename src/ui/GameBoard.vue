@@ -308,7 +308,7 @@ defineExpose({
             :y1="y(goal.position) + 20"
             :x2="goal.anchor[0] * 40"
             :y2="goal.anchor[1] * 40"
-            stroke="#fcf0bc"
+            stroke="var(--art-goal-anchor)"
             stroke-width="2"
             stroke-dasharray="4 3"
           />
@@ -377,7 +377,7 @@ defineExpose({
               cy="34"
               rx="16"
               ry="4"
-              fill="#233d3955"
+              fill="var(--art-crate-shadow)"
             />
             <rect
               x="2"
@@ -385,7 +385,7 @@ defineExpose({
               width="36"
               height="28"
               rx="4"
-              fill="#9a794b"
+              fill="var(--art-crate-side)"
             />
             <rect
               x="2"
@@ -393,8 +393,8 @@ defineExpose({
               width="36"
               height="28"
               rx="4"
-              fill="#fffdf1"
-              stroke="#405653"
+              fill="var(--art-crate-face)"
+              stroke="var(--art-crate-outline)"
               stroke-width="1.3"
             />
             <FlagIcon
@@ -411,8 +411,8 @@ defineExpose({
             <path
               v-if="level.sea"
               d="M-2 32h44l-8 11H7Z"
-              fill="#f8dfad"
-              stroke="#294e52"
+              fill="var(--art-boat-fill)"
+              stroke="var(--art-boat-outline)"
               stroke-width="1.5"
             />
             <GlobeIcon
@@ -452,10 +452,11 @@ defineExpose({
 
 .board-wrap:focus-visible {
   outline-offset: -6px;
-  outline-color: #f5d39f;
+  outline-color: var(--art-board-focus);
 }
 
 /* Reserve space for the HUD and controls, including device safe areas, before fitting the map. */
+
 .board-stage {
   position: absolute;
   inset: max(76px, calc(env(safe-area-inset-top) + 52px)) 0 max(80px, calc(env(safe-area-inset-bottom) + 64px));
@@ -469,13 +470,13 @@ defineExpose({
 }
 
 .tile-surface {
-  stroke: #657f60;
+  stroke: var(--art-land-grid);
   stroke-opacity: 0.12;
   stroke-width: 0.65;
 }
 
 .water-tile {
-  stroke: #d6efeb;
+  stroke: var(--art-water-grid);
   stroke-opacity: 0.12;
   stroke-width: 0.55;
 }
@@ -494,7 +495,7 @@ defineExpose({
 }
 
 .map-outline path {
-  fill: #a5bca0;
+  fill: var(--art-map-context);
   stroke: none;
   opacity: 0.3;
 }
@@ -506,30 +507,30 @@ defineExpose({
 
 .country-borders path {
   fill: none;
-  stroke: #5b7f684f;
+  stroke: var(--art-country-border);
   stroke-width: 1.5;
   stroke-linejoin: miter;
   stroke-linecap: butt;
 }
 
 .goal {
-  stroke: #ad6547;
+  stroke: var(--art-goal-border);
   stroke-width: 2;
-  fill: #fff6e9;
+  fill: var(--art-goal-fill);
   stroke-dasharray: 4 2;
 }
 
 .solved-goal {
-  fill: #adcda0;
-  stroke: #3c7952;
+  fill: var(--art-goal-solved);
+  stroke: var(--art-goal-solved-border);
   stroke-dasharray: none;
 }
 
 .goal-number {
   text-anchor: middle;
-  fill: #81482e;
+  fill: var(--art-goal-question);
   font-size: 21px;
-  font-weight: 750;
+  font-weight: var(--font-weight-strong);
 }
 
 .box-actor,
@@ -554,14 +555,14 @@ defineExpose({
 .flag-label span {
   position: relative;
   display: block;
-  padding: 8px 13px;
+  padding: var(--space-2) 13px;
   border-radius: 13px;
-  border: 1px solid #d6e2bd;
-  background: #f5f0d9;
-  color: #244e58;
-  font-size: 14px;
+  border: 1px solid var(--art-label-border);
+  background: var(--art-label-bg);
+  color: var(--color-text);
+  font-size: var(--font-size-body);
   line-height: 1.3;
-  box-shadow: 0 3px 0 #1a485333;
+  box-shadow: var(--shadow-map-label);
   text-wrap: balance;
   animation: label-appear 0.2s ease-out both;
 }
@@ -573,13 +574,13 @@ defineExpose({
   left: 50%;
   width: 9px;
   height: 9px;
-  background: #f5f0d9;
+  background: var(--art-label-bg);
   transform: translateX(-50%) rotate(45deg);
 }
 
 .islands path {
   opacity: 0.75;
-  fill: #dbe2af;
+  fill: var(--art-islands);
 }
 
 .target {
@@ -592,8 +593,8 @@ defineExpose({
 }
 
 .delivered-mark {
-  font-size: 16px;
-  fill: #21513c;
+  font-size: var(--font-size-lead);
+  fill: var(--art-goal-check);
 }
 
 .land-tile,
@@ -618,6 +619,7 @@ defineExpose({
 }
 
 /* Build and dismantle share tile delays with the JavaScript transition duration. */
+
 .board-swap-enter-active .land-tile,
 .board-swap-enter-active .tile-pop,
 .board-swap-enter-active .piece-reveal {
@@ -641,6 +643,7 @@ defineExpose({
 
 /* Explicit keyframes also fade on first mount. A transition to opacity: 0 can
    otherwise miss its starting frame when Vue attaches the leave classes. */
+
 .board-swap-enter-active .map-outline {
   animation: underlay-arrive 0.52s 0.08s both;
 }
@@ -665,13 +668,13 @@ defineExpose({
 
 .hint-box {
   fill: none;
-  stroke: #c35021;
+  stroke: var(--art-hint-box);
   stroke-width: 3;
   stroke-dasharray: 5 3;
 }
 
 .hint-route {
-  stroke: #a94620;
+  stroke: var(--art-hint-route);
   stroke-width: 4;
   stroke-dasharray: 5 5;
   fill: none;
@@ -684,17 +687,17 @@ defineExpose({
 }
 
 .push-marker rect {
-  fill: #ffdf9b55;
-  stroke: #a94620;
+  fill: var(--art-hint-step);
+  stroke: var(--art-hint-route);
   stroke-width: 2;
 }
 
 .push-marker text {
   font-size: 11px;
-  fill: #572a15;
+  fill: var(--art-hint-number);
   font-weight: 800;
   paint-order: stroke;
-  stroke: #fff7df;
+  stroke: var(--art-hint-number-outline);
   stroke-width: 3;
 }
 
@@ -703,6 +706,7 @@ defineExpose({
     opacity: 0;
     transform: translateY(6px);
   }
+
   to {
     opacity: 1;
     transform: none;
@@ -714,13 +718,16 @@ defineExpose({
     opacity: 0;
     transform: translateY(52px) scale(0.86, 0.12);
   }
+
   22% {
     opacity: 1;
   }
+
   72% {
     opacity: 1;
     transform: translateY(-5px) scale(1, 1.025);
   }
+
   100% {
     opacity: 1;
     transform: none;
@@ -732,10 +739,12 @@ defineExpose({
     opacity: 1;
     transform: none;
   }
+
   25% {
     opacity: 1;
     transform: translateY(-4px) scale(1, 1.025);
   }
+
   100% {
     opacity: 0;
     transform: translateY(48px) scale(0.86, 0.12);
@@ -746,6 +755,7 @@ defineExpose({
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -755,6 +765,7 @@ defineExpose({
   from {
     opacity: 1;
   }
+
   to {
     opacity: 0;
   }

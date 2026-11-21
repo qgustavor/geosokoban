@@ -49,23 +49,37 @@ onBeforeUnmount(() => {
   width: min(390px, calc(100vw - 36px));
   max-height: calc(100dvh - 36px);
   overflow: auto;
-  border: 2px solid #bfd4c3;
-  border-radius: 22px;
-  background: #f2efdb;
-  color: #244e58;
+  border: 2px solid var(--color-dialog-border);
+  border-radius: var(--radius-dialog);
+  background: var(--color-dialog-bg);
+  color: var(--color-text);
   padding: 26px;
   text-align: center;
-  box-shadow: 0 8px 0 #143e4744, 0 28px 90px #12384344;
+  box-shadow: var(--shadow-dialog);
 }
 
-.game-dialog.wide { width: min(660px, calc(100vw - 28px)); }
+.game-dialog.wide {
+  width: min(660px, calc(100vw - 28px));
+}
 
-.game-dialog[open] { animation: dialog-appear .22s ease-out both; }
+.game-dialog[open] {
+  animation: dialog-appear var(--duration-dialog) ease-out both;
+}
 
 @keyframes dialog-appear {
-  from { opacity: 0; transform: translateY(10px) scale(.97); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.game-dialog::backdrop { background: #123b4a55; backdrop-filter: blur(2px); }
+.game-dialog::backdrop {
+  background: var(--color-backdrop);
+  backdrop-filter: blur(2px);
+}
 </style>

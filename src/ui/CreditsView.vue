@@ -52,11 +52,45 @@ defineEmits(['back', 'clearProgress'])
 </template>
 
 <style scoped>
-.credits-page.embedded { width: 100%; margin: 0; padding: 0; text-align: left; }
+.credits-page {
+  width: min(760px, calc(100vw - 36px));
+  margin: 30px auto;
+  padding-bottom: 40px;
+}
 
-.embedded a { color: #285c6b; }
+.credits-page h1 {
+  font-size: 36px;
+}
 
-.embedded h1 { font-size: 28px; }
+.credits-page h2 {
+  font-size: 22px;
+}
 
-.embedded > .button { margin-bottom: 20px; }
+.credits-page section {
+  padding: 22px 0;
+  border-top: 1px solid var(--color-rule);
+}
+
+.credits-page p {
+  font-size: var(--font-size-body);
+}
+
+.credits-page.embedded {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.embedded a {
+  color: var(--color-link-on-panel);
+}
+
+.embedded h1 {
+  font-size: 28px;
+}
+
+.embedded > .button {
+  margin-bottom: var(--space-5);
+}
 </style>

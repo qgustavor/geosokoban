@@ -16,7 +16,12 @@ defineEmits(['music', 'sfx', 'musicVolume', 'sfxVolume'])
     <div class="audio-channel">
       <label class="audio-toggle">
         <span>{{ t('music') }}</span>
-        <input type="checkbox" :checked="music" @change="$emit('music', $event.target.checked)">
+        <input
+          class="check-control"
+          type="checkbox"
+          :checked="music"
+          @change="$emit('music', $event.target.checked)"
+        >
       </label>
       <label class="audio-volume" :class="{ muted: !music }">
         <span>{{ t('musicVolume') }}</span>
@@ -37,7 +42,12 @@ defineEmits(['music', 'sfx', 'musicVolume', 'sfxVolume'])
     <div class="audio-channel">
       <label class="audio-toggle">
         <span>{{ t('soundEffects') }}</span>
-        <input type="checkbox" :checked="sfx" @change="$emit('sfx', $event.target.checked)">
+        <input
+          class="check-control"
+          type="checkbox"
+          :checked="sfx"
+          @change="$emit('sfx', $event.target.checked)"
+        >
       </label>
       <label class="audio-volume" :class="{ muted: !sfx }">
         <span>{{ t('sfxVolume') }}</span>
@@ -60,7 +70,7 @@ defineEmits(['music', 'sfx', 'musicVolume', 'sfxVolume'])
 <style scoped>
 .audio-settings {
   min-width: 0;
-  margin: 24px 0 0;
+  margin: var(--space-6) 0 0;
   padding: 0;
   border: 0;
   text-align: left;
@@ -69,38 +79,30 @@ defineEmits(['music', 'sfx', 'musicVolume', 'sfxVolume'])
 .audio-settings legend {
   padding: 0;
   font-size: 17px;
-  font-weight: 750;
+  font-weight: var(--font-weight-strong);
 }
 
 .audio-channel {
-  padding: 16px 0;
-  border-bottom: 1px solid var(--line);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--color-rule);
 }
 
 .audio-toggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  min-height: 44px;
-  font-size: 15px;
-}
-
-.audio-toggle input {
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  min-height: 22px;
-  accent-color: #397c89;
+  gap: var(--space-4);
+  min-height: var(--control-min-size);
+  font-size: var(--font-size-control);
 }
 
 .audio-volume {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 4px 12px;
+  gap: var(--space-1) var(--space-3);
   padding-top: 6px;
-  font-size: 13px;
+  font-size: var(--font-size-label);
 }
 
 .audio-volume > span:first-child {
@@ -110,10 +112,10 @@ defineEmits(['music', 'sfx', 'musicVolume', 'sfxVolume'])
 .audio-volume input {
   width: 100%;
   min-width: 0;
-  min-height: 44px;
+  min-height: var(--control-min-size);
   margin: 0;
   padding: 0;
-  accent-color: #397c89;
+  accent-color: var(--color-control-accent);
 }
 
 .volume-value {

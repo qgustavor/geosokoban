@@ -3,7 +3,11 @@ export default {
   ignoreFiles: ['dist/**', 'node_modules/**', 'public/licenses/**'],
   rules: {
     // Selector order alone cannot establish whether different UI elements compete.
-    'no-descending-specificity': null
+    'no-descending-specificity': null,
+    // UI and illustration colors belong in the palette, including SFC styles.
+    'color-no-hex': true,
+    'color-named': 'never',
+    'function-disallowed-list': ['rgb', 'rgba', 'hsl', 'hsla', 'hwb', 'lab', 'lch', 'oklab', 'oklch', 'color']
   },
   overrides: [
     {
@@ -20,6 +24,14 @@ export default {
           true,
           { ignoreProperties: { '/.*/': '/v-bind\\(.+\\)/' } }
         ]
+      }
+    },
+    {
+      files: ['src/styles/theme.css', 'src/styles/art-tokens.css', 'src/styles/biome-tokens.css'],
+      rules: {
+        'color-no-hex': null,
+        'color-named': null,
+        'function-disallowed-list': null
       }
     }
   ]

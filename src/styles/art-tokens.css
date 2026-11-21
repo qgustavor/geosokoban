@@ -1,0 +1,114 @@
+/* Illustration paint, separate from UI surfaces. Geometry stays with its component. */
+
+:root {
+  /* Board geography, destinations and hints. */
+  --art-board-focus: #f5d39f;
+  --art-land-grid: #657f60;
+  --art-water-grid: #d6efeb;
+  --art-map-context: #a5bca0;
+  --art-country-border: #5b7f684f;
+  --art-islands: #dbe2af;
+  --art-goal-border: #ad6547;
+  --art-goal-fill: #fff6e9;
+  --art-goal-solved: #adcda0;
+  --art-goal-solved-border: #3c7952;
+  --art-goal-question: #81482e;
+  --art-goal-check: #21513c;
+  --art-goal-anchor: #fcf0bc;
+  --art-hint-box: #c35021;
+  --art-hint-route: #a94620;
+  --art-hint-step: #ffdf9b55;
+  --art-hint-number: #572a15;
+  --art-hint-number-outline: #fff7df;
+  --art-label-bg: #f5f0d9;
+  --art-label-border: #d6e2bd;
+  --shadow-map-label: 0 3px 0 #1a485333;
+
+  /* Crates and boat. */
+  --art-crate-shadow: #233d3955;
+  --art-crate-side: #9a794b;
+  --art-crate-face: #fffdf1;
+  --art-crate-outline: #405653;
+  --art-boat-fill: #f8dfad;
+  --art-boat-outline: #294e52;
+
+  /* Globe character. */
+  --art-object-shadow: #173f4733;
+  --art-globe-sea: #87cbd3;
+  --art-globe-outline: #234b55;
+  --art-globe-land: #dce6b5;
+  --art-globe-meridian: #387580;
+  --art-globe-shine: #f2f8de;
+  --art-globe-cheek: #dd9c88;
+
+  /* Ground details. */
+  --art-flower-stem: #7b9c72;
+  --art-flower-petal: #f4f0d1;
+  --art-flower-center: #d6b56c;
+  --art-flower-pink: #c6959b;
+  --art-fern: #82aa7c;
+  --art-leaves: #a7b581;
+  --art-lichen: #acb8a0;
+  --art-pebbles: #a7ac91;
+  --art-dry-grass: #b3ab7e;
+  --art-grass: #93ad7d;
+  --art-reed-head: #9c9c70;
+
+  /* Terrain illustrations. */
+  --art-terrain-outline: #355a58;
+  --art-tree-trunk: #a27b53;
+  --art-tree-branch: #7b7d5b;
+  --art-acacia-canopy: #7caa76;
+  --art-olive-canopy: #a3b58a;
+  --art-mangrove-canopy: #7ea786;
+  --art-broadleaf-canopy: #79b68a;
+  --art-canopy-highlight: #e4efd0;
+  --art-tree-vein: #406d5d;
+  --art-dry-tree-leaf: #a6b083;
+  --art-pine-trunk: #9b7b59;
+  --art-pine-canopy: #679c88;
+  --art-pine-highlight: #c6ddbb;
+  --art-pine-shade: #315b5f33;
+  --art-cactus: #74a57a;
+  --art-cactus-rib: #cce0ab;
+  --art-cactus-flower: #f9ebcd;
+  --art-cactus-flower-outline: #8d9b78;
+  --art-ridge: #96aaa4;
+  --art-ridge-shade: #647f7b;
+  --art-snow: #eff5e8;
+  --art-snow-outline: #d5e6dc;
+  --art-ridge-highlight: #d5ddc4;
+  --art-reef-water: #b9ded14d;
+  --art-reef-back: #7e9c9c;
+  --art-reef-front: #9eac9d;
+  --art-reef-highlight: #c9e4d9;
+  --art-sandstone: #c7b184;
+  --art-boulder: #a2b1a0;
+  --art-sandstone-shade: #a28e70;
+  --art-boulder-shade: #7f9589;
+  --art-sandstone-highlight: #eee0b9;
+  --art-boulder-highlight: #dce2cc;
+  --art-sandstone-grain: #ecd4a5;
+
+  /* Story stage and existing placeholder portraits. */
+  --art-story-sky-top: #d7e9db;
+  --art-story-sky-bottom: #a4c8be;
+  --art-story-stage-border: #91b7ad;
+  --art-story-horizon: #73a8a7;
+  --art-story-horizon-edge: #e5f0d666;
+  --art-visitor-bg: #c9add3;
+  --art-visitor-border: #8d7ea7;
+  --art-visitor-symbol: #fcf2cf;
+  --art-mystery-bg: #57747f;
+  --art-mystery-border: #466773;
+  --art-mystery-symbol: #d1dfce;
+
+  /* Level-clear lettering. */
+  --art-clear-fill: #fff1b8;
+  --art-clear-outline: #173f50;
+  --art-clear-depth: #122e42;
+  --art-clear-shadow: #12374866;
+
+  /* Ocean backdrop. */
+  --art-ocean-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='112'%3E%3Cpath d='M20 25q8 5 16 0m55 52q8 5 16 0' fill='none' stroke='%23b4dad2' stroke-opacity='.16' stroke-linecap='round'/%3E%3C/svg%3E");
+}

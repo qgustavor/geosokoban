@@ -73,7 +73,7 @@ function play () {
         <label
           v-for="(choice, index) in modes"
           :key="choice"
-          class="mode-card"
+          class="choice-card mode-card"
           :class="{ active: mode === choice }"
         >
           <input
@@ -160,50 +160,54 @@ function play () {
 
 <style scoped>
 .archive-picker {
-  margin-top: 24px;
+  margin-top: var(--space-6);
 }
+
 .archive-picker label {
   display: block;
-  margin-bottom: 8px;
-  font-size: 13px;
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-label);
   font-weight: 700;
 }
+
 .date-controls {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
 }
+
 .date-controls input {
   min-width: 0;
   width: 180px;
-  font-size: 16px;
+  font-size: var(--font-size-lead);
   text-align: center;
   color-scheme: light;
 }
+
 .date-arrow {
   width: 44px;
   height: 44px;
   flex: none;
-  border: 1px solid #b4c4b1;
-  background: #e9ecda;
-  color: #254c59;
+  border: 1px solid var(--color-stamp-border);
+  background: var(--color-choice-bg);
+  color: var(--color-ink);
   font-size: 22px;
 }
 
 .level-selection {
   width: min(800px, calc(100vw - 36px));
-  margin: 20px auto 0;
+  margin: var(--space-5) auto 0;
   padding-bottom: 40px;
 }
 
 .departure-card {
-  padding: clamp(20px, 4vw, 34px);
-  border: 1px solid #e2e7c8;
-  border-radius: 26px;
-  color: #254c59;
-  background: #f3efdc;
-  box-shadow: 0 6px 0 #1c53684d, 0 18px 50px #183f4b26;
+  padding: clamp(var(--space-5), 4vw, 34px);
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--radius-panel);
+  color: var(--color-ink);
+  background: var(--color-panel-bg);
+  box-shadow: var(--shadow-panel);
 }
 
 .mode-grid {
@@ -216,39 +220,19 @@ function play () {
 }
 
 .mode-grid legend {
-  font-size: 13px;
-  font-weight: 750;
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-strong);
   margin-bottom: 14px;
-  color: #547477;
+  color: var(--color-text-muted);
 }
 
 .mode-card {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  flex-direction: column;
-  gap: 8px;
-  padding: 18px 8px;
-  border: 2px solid #ced9c7;
-  border-radius: 16px;
-  background: #e9ecda;
-  cursor: pointer;
-  transition: background .16s, border-color .16s;
+  padding: 18px var(--space-2);
 }
 
-.mode-card:hover {
-  border-color: #8cae9f;
-}
-
-.mode-card.active {
-  border-color: #285e69;
-  background: #285e69;
-  color: #f4f1d9;
-}
-
-.mode-card:has(input:focus-visible) {
-  outline: 3px solid #b47b32;
-  outline-offset: 4px;
+.mode-card:hover:not(.active) {
+  border-color: var(--color-choice-hover);
 }
 
 .mode-symbol {
@@ -257,18 +241,18 @@ function play () {
 }
 
 .mode-card.active .mode-symbol {
-  color: #f2db87;
+  color: var(--color-primary-bg);
 }
 
 .mode-card strong {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   text-align: center;
   text-wrap: balance;
 }
 
 .mode-description {
-  color: #547477;
-  font-size: 14px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-body);
   line-height: 1.7;
   margin: 18px 0 0;
   text-wrap: pretty;
@@ -276,8 +260,8 @@ function play () {
 
 .journey-progress {
   margin-top: 22px;
-  padding-top: 20px;
-  border-top: 1px dashed #aabdaf;
+  padding-top: var(--space-5);
+  border-top: 1px dashed var(--color-panel-divider);
 }
 
 .tour-stamps {
@@ -301,43 +285,44 @@ function play () {
   width: 32px;
   height: 32px;
   flex: none;
-  border: 1px solid #b4c4b1;
+  border: 1px solid var(--color-stamp-border);
   border-radius: 50%;
-  font-weight: 750;
-  color: #6b837a;
+  font-weight: var(--font-weight-strong);
+  color: var(--color-stamp-text);
 }
 
 .complete .tour-number {
-  background: #477967;
-  border-color: #477967;
-  color: #f3efdc;
+  background: var(--color-stamp-complete);
+  border-color: var(--color-stamp-complete);
+  color: var(--color-panel-bg);
 }
 
-.tour-stamps strong, .tour-stamps li div > span {
+.tour-stamps strong,
+.tour-stamps li div > span {
   display: block;
-  font-size: 12px;
+  font-size: var(--font-size-caption);
 }
 
 .tour-stamps li div > span {
   margin-top: 3px;
   font-size: 11px;
-  color: #547477;
+  color: var(--color-text-muted);
 }
 
 .next-destination {
-  font-size: 12px;
-  color: #547477;
-  margin: 16px 0 0;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  margin: var(--space-4) 0 0;
 }
 
 .departure-footer {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 20px;
+  gap: var(--space-5);
   padding-top: 26px;
   margin-top: 26px;
-  border-top: 1px dashed #aabdaf;
+  border-top: 1px dashed var(--color-panel-divider);
 }
 
 .start-game {
@@ -346,7 +331,7 @@ function play () {
 }
 
 .start-game span {
-  margin-left: 12px;
+  margin-left: var(--space-3);
 }
 
 .notice {
@@ -355,7 +340,7 @@ function play () {
 
 @media (max-width: 540px) {
   .level-selection {
-    margin-top: 8px;
+    margin-top: var(--space-2);
   }
 
   .mode-grid {
@@ -367,7 +352,7 @@ function play () {
   }
 
   .mode-card strong {
-    font-size: 12px;
+    font-size: var(--font-size-caption);
   }
 
   .tour-stamps li {

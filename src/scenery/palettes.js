@@ -1,105 +1,106 @@
 // Palettes are art direction, not a species-occurrence or present-day land-cover survey.
+// Ground and edge paint live in src/styles/biome-tokens.css.
 // Array order determines the art selected by each cell's hash; keep it stable across redraws.
 export const PALETTES = {
   neutral: {
-    ground: '#dce4bc',
-    edge: '#8fa576',
+    ground: 'var(--biome-neutral-ground)',
+    edge: 'var(--biome-neutral-edge)',
     obstacles: ['boulder'],
     details: ['pebbles']
   },
   rainforest: {
-    ground: '#c4dca6',
-    edge: '#7f9c70',
+    ground: 'var(--biome-rainforest-ground)',
+    edge: 'var(--biome-rainforest-edge)',
     obstacles: ['broadleaf', 'boulder'],
     details: ['fern', 'leaves', 'flowers']
   },
   dryForest: {
-    ground: '#dce0ac',
-    edge: '#a2ac7c',
+    ground: 'var(--biome-dry-forest-ground)',
+    edge: 'var(--biome-dry-forest-edge)',
     obstacles: ['dryTree', 'boulder'],
     details: ['dryGrass', 'leaves']
   },
   caatinga: {
-    ground: '#e5ddb2',
-    edge: '#adab7c',
+    ground: 'var(--biome-caatinga-ground)',
+    edge: 'var(--biome-caatinga-edge)',
     obstacles: ['mandacaru', 'dryTree', 'boulder'],
     details: ['dryGrass', 'pebbles', 'flowers']
   },
   conifer: {
-    ground: '#cbd9ae',
-    edge: '#8a9e7e',
+    ground: 'var(--biome-conifer-ground)',
+    edge: 'var(--biome-conifer-edge)',
     obstacles: ['pine', 'boulder'],
     details: ['grass', 'leaves', 'flowers']
   },
   woodland: {
-    ground: '#d8e1b1',
-    edge: '#8da274',
+    ground: 'var(--biome-woodland-ground)',
+    edge: 'var(--biome-woodland-edge)',
     obstacles: ['broadleaf', 'boulder'],
     details: ['grass', 'flowers', 'leaves']
   },
   taiga: {
-    ground: '#c9d9c0',
-    edge: '#859c8a',
+    ground: 'var(--biome-taiga-ground)',
+    edge: 'var(--biome-taiga-edge)',
     obstacles: ['pine', 'boulder'],
     details: ['lichen', 'grass']
   },
   savanna: {
-    ground: '#e3ddb1',
-    edge: '#b3ae7c',
+    ground: 'var(--biome-savanna-ground)',
+    edge: 'var(--biome-savanna-edge)',
     obstacles: ['acacia', 'boulder'],
     details: ['dryGrass', 'flowers', 'pebbles']
   },
   grassland: {
-    ground: '#dce0ac',
-    edge: '#a0ac79',
+    ground: 'var(--biome-grassland-ground)',
+    edge: 'var(--biome-grassland-edge)',
     obstacles: ['boulder'],
     details: ['grass', 'flowers']
   },
   wetland: {
-    ground: '#c4d8b0',
-    edge: '#829d81',
+    ground: 'var(--biome-wetland-ground)',
+    edge: 'var(--biome-wetland-edge)',
     obstacles: ['broadleaf', 'boulder'],
     details: ['reeds', 'grass']
   },
   montane: {
-    ground: '#d8dbbd',
-    edge: '#9aab97',
+    ground: 'var(--biome-montane-ground)',
+    edge: 'var(--biome-montane-edge)',
     obstacles: ['ridge', 'boulder'],
     details: ['lichen', 'grass', 'flowers']
   },
   tundra: {
-    ground: '#d9e1cd',
-    edge: '#99afa3',
+    ground: 'var(--biome-tundra-ground)',
+    edge: 'var(--biome-tundra-edge)',
     obstacles: ['boulder'],
     details: ['lichen', 'pebbles']
   },
   mediterranean: {
-    ground: '#e0dfb8',
-    edge: '#aaa978',
+    ground: 'var(--biome-mediterranean-ground)',
+    edge: 'var(--biome-mediterranean-edge)',
     obstacles: ['olive', 'boulder'],
     details: ['dryGrass', 'flowers', 'pebbles']
   },
   arid: {
-    ground: '#ead8ac',
-    edge: '#b9a779',
+    ground: 'var(--biome-arid-ground)',
+    edge: 'var(--biome-arid-edge)',
     obstacles: ['sandstone', 'boulder'],
     details: ['dryGrass', 'pebbles']
   },
   mangrove: {
-    ground: '#c2d5ab',
-    edge: '#789584',
+    ground: 'var(--biome-mangrove-ground)',
+    edge: 'var(--biome-mangrove-edge)',
     obstacles: ['mangrove', 'boulder'],
     details: ['reeds', 'leaves']
   },
   ice: {
-    ground: '#e2eee7',
-    edge: '#aac8c5',
+    ground: 'var(--biome-ice-ground)',
+    edge: 'var(--biome-ice-edge)',
     obstacles: ['snowRock'],
     details: ['pebbles']
   },
   sea: {
-    ground: '#73aeb530',
-    edge: '#73aeb530',
+    ground: 'var(--biome-sea-ground)',
+    edge: 'var(--biome-sea-edge)',
     obstacles: ['reef'],
     details: []
   }

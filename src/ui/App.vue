@@ -139,11 +139,115 @@ provide(gameContext, app)
 </template>
 
 <style scoped>
-.pause-actions { display: grid; gap: 12px; }
+.app-shell {
+  min-height: 100dvh;
+  background-color: var(--color-page-bg);
+  background-image: var(--art-ocean-pattern);
+}
 
-.header-tools { flex-wrap: wrap; }
+.topbar {
+  width: min(1000px, calc(100vw - 36px));
+  min-height: 94px;
+  margin: auto;
+  padding: 14px 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
 
-.load-error { padding: 20px; margin: 16px 0; border: 1px solid var(--line); border-radius: 10px; }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: none;
+  border: 0;
+  padding: 0;
+}
 
-.load-error .quiet { margin-left: 16px; }
+.brand-globe {
+  width: 46px;
+  height: 50px;
+}
+
+.brand-name {
+  font-size: 26px;
+  font-weight: 850;
+  letter-spacing: -.7px;
+  text-shadow: var(--shadow-brand);
+}
+
+.prototype-badge {
+  background: var(--color-badge-bg);
+  border: 1px solid var(--color-badge-border);
+  color: var(--color-badge-text);
+  border-radius: 7px;
+  padding: 5px 7px;
+  font-size: 9px;
+  font-weight: var(--font-weight-strong);
+  letter-spacing: .07em;
+}
+
+.header-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.language-picker select {
+  font-size: var(--font-size-caption);
+}
+
+.load-error {
+  width: min(600px, calc(100vw - 36px));
+  margin: var(--space-6) auto;
+  background: var(--color-error-bg);
+  padding: var(--space-5);
+  border: 1px solid var(--color-rule);
+  border-radius: 10px;
+}
+
+@media (max-width: 650px) {
+  .topbar {
+    gap: 10px;
+    min-height: 78px;
+    flex-wrap: wrap;
+  }
+
+  .brand-globe {
+    width: 34px;
+    height: 40px;
+  }
+
+  .brand-name {
+    font-size: 21px;
+  }
+
+  .header-tools {
+    gap: var(--space-3);
+  }
+
+  .prototype-badge {
+    font-size: 8px;
+  }
+
+  .header-tools .quiet {
+    font-size: var(--font-size-caption);
+  }
+
+  .language-picker select {
+    max-width: 105px;
+    padding: 5px;
+  }
+}
+
+.pause-actions {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.load-error .quiet {
+  margin-left: var(--space-4);
+}
 </style>

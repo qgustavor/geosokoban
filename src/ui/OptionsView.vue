@@ -30,14 +30,24 @@ defineEmits(['back', 'locale', 'reduced', 'speedrun', 'music', 'sfx', 'musicVolu
 
     <label class="option-row">
       <span>{{ t('reduceMotion') }}</span>
-      <input type="checkbox" :checked="reduced" @change="$emit('reduced', $event.target.checked)">
+      <input
+        class="check-control"
+        type="checkbox"
+        :checked="reduced"
+        @change="$emit('reduced', $event.target.checked)"
+      >
     </label>
 
     <label class="option-row speedrun-option">
       <span>
         {{ t('speedrun') }}
       </span>
-      <input type="checkbox" :checked="speedrun" @change="$emit('speedrun', $event.target.checked)">
+      <input
+        class="check-control"
+        type="checkbox"
+        :checked="speedrun"
+        @change="$emit('speedrun', $event.target.checked)"
+      >
     </label>
 
     <AudioSettings
@@ -59,33 +69,46 @@ defineEmits(['back', 'locale', 'reduced', 'speedrun', 'music', 'sfx', 'musicVolu
 </template>
 
 <style scoped>
-.options-page { width: min(600px, calc(100vw - 36px)); margin: 45px auto 70px; }
+.options-page {
+  width: min(600px, calc(100vw - 36px));
+  margin: 45px auto 70px;
+}
 
-.options-page.embedded { width: 100%; margin: 0; text-align: left; }
+.options-page.embedded {
+  width: 100%;
+  margin: 0;
+  text-align: left;
+}
 
-.options-page h1 { font-size: 26px; text-align: center; font-weight: 750; margin: 0 0 20px; }
+.options-page h1 {
+  font-size: 26px;
+  text-align: center;
+  font-weight: var(--font-weight-strong);
+  margin: 0 0 var(--space-5);
+}
 
 .option-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 20px 0;
-  border-bottom: 1px solid var(--line);
-  font-size: 15px;
+  gap: var(--space-4);
+  padding: var(--space-5) 0;
+  border-bottom: 1px solid var(--color-rule);
+  font-size: var(--font-size-control);
 }
-
-.option-row input { width: 22px; height: 22px; min-height: 22px; flex-shrink: 0; accent-color: #397c89; }
 
 .option-row select {
   max-width: 155px;
   padding: 10px;
   font: inherit;
-  border: 1px solid var(--line);
+  border: 1px solid var(--color-rule);
   border-radius: 8px;
-  background: #fffdf7;
-  color: #244e58;
+  background: var(--color-select-bg);
+  color: var(--color-text);
 }
 
-.back-button { width: 100%; margin-top: 24px; }
+.back-button {
+  width: 100%;
+  margin-top: var(--space-6);
+}
 </style>

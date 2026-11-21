@@ -1,0 +1,39 @@
+/* Palette names match src/scenery/palettes.js; values do not affect map or puzzle generation. */
+
+:root {
+  /* Biome tile surfaces and edges. */
+  --biome-neutral-ground: #dce4bc;
+  --biome-neutral-edge: #8fa576;
+  --biome-rainforest-ground: #c4dca6;
+  --biome-rainforest-edge: #7f9c70;
+  --biome-dry-forest-ground: #dce0ac;
+  --biome-dry-forest-edge: #a2ac7c;
+  --biome-caatinga-ground: #e5ddb2;
+  --biome-caatinga-edge: #adab7c;
+  --biome-conifer-ground: #cbd9ae;
+  --biome-conifer-edge: #8a9e7e;
+  --biome-woodland-ground: #d8e1b1;
+  --biome-woodland-edge: #8da274;
+  --biome-taiga-ground: #c9d9c0;
+  --biome-taiga-edge: #859c8a;
+  --biome-savanna-ground: #e3ddb1;
+  --biome-savanna-edge: #b3ae7c;
+  --biome-grassland-ground: #dce0ac;
+  --biome-grassland-edge: #a0ac79;
+  --biome-wetland-ground: #c4d8b0;
+  --biome-wetland-edge: #829d81;
+  --biome-montane-ground: #d8dbbd;
+  --biome-montane-edge: #9aab97;
+  --biome-tundra-ground: #d9e1cd;
+  --biome-tundra-edge: #99afa3;
+  --biome-mediterranean-ground: #e0dfb8;
+  --biome-mediterranean-edge: #aaa978;
+  --biome-arid-ground: #ead8ac;
+  --biome-arid-edge: #b9a779;
+  --biome-mangrove-ground: #c2d5ab;
+  --biome-mangrove-edge: #789584;
+  --biome-ice-ground: #e2eee7;
+  --biome-ice-edge: #aac8c5;
+  --biome-sea-ground: #73aeb530;
+  --biome-sea-edge: #73aeb530;
+}

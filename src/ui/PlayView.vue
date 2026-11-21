@@ -443,6 +443,7 @@ onBeforeUnmount(() => {
 }
 
 /* Keep the HUD above the map without stealing pointer input from the board beneath it. */
+
 .play-hud {
   position: absolute;
   top: max(14px, env(safe-area-inset-top));
@@ -451,22 +452,22 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
   pointer-events: none;
-  color: #eff3df;
+  color: var(--color-hud-text);
 }
 
 .play-hud h1 {
   font-size: clamp(16px, 2vw, 22px);
   margin: 0;
   font-weight: 700;
-  text-shadow: 0 1px 2px #163f4b44;
+  text-shadow: var(--shadow-hud-title);
 }
 
 .hud-stats {
   display: grid;
   justify-items: end;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .run-timer,
@@ -475,19 +476,19 @@ onBeforeUnmount(() => {
 }
 
 .run-timer {
-  font-size: 13px;
+  font-size: var(--font-size-label);
   white-space: nowrap;
 }
 
 .journey-hud {
-  margin: 0 0 4px;
+  margin: 0 0 var(--space-1);
   font-size: 11px;
   letter-spacing: 0.04em;
   opacity: 0.85;
 }
 
 .move-counter {
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   opacity: 0.9;
   white-space: nowrap;
 }
@@ -513,8 +514,8 @@ onBeforeUnmount(() => {
   bottom: max(14px, env(safe-area-inset-bottom));
   transform: translateX(-50%);
   padding: 6px;
-  border-radius: 18px;
-  background: #1c536577;
+  border-radius: var(--radius-overlay);
+  background: var(--color-hud-tray);
 }
 
 .hud-button {
@@ -524,16 +525,16 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #b5d9d266;
-  border-radius: 12px;
-  background: #245b6ecc;
-  color: #f1efdb;
+  border: 1px solid var(--color-hud-button-border);
+  border-radius: var(--radius-control);
+  background: var(--color-hud-button);
+  color: var(--color-hud-button-text);
   line-height: 1;
-  box-shadow: 0 3px 0 #163f4b77;
+  box-shadow: var(--shadow-hud-button);
 }
 
 .hud-button.active {
-  background: #043b4ecc;
+  background: var(--color-hud-button-active);
 }
 
 .top-overlay {
@@ -544,11 +545,11 @@ onBeforeUnmount(() => {
   width: max-content;
   max-width: calc(100vw - 28px);
   padding: 18px 22px;
-  border: 2px solid #d9ba7c;
-  border-radius: 22px;
-  background: #f3efdbf5;
-  color: #244e58;
-  box-shadow: 0 5px 0 #17445133;
+  border: 2px solid var(--color-warning-border);
+  border-radius: var(--radius-dialog);
+  background: var(--color-overlay-bg);
+  color: var(--color-text);
+  box-shadow: var(--shadow-warning);
   z-index: 4;
   text-align: center;
 }
@@ -556,25 +557,25 @@ onBeforeUnmount(() => {
 .deadlock-warning strong {
   display: block;
   font-size: clamp(20px, 3vw, 28px);
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
   text-wrap: balance;
 }
 
 .recovery-actions {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .recovery-actions .button {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 kbd {
   font-family: inherit;
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   font-weight: 600;
   line-height: 1.3;
   border: 1px solid currentColor;
@@ -585,7 +586,7 @@ kbd {
 
 .hud-enter-active,
 .hud-leave-active {
-  transition: opacity 0.18s;
+  transition: opacity var(--duration-overlay);
 }
 
 .hud-enter-from,
@@ -595,7 +596,7 @@ kbd {
 
 .warning-enter-active,
 .warning-leave-active {
-  transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+  transition: transform var(--duration-warning) ease-out, opacity var(--duration-warning) ease-out;
 }
 
 .warning-enter-from,
@@ -606,7 +607,7 @@ kbd {
 
 .hint-enter-active,
 .hint-leave-active {
-  transition: transform 0.18s ease-out, opacity 0.18s;
+  transition: transform var(--duration-overlay) ease-out, opacity var(--duration-overlay);
 }
 
 .hint-enter-from,
@@ -620,10 +621,10 @@ kbd {
   left: 50%;
   bottom: 86px;
   transform: translateX(-50%);
-  padding: 8px 16px;
-  background: #f3efdb;
-  color: #244e58;
-  border-radius: 12px;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-notice-bg);
+  color: var(--color-text);
+  border-radius: var(--radius-control);
   pointer-events: none;
 }
 
@@ -634,11 +635,11 @@ kbd {
   width: min(340px, calc(100vw - 32px));
   max-height: 40dvh;
   overflow: auto;
-  border: 2px solid #c1d6bd;
-  border-radius: 18px;
-  background: #f3efdbf5;
-  color: #244e58;
-  box-shadow: 0 5px 20px #163e4933;
+  border: 2px solid var(--color-hint-border);
+  border-radius: var(--radius-overlay);
+  background: var(--color-overlay-bg);
+  color: var(--color-text);
+  box-shadow: var(--shadow-hint);
 }
 
 .geography-popover {
@@ -651,15 +652,15 @@ kbd {
 .victory-flags {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: var(--space-3);
   margin: 0 0 18px;
 }
 
 .victory-flags svg {
   width: 57px;
   height: 45px;
-  border: 3px solid white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border: 3px solid var(--color-flag-border);
+  box-shadow: var(--shadow-flag);
 }
 
 .result-title {
@@ -669,43 +670,42 @@ kbd {
 
 .result-moves {
   font-size: 32px;
-  font-weight: 750;
-  margin: 24px 0 28px;
+  font-weight: var(--font-weight-strong);
+  margin: var(--space-6) 0 28px;
 }
 
 .result-moves small {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 500;
 }
 
 .result-message {
-  color: #547477;
-  font-size: 15px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-control);
   text-wrap: balance;
 }
 
-.result-date,
 .result-progress {
-  color: #547477;
-  font-size: 13px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-label);
 }
 
 .result-time {
-  font-size: 16px;
+  font-size: var(--font-size-lead);
 }
 
 .result-time strong {
-  margin-left: 8px;
+  margin-left: var(--space-2);
 }
 
 .result-notice {
-  margin: 0 0 16px;
-  font-size: 14px;
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-size-body);
 }
 
 .result-actions {
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .result-actions .button {
@@ -717,11 +717,11 @@ kbd {
   width: 100%;
   min-height: 130px;
   resize: vertical;
-  padding: 12px;
-  margin-bottom: 16px;
-  color: #244e58;
-  border: 1px solid #a8bdac;
-  background: #fffcef;
+  padding: var(--space-3);
+  margin-bottom: var(--space-4);
+  color: var(--color-text);
+  border: 1px solid var(--color-report-border);
+  background: var(--color-report-bg);
 }
 
 .result-reopen {
@@ -743,7 +743,7 @@ kbd {
   }
 
   .recovery-actions .button {
-    font-size: 13px;
+    font-size: var(--font-size-label);
     padding: 10px;
   }
 }

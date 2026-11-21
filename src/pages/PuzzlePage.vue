@@ -42,3 +42,10 @@ const app = useGameContext()
     {{ app.t('preparing') }}
   </main>
 </template>
+
+<style scoped>
+.route-pending {
+  text-align: center;
+  padding: 30px;
+}
+</style>

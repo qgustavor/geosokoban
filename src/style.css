@@ -1,30 +1,184 @@
+/* Shared palette and document-wide styles only. */
+@import './styles/theme.css';
+@import './styles/art-tokens.css';
+@import './styles/biome-tokens.css';
+
+/* Document defaults. Component layouts stay in their Vue SFCs. */
+
 :root {
-  font-family: ui-rounded, "Avenir Next Rounded", system-ui, -apple-system, sans-serif;
-  color: #edf2df;
-  background: #397c89;
+  font-family: var(--font-ui);
+  color: var(--color-page-text);
+  background: var(--color-page-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --ink: #254c59;
-  --line: #a2cbc14d;
-  --sea: #397c89;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-body { margin: 0; }
+body {
+  margin: 0;
+}
 
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
   font: inherit;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
 }
 
-button, a, input, select, textarea, summary, [tabindex] { -webkit-tap-highlight-color: transparent; }
+button,
+a,
+input,
+select,
+textarea,
+summary,
+[tabindex] {
+  -webkit-tap-highlight-color: transparent;
+}
 
-button { cursor: pointer; color: inherit; touch-action: manipulation; }
+button {
+  cursor: pointer;
+  color: inherit;
+  touch-action: manipulation;
+}
 
-a { color: #e9dda5; text-underline-offset: 4px; }
+a {
+  color: var(--color-link);
+  text-underline-offset: 4px;
+}
 
-button:disabled { cursor: default; opacity: .4; }
+button:disabled {
+  cursor: default;
+  opacity: .4;
+}
+
+p {
+  line-height: 1.55;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: inherit;
+  font-weight: var(--font-weight-strong);
+}
+
+.notice {
+  font-size: var(--font-size-body);
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-strong);
+}
+
+/* Shared form controls. Component-specific rules stay in <style scoped>. */
+
+.quiet {
+  background: none;
+  border: none;
+  padding: 10px 0;
+  font-size: var(--font-size-label);
+  font-weight: 650;
+  color: inherit;
+}
+
+.quiet:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.language-picker select,
+input {
+  min-height: var(--control-min-size);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-input-border);
+  background: var(--color-input-bg);
+  color: var(--color-ink);
+}
+
+.button {
+  min-height: var(--control-min-size);
+  padding: var(--space-3) 18px;
+  font-weight: var(--font-weight-strong);
+  border: 2px solid transparent;
+  font-size: var(--font-size-body);
+  border-radius: var(--radius-button);
+  transition: transform var(--duration-control), background var(--duration-control);
+}
+
+.button.primary {
+  background: var(--color-primary-bg);
+  border-color: var(--color-primary-border);
+  color: var(--color-primary-text);
+  box-shadow: var(--shadow-primary);
+}
+
+.button.secondary {
+  background: var(--color-secondary-bg);
+  border-color: var(--color-secondary-border);
+  color: var(--color-text);
+  box-shadow: var(--shadow-secondary);
+}
+
+.button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+/* Radio-card mechanics are shared; each owner supplies its selected-state palette. */
+
+.choice-card {
+  --choice-active-bg: var(--color-mode-active);
+  --choice-active-border: var(--color-mode-active);
+  --choice-active-text: var(--color-mode-active-text);
+  --choice-focus-offset: var(--focus-offset);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  border: 2px solid var(--color-choice-border);
+  border-radius: var(--radius-choice);
+  background: var(--color-choice-bg);
+  cursor: pointer;
+  transition: background var(--duration-choice), border-color var(--duration-choice);
+}
+
+.choice-card.active {
+  border-color: var(--choice-active-border);
+  background: var(--choice-active-bg);
+  color: var(--choice-active-text);
+}
+
+.choice-card:has(input:focus-visible) {
+  outline: var(--focus-width) solid var(--color-focus-on-panel);
+  outline-offset: var(--choice-focus-offset);
+}
+
+.check-control {
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
+  min-height: var(--checkbox-size);
+  flex-shrink: 0;
+  accent-color: var(--color-control-accent);
+}
+
+/* Focus, screen-reader content and motion preferences are global across dialogs and route components. */
 
 button:focus-visible,
 a:focus-visible,
@@ -33,17 +187,10 @@ select:focus-visible,
 summary:focus-visible,
 textarea:focus-visible,
 [tabindex]:focus-visible {
-  outline: 3px solid #f5d78b;
-  outline-offset: 4px;
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
 }
 
-p { line-height: 1.55; }
-
-h1, h2, h3, p { margin-top: 0; }
-
-h1, h2, h3 { font-family: inherit; font-weight: 750; }
-
-/* Keep descriptions available to assistive technology without taking up board space. */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -56,114 +203,36 @@ h1, h2, h3 { font-family: inherit; font-weight: 750; }
   border: 0;
 }
 
-.app-shell {
-  min-height: 100dvh;
-  background-color: var(--sea);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='112'%3E%3Cpath d='M20 25q8 5 16 0m55 52q8 5 16 0' fill='none' stroke='%23b4dad2' stroke-opacity='.16' stroke-linecap='round'/%3E%3C/svg%3E");
-}
-
-.topbar {
-  width: min(1000px, calc(100vw - 36px));
-  min-height: 94px;
-  margin: auto;
-  padding: 14px 0;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.brand { display: flex; align-items: center; gap: 8px; background: none; border: 0; padding: 0; }
-
-.brand-globe { width: 46px; height: 50px; }
-
-.brand-name { font-size: 26px; font-weight: 850; letter-spacing: -.7px; text-shadow: 0 3px 0 #1e5368; }
-
-.prototype-badge {
-  background: #214b6277;
-  border: 1px solid #add2ca66;
-  color: #e9ead6;
-  border-radius: 7px;
-  padding: 5px 7px;
-  font-size: 9px;
-  font-weight: 750;
-  letter-spacing: .07em;
-}
-
-.header-tools { margin-left: auto; display: flex; align-items: center; gap: 16px; }
-
-.quiet { background: none; border: none; padding: 10px 0; font-size: 13px; font-weight: 650; color: inherit; }
-
-.quiet:hover { text-decoration: underline; text-underline-offset: 3px; }
-
-.language-picker select, input {
-  min-height: 44px;
-  padding: 8px 12px;
-  border: 1px solid #cbdccb;
-  background: #f5f0db;
-  color: #254c59;
-}
-
-.language-picker select { font-size: 12px; }
-
-.button {
-  min-height: 44px;
-  padding: 12px 18px;
-  font-weight: 750;
-  border: 2px solid transparent;
-  font-size: 14px;
-  border-radius: 14px;
-  transition: transform .12s, background .12s;
-}
-
-.button.primary { background: #f2db87; border-color: #f9e8ab; color: #234b5e; box-shadow: 0 4px 0 #b49b5f; }
-
-.button.secondary { background: #d8e8d6; border-color: #ebf1d9; color: #244e58; box-shadow: 0 3px 0 #90b29d; }
-
-.button:hover:not(:disabled) { transform: translateY(-1px); }
-
-.button:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
-
-.notice { font-size: 14px; text-align: center; }
-
-
-.eyebrow { font-size: 12px; font-weight: 750; }
-
-.credits-page { width: min(760px, calc(100vw - 36px)); margin: 30px auto; padding-bottom: 40px; }
-
-.credits-page h1 { font-size: 36px; }
-
-.credits-page h2 { font-size: 22px; }
-
-.credits-page section { padding: 22px 0; border-top: 1px solid var(--line); }
-
-.credits-page p { font-size: 14px; }
-
-.load-error { width: min(600px, calc(100vw - 36px)); margin: 24px auto !important; background: #214d62; }
-
-.route-pending { text-align: center; padding: 30px; }
-
-/* Honor both the saved in-game preference and the operating system preference. */
-.reduced-motion *, .reduced-motion *::before, .reduced-motion *::after {
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
   animation: none !important;
   transition: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-@media (max-width: 650px) {
-  .topbar { gap: 10px; min-height: 78px; flex-wrap: wrap; }
-  .brand-globe { width: 34px; height: 40px; }
-  .brand-name { font-size: 21px; }
-  .header-tools { gap: 12px; }
-  .prototype-badge { font-size: 8px; }
-  .header-tools .quiet { font-size: 12px; }
-  .language-picker select { max-width: 105px; padding: 5px; }
+.gameplay-active {
+  overscroll-behavior: none;
 }
 
-/* Disallow browser pinch/double-tap zoom in play without disabling menu zoom. */
-.gameplay-active { overscroll-behavior: none; }
-.gameplay-active body { overscroll-behavior: none; }
-.gameplay-active .app-shell { touch-action: pan-x pan-y; }
-.gameplay-active .play-page, .gameplay-active .play-page button { touch-action: none; }
+.gameplay-active body {
+  overscroll-behavior: none;
+}
+
+.gameplay-active .app-shell {
+  touch-action: pan-x pan-y;
+}
+
+.gameplay-active .play-page,
+.gameplay-active .play-page button {
+  touch-action: none;
+}

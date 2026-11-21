@@ -12,7 +12,7 @@ defineEmits(['change'])
       <label
         v-for="(choice, index) in CHALLENGES"
         :key="choice"
-        class="challenge-card"
+        class="choice-card challenge-card"
         :class="{ active: value === choice }"
       >
         <input
@@ -31,30 +31,40 @@ defineEmits(['change'])
 </template>
 
 <style scoped>
-.challenge-picker { margin: 28px 0 0; border: 0; padding: 0; }
-
-.challenge-picker legend { font-size: 13px; font-weight: 750; margin-bottom: 12px; color: #547477; }
-
-.challenge-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-
-.challenge-card {
-  padding: 17px 12px;
-  border: 2px solid #ced9c7;
-  border-radius: 16px;
-  background: #e9ecda;
-  transition: background .16s, border-color .16s;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
+.challenge-picker {
+  margin: 28px 0 0;
+  border: 0;
+  padding: 0;
 }
 
-.challenge-card.active { border-color: #547b70; background: #d5e4cf; }
+.challenge-picker legend {
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-strong);
+  margin-bottom: var(--space-3);
+  color: var(--color-text-muted);
+}
 
-.challenge-card:has(input:focus-visible) { outline: 3px solid #b47b32; outline-offset: 3px; }
+.challenge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
 
-.difficulty-dots { font-size: 10px; letter-spacing: 3px; color: #547b70; }
+.challenge-card {
+  --choice-active-bg: var(--color-challenge-active);
+  --choice-active-border: var(--color-challenge-accent);
+  --choice-active-text: var(--color-ink);
+  --choice-focus-offset: 3px;
+  padding: 17px var(--space-3);
+}
 
-.challenge-card strong { font-size: 14px; }
+.difficulty-dots {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--color-challenge-accent);
+}
+
+.challenge-card strong {
+  font-size: var(--font-size-body);
+}
 </style>

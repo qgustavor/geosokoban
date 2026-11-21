@@ -29,3 +29,7 @@ Review every screen in English, Portuguese and Spanish. Try reduced motion and t
 Inspect country names, flags, goal positions, island dock anchors, map outlines and scenery at representative stops. A solver cannot establish educational accuracy. Review story progression, difficulty, writing and accessibility through actual play with the intended audience.
 
 A completed checklist is a record of what was observed, not a guarantee about every seed, browser or device.
+
+## Presentation changes
+
+Compare the menu, mode/difficulty selections, archive date control, pause/options/credits dialogs, story dialogue, hints and result overlays at desktop and narrow mobile widths. Check keyboard-visible focus and all three locales for clipping. Review at least one land board and one sea board, including SVG markers and character artwork. Confirm saved reduced motion and operating-system reduced motion independently. Palette changes must not alter flags, country geometry or puzzle behavior. See `STYLING.md` for the stylesheet owners.

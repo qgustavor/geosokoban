@@ -24,6 +24,6 @@ The importer samples 16 points per tile and uses the game's country geometry as 
 
 `src/scenery/scene.js` selects artwork after puzzle construction with independent per-cell hashes. It cannot change floors, barriers, actors or solutions. Ground details stay off destinations and blocking obstacles. Sea boards retain water art and reefs.
 
-`src/scenery/palettes.js` maps current atlas records to artwork. Caatinga has its own cactus rule; Rock and Ice uses snowy rock. These are stylized palette choices, not precise plant observations. The color and component styling organization is separate from this content pipeline.
+`src/scenery/palettes.js` maps current atlas records to artwork. Caatinga has its own cactus rule; Rock and Ice uses snowy rock. These are stylized palette choices, not precise plant observations. Tile colors live in `src/styles/biome-tokens.css`; `palettes.js` references them without changing palette selection. Character, terrain and board-marker paint lives in `src/styles/art-tokens.css`. See `STYLING.md` for component ownership and theme editing.
 
 Map outlines use quarter-cell pixel contours aligned with the board grid. Context paths are decorative geography, not playable floor. The globe and tile-based level transitions are the active character/transition presentation; there is no aircraft component or alternate board-preview mode.

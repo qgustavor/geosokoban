@@ -57,50 +57,76 @@ onMounted(() => cancelButton.value?.focus({ preventScroll: true }))
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 24px;
-  padding: 48px 20px;
+  gap: var(--space-6);
+  padding: 48px var(--space-5);
   text-align: center;
 }
 
-.loading-globe { width: 86px; height: 86px; }
+.loading-globe {
+  width: 86px;
+  height: 86px;
+}
 
-h1 { font-size: 25px; font-weight: 700; margin: 0; }
+h1 {
+  font-size: 25px;
+  font-weight: 700;
+  margin: 0;
+}
 
 .generation-progress {
   appearance: none;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   overflow: hidden;
   width: min(320px, 85vw);
   height: 10px;
-  background: var(--line);
-  accent-color: var(--ink);
+  background: var(--color-rule);
+  accent-color: var(--color-ink);
 }
 
-.generation-progress::-webkit-progress-bar { background: var(--line); border-radius: 12px; }
+.generation-progress::-webkit-progress-bar {
+  background: var(--color-rule);
+  border-radius: var(--radius-control);
+}
 
 .generation-progress::-webkit-progress-value {
-  background: var(--ink);
-  border-radius: 12px;
+  background: var(--color-ink);
+  border-radius: var(--radius-control);
   transition: width 400ms ease-out;
 }
 
-.generation-progress::-moz-progress-bar { background: var(--ink); border-radius: 12px; }
+.generation-progress::-moz-progress-bar {
+  background: var(--color-ink);
+  border-radius: var(--radius-control);
+}
 
 .generation-progress:indeterminate {
-  background: repeating-linear-gradient(100deg, var(--line) 0 12px, var(--ink) 12px 20px);
+  background: repeating-linear-gradient(100deg, var(--color-rule) 0 12px, var(--color-ink) 12px 20px);
   animation: loading-wave 1.8s linear infinite;
   background-size: 48px 100%;
 }
 
-@keyframes loading-wave { to { background-position: 48px 0; } }
+@keyframes loading-wave {
+  to {
+    background-position: 48px 0;
+  }
+}
 
-:global(.reduced-motion) .generation-progress { animation: none; }
+:global(.reduced-motion) .generation-progress {
+  animation: none;
+}
 
-:global(.reduced-motion) .generation-progress::-webkit-progress-value { transition: none; }
+:global(.reduced-motion) .generation-progress::-webkit-progress-value {
+  transition: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .generation-progress { animation: none; }
-  .generation-progress::-webkit-progress-value { transition: none; }
+  .generation-progress {
+    animation: none;
+  }
+
+  .generation-progress::-webkit-progress-value {
+    transition: none;
+  }
 }
 </style>

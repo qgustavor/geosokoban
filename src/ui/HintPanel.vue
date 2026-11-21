@@ -56,21 +56,35 @@ const requestLabel = computed(() => {
 </template>
 
 <style scoped>
-.hint-panel { padding: 18px; }
+.hint-panel {
+  padding: 18px;
+}
 
-.hint-panel p { font-size: 14px; margin: 0 0 14px; text-wrap: pretty; }
+.hint-panel p {
+  font-size: var(--font-size-body);
+  margin: 0 0 14px;
+  text-wrap: pretty;
+}
 
-.hint-actions { display: flex; gap: 10px; }
+.hint-actions {
+  display: flex;
+  gap: 10px;
+}
 
 .hint-actions .button {
   flex: 1;
   min-width: 0;
-  padding: 10px 12px;
-  font-size: 13px;
+  padding: 10px var(--space-3);
+  font-size: var(--font-size-label);
   text-wrap: balance;
 }
 
-.hint-request { font-variant-numeric: tabular-nums; }
+.hint-request {
+  font-variant-numeric: tabular-nums;
+}
 
-.hint-request:disabled { cursor: not-allowed; opacity: .65; }
+.hint-request:disabled {
+  cursor: not-allowed;
+  opacity: .65;
+}
 </style>
