@@ -61,7 +61,7 @@ The available portraits are Little Globe (`globe`), the anonymous silhouette (`s
 
 The line immediately before magnet removal has `action: 'removeMagnet'`, which labels the existing advance button. Advancing shows the next line’s `relieved` stage and settles the needle. Back can replay this moment. Skip and Escape finish the scene through the existing continuation; no timed interaction, drag gesture or separate puzzle is required.
 
-The needle chooses fresh turn directions, distances and pauses. It stops while the tab is hidden, on local Pause needle, or when reduced motion is requested through either the game setting or operating system. Removing the magnet under reduced motion settles it immediately. Unmounting cancels the animation and removes its visibility listener. The west label is `W` in English and `O` in Portuguese and Spanish.
+The needle chooses fresh turn directions, distances and pauses. It stops while the tab is hidden or when reduced motion is requested through either the game setting or operating system. Removing the magnet under reduced motion settles it immediately. Unmounting cancels the animation and removes its visibility listener. The west label is `W` in English and `O` in Portuguese and Spanish.
 
 An absent before-scene uses the translated region briefing. An absent after-scene shows a matching country curiosity if available, otherwise continues immediately. An explicit scene with `lines: []` is silent. All lines appear immediately and wait for the player; there is no timed reading or typewriter effect.
 

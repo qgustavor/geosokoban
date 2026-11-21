@@ -4,7 +4,6 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 const props = defineProps({
   pose: { type: String, default: 'friendly' },
   reducedMotion: Boolean,
-  paused: Boolean,
   west: { type: String, default: 'W' }
 })
 const magnetized = computed(() => props.pose === 'magnetized')
@@ -53,9 +52,8 @@ function refreshMotion () {
   phase = null
   if (!needle.value) return
 
-  if (props.reducedMotion || props.paused) {
-    if (!magnetized.value) angle = 0
-    else if (props.reducedMotion) angle = 72
+  if (props.reducedMotion) {
+    angle = magnetized.value ? 72 : 0
     paint()
     return
   }
@@ -65,7 +63,7 @@ function refreshMotion () {
   if (magnetized.value || angle % 360 !== 0) frame = requestAnimationFrame(tick)
 }
 
-watch(() => [props.pose, props.reducedMotion, props.paused], refreshMotion, { flush: 'post' })
+watch(() => [props.pose, props.reducedMotion], refreshMotion, { flush: 'post' })
 onMounted(() => {
   document.addEventListener('visibilitychange', refreshMotion)
   refreshMotion()

@@ -12,7 +12,6 @@ const props = defineProps({
 })
 const emit = defineEmits(['finish'])
 const index = ref(0)
-const motionPaused = ref(false)
 const line = computed(() => props.scene.lines[index.value])
 const speaker = computed(() => props.scene.characters[line.value.speaker])
 const lastLine = computed(() => index.value === props.scene.lines.length - 1)
@@ -70,41 +69,30 @@ function key (event) {
           {{ t('skipScene') }}
         </button>
       </header>
-      <div class="story-stage-wrap">
-        <div class="story-stage" aria-hidden="true">
-          <div class="story-horizon" />
-          <div
-            v-for="(pose, id) in line.stage"
-            :key="id"
-            class="story-portrait"
-            :class="[
-              scene.characters[id].side,
-              {
-                speaking: line.speaker === id,
-                distant: scene.characters[id].art === 'silhouette',
-                compass: scene.characters[id].art === 'compass'
-              }
-            ]"
-          >
-            <GlobeIcon v-if="scene.characters[id].art === 'globe'" :uid="`story-${id}`" />
-            <CompassIcon
-              v-else-if="scene.characters[id].art === 'compass'"
-              :pose="pose"
-              :reduced-motion="reducedMotion"
-              :paused="motionPaused"
-              :west="t('compassWest')"
-            />
-            <div v-else class="story-silhouette" />
-          </div>
-        </div>
-        <button
-          v-if="line.stage.compass === 'magnetized' && !reducedMotion"
-          class="quiet story-motion"
-          :aria-pressed="motionPaused"
-          @click="motionPaused = !motionPaused"
+      <div class="story-stage" aria-hidden="true">
+        <div class="story-horizon" />
+        <div
+          v-for="(pose, id) in line.stage"
+          :key="id"
+          class="story-portrait"
+          :class="[
+            scene.characters[id].side,
+            {
+              speaking: line.speaker === id,
+              distant: scene.characters[id].art === 'silhouette',
+              compass: scene.characters[id].art === 'compass'
+            }
+          ]"
         >
-          {{ t(motionPaused ? 'resumeNeedle' : 'pauseNeedle') }}
-        </button>
+          <GlobeIcon v-if="scene.characters[id].art === 'globe'" :uid="`story-${id}`" />
+          <CompassIcon
+            v-else-if="scene.characters[id].art === 'compass'"
+            :pose="pose"
+            :reduced-motion="reducedMotion"
+            :west="t('compassWest')"
+          />
+          <div v-else class="story-silhouette" />
+        </div>
       </div>
       <!-- Whole lines are shown immediately: no timed reading or typewriter announcements. -->
       <div class="story-text" aria-live="polite" aria-atomic="true">
@@ -169,10 +157,6 @@ function key (event) {
 .story-skip {
   flex: none;
   color: var(--color-story-skip);
-}
-
-.story-stage-wrap {
-  position: relative;
 }
 
 .story-stage {
@@ -278,16 +262,6 @@ function key (event) {
 
 .is-still .story-silhouette {
   animation: none;
-}
-
-.story-motion {
-  position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
-  border-radius: var(--radius-control);
-  background: var(--color-panel-bg);
-  color: var(--color-text);
-  font-size: var(--font-size-caption);
 }
 
 .story-fact-flag {

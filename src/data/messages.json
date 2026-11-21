@@ -134,8 +134,6 @@
     "copyReport": "Copy error report",
     "storyCAR": "We are in the Caribbean. Push each flag to its dock beside the island.",
     "removeMagnet": "Remove magnet",
-    "pauseNeedle": "Pause needle",
-    "resumeNeedle": "Resume needle",
     "compassWest": "W"
   },
   "pt-BR": {
@@ -273,8 +271,6 @@
     "copyReport": "Copiar relato do erro",
     "storyCAR": "Estamos no Caribe. Empurre cada bandeira até seu cais ao lado da ilha.",
     "removeMagnet": "Tirar o ímã",
-    "pauseNeedle": "Pausar agulha",
-    "resumeNeedle": "Retomar agulha",
     "compassWest": "O"
   },
   "es": {
@@ -412,8 +408,6 @@
     "copyReport": "Copiar informe del error",
     "storyCAR": "Estamos en el Caribe. Empuja cada bandera hasta su muelle junto a la isla.",
     "removeMagnet": "Quitar el imán",
-    "pauseNeedle": "Pausar aguja",
-    "resumeNeedle": "Reanudar aguja",
     "compassWest": "O"
   }
 }
