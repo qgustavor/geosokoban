@@ -9,12 +9,17 @@ Use Node 22.13+ on the Node 22 line, or Node 24+.
 ```sh
 npm ci
 npm run dev
-npm run lint
-npm run build
+npm run check
 npm run preview
 ```
 
-`npm run check` runs lint and the production build. There is no automated test suite. Use `docs/MANUAL_CHECKLIST.md` for release playthroughs. Lint and build success do not establish that the game feels right or that every generated puzzle succeeds.
+`npm run check` applies available lint fixes, reports any remaining errors, then runs the production build. `npm run lint` is the read-only check; `npm run lint:fix` applies fixes without building. `npm run lint:js` and `npm run lint:css` inspect JavaScript/Vue templates and CSS respectively.
+
+ESLint keeps the existing Neostandard JavaScript rules, including the space before function parentheses. Stylelint checks standalone CSS and Vue `<style>` blocks, with Vue-aware parsing and correctness rules rather than a formatting preset. Malformed CSS remains an error; autofix does not guess a missing selector. There is no Prettier or required Git hook.
+
+The Pages workflow uses the same autofix command before building. It does not fail merely because a fix changed a file, and it does not commit or push those changes. Run fixes locally and commit them to keep the source consistent with the deployed build.
+
+There is no automated test suite. Use `docs/MANUAL_CHECKLIST.md` for release playthroughs. Lint and build success do not establish that the game feels right or that every generated puzzle succeeds.
 
 The application uses Vue single-file components, Vue Router and Vite. It has no server, accounts, telemetry, remote assets during play, or component library.
 
@@ -62,6 +67,6 @@ Map outlines and the compact, prepared scenery atlas are committed. Regenerate o
 
 `src/core` contains game rules, generation, solving and transitions. `src/geo` handles geographic loading, projection and rasterization. `src/content` holds current boards, story dialogue and prepared map data. `src/scenery` chooses decorative artwork without changing puzzle rules. `src/ui`, `src/pages`, `src/router` and `src/composables` implement the interface and session lifecycle.
 
-Publish `dist/` with the manual GitHub Pages workflow. It installs the lockfile, lints, builds, and deploys; it does not run tests. Hash routing supports repository subpaths without server rewrites. Use `BASE_PATH=/repository-name/ npm run build` when reviewing such a deployment locally.
+Publish `dist/` with the manual GitHub Pages workflow. It installs the lockfile, applies available lint fixes, checks remaining errors, builds, and deploys; it does not run tests. Hash routing supports repository subpaths without server rewrites. Use `BASE_PATH=/repository-name/ npm run build` when reviewing such a deployment locally.
 
 Keep `LICENSE`, `THIRD_PARTY_NOTICES.md`, `docs/SOURCES.md` and map provenance with the project. Git stores development history; the source tree contains current documentation and content only.

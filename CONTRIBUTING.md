@@ -8,7 +8,7 @@ Use Vue `.vue` single-file components with `<script setup>` for interface elemen
 
 Keep the default gentle and challenge presets optional. Keep Speedrun optional; do not introduce a compulsory timer or score pressure. Do not cap undo, charge for hints, penalize resetting, or call a budget-limited search a proven deadlock. Preserve country identity in every solver and generator check. Keep geography geometry distinct from the schematic puzzle terrain.
 
-Run `npm run lint` and `npm run build`, then play through `docs/MANUAL_CHECKLIST.md` before a release. There is no automated test suite. Prototype seeds and saves may break; do not add compatibility aliases, migrations, replacement boards, or archived content. Commit a reviewed lockfile after changing dependencies. Keep third-party notices and map provenance current. No telemetry or new external requests without an explicit design decision.
+Run `npm run check` to apply available ESLint/Stylelint fixes and build, then play through `docs/MANUAL_CHECKLIST.md` before a release. There is no automated test suite. Prototype seeds and saves may break; do not add compatibility aliases, migrations, replacement boards, or archived content. Use `npm run lint` for read-only checks or `npm run lint:fix` to fix without building. Review and commit autofixes; CI uses them for the build but does not push them. After changing dependencies, run `npm install` and commit the reviewed `package-lock.json` together with `package.json` before running CI. Keep third-party notices and map provenance current. No telemetry or new external requests without an explicit design decision.
 
 ## Coding Standards & Architecture Guidelines
 

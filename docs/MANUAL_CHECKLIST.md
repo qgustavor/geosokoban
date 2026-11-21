@@ -1,6 +1,6 @@
 # Manual release review
 
-Run `npm ci`, `npm run lint`, and `npm run build`, then open `npm run preview`. Repeat the important flows under the repository's deployment subpath. Record observations in the release review or issue, not as committed snapshots of past runs.
+Run `npm ci` and `npm run check`, review and commit any automatic lint fixes, then open `npm run preview`. The check covers JavaScript, Vue templates, standalone CSS and Vue `<style>` blocks before building. Repeat the important flows under the repository's deployment subpath. Record observations in the release review or issue, not as committed snapshots of past runs.
 
 ## Story and navigation
 
