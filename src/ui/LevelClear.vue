@@ -80,7 +80,10 @@ const timing = {
   color: var(--art-clear-fill);
   -webkit-text-stroke: clamp(2px, .3vw, 4px) var(--art-clear-outline);
   paint-order: stroke fill;
-  text-shadow: 0 .065em 0 var(--art-clear-outline), 0 .105em 0 var(--art-clear-depth), 0 .15em .12em var(--art-clear-shadow);
+  text-shadow:
+    0 .065em 0 var(--art-clear-outline),
+    0 .105em 0 var(--art-clear-depth),
+    0 .15em .12em var(--art-clear-shadow);
   transform-origin: 50% 75%;
   animation: clear-letter-pop var(--letter-duration) cubic-bezier(.2, .8, .3, 1) both;
   animation-delay: var(--letter-delay);

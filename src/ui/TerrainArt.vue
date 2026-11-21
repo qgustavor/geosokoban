@@ -139,7 +139,8 @@ defineProps({ kind: { type: String, required: true }, flip: Boolean })
         fill="var(--art-reef-water)"
         stroke="none"
       />
-      <path d="m4 31 4-12 8-4 8 5 3 12Z" fill="var(--art-reef-back)" /><path d="m18 32 3-8 9-6 7 8v6Z" fill="var(--art-reef-front)" />
+      <path d="m4 31 4-12 8-4 8 5 3 12Z" fill="var(--art-reef-back)" />
+      <path d="m18 32 3-8 9-6 7 8v6Z" fill="var(--art-reef-front)" />
       <path
         d="m8 20 7-3m11 7 4-3M3 35q17 4 34 0"
         fill="none"
@@ -148,8 +149,15 @@ defineProps({ kind: { type: String, required: true }, flip: Boolean })
       />
     </g>
     <g v-else>
-      <path d="M4 30 7 19 16 11 28 13 35 23l1 9q-17 6-32-2Z" :fill="kind === 'sandstone' ? 'var(--art-sandstone)' : 'var(--art-boulder)'" />
-      <path d="m16 12 3 14 16 6-1-9-7-10Z" :fill="kind === 'sandstone' ? 'var(--art-sandstone-shade)' : 'var(--art-boulder-shade)'" stroke="none" />
+      <path
+        d="M4 30 7 19 16 11 28 13 35 23l1 9q-17 6-32-2Z"
+        :fill="kind === 'sandstone' ? 'var(--art-sandstone)' : 'var(--art-boulder)'"
+      />
+      <path
+        d="m16 12 3 14 16 6-1-9-7-10Z"
+        :fill="kind === 'sandstone' ? 'var(--art-sandstone-shade)' : 'var(--art-boulder-shade)'"
+        stroke="none"
+      />
       <path
         d="m9 20 7-5m-8 11 4-2"
         fill="none"

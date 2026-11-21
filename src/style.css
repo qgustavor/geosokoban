@@ -83,7 +83,7 @@ h3 {
   font-weight: var(--font-weight-strong);
 }
 
-/* Shared form controls. Component-specific rules stay in <style scoped>. */
+/* Shared form controls. Component-specific rules stay in ‹style scoped›. */
 
 .quiet {
   background: none;
