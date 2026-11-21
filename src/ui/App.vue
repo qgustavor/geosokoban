@@ -94,9 +94,6 @@ provide(gameContext, app)
       @dismiss="app.closePanel"
     >
       <div v-if="app.panel === 'pause'" class="pause-actions">
-        <p class="gesture-help">
-          {{ app.t('gestureHelp') }}
-        </p>
         <button class="button primary" @click="app.closePanel">
           {{ app.t('resume') }}
         </button>
@@ -142,8 +139,6 @@ provide(gameContext, app)
 </template>
 
 <style scoped>
-.gesture-help { margin: 0 0 4px; font-size: 13px; line-height: 1.6; color: #547477; }
-
 .pause-actions { display: grid; gap: 12px; }
 
 .header-tools { flex-wrap: wrap; }

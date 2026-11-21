@@ -130,7 +130,6 @@
     "shareDatedResult": "GeoSokoban · {date} · {challenge} · {moves} moves · {help}",
     "shareStoryResult": "GeoSokoban · Journey complete! · {levels} stops · {moves} moves · {help}",
     "shareStoryPartial": "GeoSokoban · Journey ending reached · {levels} stops recorded · {moves} moves · {help}",
-    "gestureHelp": "Swipe with one finger to move. Pinch to zoom the map, and drag with two fingers to look around.",
     "reportPuzzle": "Puzzle: {code}",
     "copyReport": "Copy error report",
     "storyCAR": "We are in the Caribbean. Push each flag to its dock beside the island."
@@ -266,7 +265,6 @@
     "shareDatedResult": "GeoSokoban · {date} · {challenge} · {moves} movimentos · {help}",
     "shareStoryResult": "GeoSokoban · Viagem concluída! · {levels} paradas · {moves} movimentos · {help}",
     "shareStoryPartial": "GeoSokoban · Final da viagem alcançado · {levels} paradas registradas · {moves} movimentos · {help}",
-    "gestureHelp": "Deslize com um dedo para mover. Use uma pinça para ampliar o mapa e arraste com dois dedos para olhar ao redor.",
     "reportPuzzle": "Desafio: {code}",
     "copyReport": "Copiar relato do erro",
     "storyCAR": "Estamos no Caribe. Empurre cada bandeira até seu cais ao lado da ilha."
@@ -402,7 +400,6 @@
     "shareDatedResult": "GeoSokoban · {date} · {challenge} · {moves} movimientos · {help}",
     "shareStoryResult": "GeoSokoban · ¡Viaje completado! · {levels} paradas · {moves} movimientos · {help}",
     "shareStoryPartial": "GeoSokoban · Final del viaje alcanzado · {levels} paradas registradas · {moves} movimientos · {help}",
-    "gestureHelp": "Desliza con un dedo para moverte. Pellizca para ampliar el mapa y arrastra con dos dedos para mirar alrededor.",
     "reportPuzzle": "Desafío: {code}",
     "copyReport": "Copiar informe del error",
     "storyCAR": "Estamos en el Caribe. Empuja cada bandera hasta su muelle junto a la isla."
