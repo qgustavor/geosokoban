@@ -277,7 +277,6 @@ ${error.name}: ${error.message}`
     const arrived = level.value.goals.find(goal => !previouslyDelivered.has(goal.country) && hasDeliveredFlag(goal))
 
     if (arrived) {
-
       revealed.value = [...new Set([...revealed.value, arrived.country])]
     }
 

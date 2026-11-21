@@ -60,7 +60,9 @@ provide(gameContext, app)
         <button class="button secondary" @click="app.copyFailure">
           {{ app.t('copyReport') }}
         </button>
-        <p v-if="app.notice" role="status">{{ app.notice }}</p>
+        <p v-if="app.notice" role="status">
+          {{ app.notice }}
+        </p>
         <textarea
           v-if="app.fallbackText"
           :value="app.fallbackText"
