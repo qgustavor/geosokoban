@@ -10,7 +10,7 @@ import { useGameAudio } from './useGameAudio.js'
 import { movementSound } from '../audio/score.js'
 import { normalizeCode, puzzleDate, isPlanningCode } from '../core/seed.js'
 import { CHALLENGES, challengeSettings, challengeName } from '../core/challenge.js'
-import { storyCode, storyIndex, STORY_COUNT } from '../content/regions.js'
+import { storyCode, storyIndex, storyGuidance, STORY_COUNT } from '../content/regions.js'
 import { translate, countryName } from '../data/i18n.js'
 import { readPreferences, savePreferences } from '../ui/storage.js'
 import { createRun, finishRunLevel, reopenRunLevel, elapsedRun, formatElapsed, runTotals } from '../core/run.js'
@@ -123,7 +123,7 @@ export function useGameController () {
 
       // Reset discoveries and assistance only after the replacement board is ready.
       if (storyIndex(code)) {
-        guidance.value = 'learn'
+        guidance.value = storyGuidance(code)
         if (!storyRun.value || (storyIndex(code) === 1 &&
           (storyRun.value.finishedAt !== null || storyIndex(storyRun.value.code) !== 1))) {
           storyRun.value = createRun(code, speedrun.value)
@@ -512,9 +512,9 @@ ${error.name}: ${error.message}`
     }
     const code = normalizeCode(destination.params.code)
 
-    // Hard always hides destinations; other boards take guidance from the shareable query parameter.
-    const rememberTargets = !storyIndex(code) && (isPlanningCode(code) || route.query.g === 'remember')
-    guidance.value = rememberTargets ? 'remember' : 'learn'
+    // Story follows its tour; dated puzzles take guidance from their own shareable link.
+    const rememberTargets = isPlanningCode(code) || route.query.g === 'remember'
+    guidance.value = storyGuidance(code) ?? (rememberTargets ? 'remember' : 'learn')
 
     // A guidance-only URL change must not restart the current puzzle or discard its history.
     if (activeCode.value === code) {

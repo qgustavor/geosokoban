@@ -2,16 +2,23 @@
 import { computed, ref } from 'vue'
 import OverlayDialog from './OverlayDialog.vue'
 import GlobeIcon from './GlobeIcon.vue'
+import CompassIcon from './CompassIcon.vue'
+import FlagIcon from './FlagIcon.vue'
 
 const props = defineProps({
   scene: { type: Object, required: true },
-  t: { type: Function, required: true }
+  t: { type: Function, required: true },
+  reducedMotion: Boolean
 })
 const emit = defineEmits(['finish'])
 const index = ref(0)
+const motionPaused = ref(false)
 const line = computed(() => props.scene.lines[index.value])
 const speaker = computed(() => props.scene.characters[line.value.speaker])
 const lastLine = computed(() => index.value === props.scene.lines.length - 1)
+const advanceLabel = computed(() => props.t(
+  line.value.action ?? (lastLine.value ? 'continueStory' : 'nextLine')
+))
 
 function advance () {
   if (lastLine.value) emit('finish')
@@ -38,12 +45,6 @@ function key (event) {
     else previous()
   }
 }
-
-function portrait (id, character) {
-  const expression = id === line.value.speaker ? line.value.expression : 'neutral'
-
-  return character.portraits?.[expression] ?? character.portraits?.neutral
-}
 </script>
 
 <template>
@@ -53,7 +54,11 @@ function portrait (id, character) {
     :label="t('storyDialogue')"
     @dismiss="$emit('finish')"
   >
-    <section class="story-scene" @keydown.stop="key">
+    <section
+      class="story-scene"
+      :class="{ 'is-still': reducedMotion }"
+      @keydown.stop="key"
+    >
       <header class="story-heading">
         <div>
           <p class="story-tour">
@@ -65,27 +70,49 @@ function portrait (id, character) {
           {{ t('skipScene') }}
         </button>
       </header>
-      <div class="story-stage" aria-hidden="true">
-        <div class="story-horizon" />
-        <div
-          v-for="(character, id) in scene.characters"
-          :key="id"
-          class="story-portrait"
-          :class="[character.side, { speaking: line.speaker === id }]"
-        >
-          <img v-if="portrait(id, character)" :src="portrait(id, character)" alt="">
-          <GlobeIcon v-else-if="character.art === 'globe'" :uid="`story-${id}`" />
-          <div v-else class="visitor-portrait" :class="{ mystery: character.art === 'mystery' }">
-            <span>{{ character.art === 'mystery' ? '?' : '✦' }}</span>
+      <div class="story-stage-wrap">
+        <div class="story-stage" aria-hidden="true">
+          <div class="story-horizon" />
+          <div
+            v-for="(pose, id) in line.stage"
+            :key="id"
+            class="story-portrait"
+            :class="[
+              scene.characters[id].side,
+              {
+                speaking: line.speaker === id,
+                distant: scene.characters[id].art === 'silhouette',
+                compass: scene.characters[id].art === 'compass'
+              }
+            ]"
+          >
+            <GlobeIcon v-if="scene.characters[id].art === 'globe'" :uid="`story-${id}`" />
+            <CompassIcon
+              v-else-if="scene.characters[id].art === 'compass'"
+              :pose="pose"
+              :reduced-motion="reducedMotion"
+              :paused="motionPaused"
+              :west="t('compassWest')"
+            />
+            <div v-else class="story-silhouette" />
           </div>
         </div>
+        <button
+          v-if="line.stage.compass === 'magnetized' && !reducedMotion"
+          class="quiet story-motion"
+          :aria-pressed="motionPaused"
+          @click="motionPaused = !motionPaused"
+        >
+          {{ t(motionPaused ? 'resumeNeedle' : 'pauseNeedle') }}
+        </button>
       </div>
       <!-- Whole lines are shown immediately: no timed reading or typewriter announcements. -->
       <div class="story-text" aria-live="polite" aria-atomic="true">
         <p class="story-speaker">
           {{ speaker.name }}
         </p>
-        <p class="story-line">
+        <p class="story-line" :data-country="line.country">
+          <FlagIcon v-if="line.country" :country="line.country" class="story-fact-flag" />
           {{ line.text }}
         </p>
       </div>
@@ -97,7 +124,7 @@ function portrait (id, character) {
           {{ index + 1 }} / {{ scene.lines.length }}
         </span>
         <button class="button primary story-advance" autofocus @click="advance">
-          {{ t(lastLine ? 'continueStory' : 'nextLine') }} <span aria-hidden="true">→</span>
+          {{ advanceLabel }} <span aria-hidden="true">→</span>
         </button>
       </footer>
     </section>
@@ -144,6 +171,10 @@ function portrait (id, character) {
   color: var(--color-story-skip);
 }
 
+.story-stage-wrap {
+  position: relative;
+}
+
 .story-stage {
   position: relative;
   display: flex;
@@ -177,6 +208,12 @@ function portrait (id, character) {
   transition: opacity .2s, transform .2s;
 }
 
+.story-portrait.compass {
+  width: 49%;
+  max-width: 231px;
+  height: 100%;
+}
+
 .story-portrait.left {
   order: 0;
 }
@@ -190,7 +227,6 @@ function portrait (id, character) {
   transform: none;
 }
 
-.story-portrait img,
 .story-portrait svg {
   width: 100%;
   height: 100%;
@@ -198,23 +234,68 @@ function portrait (id, character) {
   object-position: bottom;
 }
 
-.visitor-portrait {
-  width: 85%;
-  aspect-ratio: 1;
-  border-radius: 45% 55% 42% 48%;
-  display: grid;
-  place-items: center;
-  background: var(--art-visitor-bg);
-  border: 3px solid var(--art-visitor-border);
-  color: var(--art-visitor-symbol);
-  font-size: clamp(38px, 8vw, 70px);
-  margin-bottom: var(--space-2);
+.story-portrait.distant {
+  position: absolute;
+  right: 18%;
+  bottom: 49%;
+  width: 26px;
+  height: 26px;
+  opacity: .7;
+  transform: none;
 }
 
-.visitor-portrait.mystery {
+.story-silhouette {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
   background: var(--art-mystery-bg);
-  border-color: var(--art-mystery-border);
-  color: var(--art-mystery-symbol);
+  animation: silhouette-run 2.8s ease-out both;
+}
+
+@keyframes silhouette-run {
+  0% {
+    transform: translate(-25px, 0);
+  }
+
+  25% {
+    transform: translate(0, -5px) scale(.95);
+  }
+
+  50% {
+    transform: translate(25px, 0) scale(.85);
+  }
+
+  75% {
+    opacity: .8;
+    transform: translate(50px, -4px) scale(.75);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(75px, 0) scale(.65);
+  }
+}
+
+.is-still .story-silhouette {
+  animation: none;
+}
+
+.story-motion {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  border-radius: var(--radius-control);
+  background: var(--color-panel-bg);
+  color: var(--color-text);
+  font-size: var(--font-size-caption);
+}
+
+.story-fact-flag {
+  display: inline-block;
+  width: 1.6em;
+  height: 1.2em;
+  margin-right: .3em;
+  vertical-align: -.2em;
 }
 
 .story-text {

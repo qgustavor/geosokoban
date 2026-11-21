@@ -1,156 +1,194 @@
 import { storyIndex, storyStop, STORY_TOURS } from './regions.js'
+import { storyLevel } from './story.js'
+import facts from './story-facts.json' with { type: 'json' }
 import { translate } from '../data/i18n.js'
 
-// Prototype names and dialogue are deliberately kept here, not inside components.
-// A portrait can be a URL in public/ or an imported asset; expressions select its key.
+const text = (en, pt, es) => ({ en, 'pt-BR': pt, es })
+const globe = (en, pt, es, stage) => ({ speaker: 'globe', text: text(en, pt, es), stage })
+const compass = (en, pt, es, stage) => ({ speaker: 'compass', text: text(en, pt, es), stage })
+
 const STORY_CHARACTERS = {
   globe: {
-    name: { en: 'Globe', 'pt-BR': 'Globo', es: 'Globo' },
+    name: text('Little Globe', 'Globinho', 'Globito'),
     side: 'left',
-    art: 'globe',
-    portraits: {}
+    art: 'globe'
   },
-  unknown: {
-    name: { en: 'Unknown visitor', 'pt-BR': 'Visitante misterioso', es: 'Visitante misterioso' },
+  silhouette: { side: 'right', art: 'silhouette' },
+  compass: {
+    name: text('Compass', 'Bússola', 'Brújula'),
     side: 'right',
-    art: 'mystery',
-    portraits: {}
-  },
-  visitor: {
-    name: { en: 'Visitor', 'pt-BR': 'Visitante', es: 'Visitante' },
-    side: 'right',
-    art: 'spark',
-    portraits: {}
+    art: 'compass'
   }
 }
 
-const text = (en, pt, es) => ({ en, 'pt-BR': pt, es })
-const globe = (en, pt, es) => ({ speaker: 'globe', text: text(en, pt, es) })
+const alone = { globe: 'neutral' }
+const sighting = { globe: 'neutral', silhouette: 'running' }
+const magnetized = { globe: 'neutral', compass: 'magnetized' }
+const relieved = { globe: 'neutral', compass: 'relieved' }
+const friends = { globe: 'neutral', compass: 'friendly' }
 
-// Keys are "tour:region". Missing before scenes use the region briefing below;
-// missing after scenes are silent. An explicit { lines: [] } disables a scene.
-// Add or replace any of the 21 stops without touching routing or game logic.
+// Each stage replaces the visible cast and stays in effect until another is supplied.
+// Scenes are keyed by tour:region; levels remain independently editable in Tiled.
 const STORY_SCENES = {
   '1:SA': {
     before: {
       lines: [
         globe(
-          'The flags are all out of place! Someone has been travelling ahead of us. Let’s follow the trail.',
-          'As bandeiras estão fora do lugar! Alguém passou por aqui antes de nós. Vamos seguir as pistas.',
-          '¡Las banderas están fuera de lugar! Alguien ha pasado por aquí antes que nosotros. Sigamos las pistas.'
+          'Oh! These flags are in the wrong places. It looks like flags have been mixed up all around the world!',
+          'Oh! Estas bandeiras estão nos lugares errados. Parece que misturaram bandeiras pelo mundo inteiro!',
+          '¡Oh! Estas banderas están en los lugares equivocados. ¡Parece que mezclaron banderas por todo el mundo!'
         ),
         globe(
-          'Walk behind a flag to push it home. We can push, but never pull. Undo is always there if we need it.',
-          'Vá para trás de uma bandeira para empurrá-la até seu destino. Não podemos puxar. ' +
-          'Podemos desfazer uma jogada.',
-          'Ponte detrás de una bandera para empujarla a su destino. No podemos tirar. ' +
-          'Siempre podemos deshacer una jugada.'
+          'I’m Little Globe. Will you help me put them back? We can travel together and learn about each country.',
+          'Sou o Globinho. Você me ajuda a arrumá-las? Podemos viajar juntos e aprender sobre cada país.',
+          'Soy Globito. ¿Me ayudas a ordenarlas? Podemos viajar juntos y aprender sobre cada país.'
         ),
         globe(
-          'We’ll visit every region, then circle the world again. Ready for our first journey?',
-          'Vamos visitar todas as regiões e depois dar outra volta ao mundo. Pronto para a primeira viagem?',
-          'Visitaremos todas las regiones y después daremos otra vuelta al mundo. ¿Listos para el primer viaje?'
+          'Push each flag to the matching destination. We can push, but not pull. ' +
+          'Take your time—we can always undo a move.',
+          'Empurre cada bandeira até o destino com a mesma bandeira. Podemos empurrar, mas não puxar. ' +
+          'Sem pressa: sempre podemos desfazer uma jogada.',
+          'Empuja cada bandera hasta el destino con la misma bandera. Podemos empujar, pero no tirar. ' +
+          'Sin prisa: siempre podemos deshacer un movimiento.'
         )
       ]
     },
     after: {
       lines: [globe(
-        'The flags are back home! The trail goes north. Let’s see what happened there.',
-        'As bandeiras estão de volta ao lugar! As pistas seguem para o norte. Vamos ver o que aconteceu por lá.',
-        '¡Las banderas están de vuelta a casa! Las pistas siguen hacia el norte. Veamos qué pasó allí.'
+        'Our first flags are home! Let’s head north and help with the next ones.',
+        'Nossas primeiras bandeiras estão no lugar! Vamos para o norte ajudar com as próximas.',
+        '¡Nuestras primeras banderas están en su sitio! Vayamos al norte para ayudar con las siguientes.'
       )]
     }
   },
   '1:OC': {
     after: {
       lines: [globe(
-        'Our first trip around the world is complete! But fresh tracks lead back to South America. ' +
-        'Who is moving the flags?',
-        'Completamos a primeira volta ao mundo! Mas novas pegadas levam à América do Sul. ' +
-        'Quem está movendo as bandeiras?',
-        '¡Completamos la primera vuelta al mundo! Pero hay nuevas huellas hacia Sudamérica. ¿Quién mueve las banderas?'
+        'We’ve been all around the world! Let’s return to South America, where our journey began.',
+        'Demos a volta ao mundo! Vamos voltar à América do Sul, onde nossa viagem começou.',
+        '¡Dimos la vuelta al mundo! Volvamos a Sudamérica, donde empezó nuestro viaje.'
       )]
     }
   },
   '2:SA': {
     before: {
-      lines: [globe(
-        'Back where we started, with a new puzzle! This time, let’s look for clues as well as routes.',
-        'Voltamos ao começo, com um novo desafio! Desta vez, vamos procurar pistas e caminhos.',
-        '¡Volvemos al comienzo, con un nuevo desafío! Esta vez busquemos pistas además de caminos.'
-      )]
-    }
-  },
-  '2:AF': {
-    after: {
-      lines: [globe(
-        'A little note says “I was trying to help.” Perhaps our mystery visitor isn’t an enemy after all.',
-        'Um bilhete diz: “Eu estava tentando ajudar.” Talvez nosso visitante misterioso não seja um inimigo.',
-        'Una nota dice: «Intentaba ayudar». Quizá nuestro visitante misterioso no sea un enemigo.'
-      )]
-    }
-  },
-  '2:OC': {
-    after: {
-      cast: ['globe', 'unknown'],
       lines: [
-        {
-          speaker: 'unknown',
-          text: text(
-            'Oh no… I’ve mixed them up again. I thought I had it right this time!',
-            'Ah, não… Misturei tudo de novo. Achei que desta vez tinha acertado!',
-            'Ay, no… Las he mezclado otra vez. ¡Pensé que esta vez lo había hecho bien!'
-          )
-        },
         globe(
-          'Someone is just ahead! One more trip around the world. Maybe we can help each other.',
-          'Tem alguém logo adiante! Mais uma volta ao mundo. Talvez possamos nos ajudar.',
-          '¡Hay alguien más adelante! Una vuelta más al mundo. Quizá podamos ayudarnos.'
+          'We’re back! Wait… these flags are mixed up again. We just put them in the right places!',
+          'Voltamos! Espere… estas bandeiras estão misturadas de novo. Acabamos de colocá-las nos lugares certos!',
+          '¡Volvimos! Espera… estas banderas están mezcladas otra vez. ¡Acabamos de ponerlas en su sitio!'
+        ),
+        globe(
+          'Look! A little round shadow is running away in the distance. It’s too far away to see who it is.',
+          'Olhe! Uma pequena sombra redonda está correndo ao longe. Está longe demais para ver quem é.',
+          '¡Mira! Una pequeña sombra redonda corre a lo lejos. Está demasiado lejos para ver quién es.',
+          sighting
+        ),
+        globe(
+          'And the destinations all show “?” now! Let’s use what we remember about the countries. ' +
+          'We can still ask for help.',
+          'E agora todos os destinos mostram “?”! Vamos usar o que lembramos sobre os países. ' +
+          'Ainda podemos pedir ajuda.',
+          '¡Y ahora todos los destinos muestran “?”! Usemos lo que recordamos de los países. ' +
+          'Todavía podemos pedir ayuda.',
+          alone
+        ),
+        globe(
+          'Another trip around the world, together. Let’s get these flags home again!',
+          'Outra volta ao mundo, juntos. Vamos colocar estas bandeiras no lugar de novo!',
+          'Otra vuelta al mundo, juntos. ¡Pongamos estas banderas en su sitio otra vez!'
         )
       ]
     }
   },
+  '2:OC': {
+    after: {
+      lines: [globe(
+        'That’s our second trip complete! Let’s go back to the starting point and see how things look.',
+        'Completamos nossa segunda volta! Vamos voltar ao ponto de partida e ver como estão as coisas.',
+        '¡Completamos nuestra segunda vuelta! Volvamos al punto de partida para ver cómo está todo.'
+      )]
+    }
+  },
   '3:SA': {
     before: {
-      lines: [globe(
-        'Our third journey begins. Let’s put the flags back and find our visitor. ' +
-        'Everyone needs a little help sometimes.',
-        'Nossa terceira viagem começa. Vamos arrumar as bandeiras e encontrar o visitante. ' +
-        'Todos precisam de ajuda às vezes.',
-        'Empieza nuestro tercer viaje. Arreglemos las banderas y encontremos al visitante. ' +
-        'Todos necesitamos ayuda a veces.'
-      )]
+      lines: [
+        globe(
+          'Oh no, more flags are out of place! And the destinations still show “?”.',
+          'Ah, não, mais bandeiras fora do lugar! E os destinos ainda mostram “?”.',
+          '¡Oh, no, hay más banderas fuera de lugar! Y los destinos todavía muestran “?”.'
+        ),
+        globe(
+          'There’s that round shadow again! Who could it be? We still can’t see clearly.',
+          'Lá está aquela sombra redonda de novo! Quem será? Ainda não conseguimos ver direito.',
+          '¡Ahí está esa sombra redonda otra vez! ¿Quién será? Aún no podemos verla bien.',
+          sighting
+        ),
+        globe(
+          'Let’s help with the flags and find out what’s happening. We’ll make this third journey together.',
+          'Vamos ajudar com as bandeiras e descobrir o que está acontecendo. Faremos esta terceira viagem juntos.',
+          'Ayudemos con las banderas y descubramos qué ocurre. Haremos este tercer viaje juntos.',
+          alone
+        )
+      ]
     }
   },
   '3:OC': {
     after: {
-      cast: ['globe', 'visitor'],
       lines: [
-        {
-          speaker: 'visitor',
-          text: text(
-            'It was me. I wanted to put the flags in the right places, but I kept getting turned around. I’m sorry.',
-            'Fui eu. Queria colocar as bandeiras nos lugares certos, mas me atrapalhei. Desculpa.',
-            'Fui yo. Quería poner las banderas en sus lugares, pero me confundí. Lo siento.'
-          )
-        },
         globe(
-          'Thanks for telling us. We’ve learned a lot on these three journeys. We can show you!',
-          'Obrigado por contar. Aprendemos muito nestas três viagens. Podemos te mostrar!',
-          'Gracias por contárnoslo. Aprendimos mucho en estos tres viajes. ¡Podemos enseñarte!'
+          'There you are! You’re a compass! Your needle is turning every which way. What happened?',
+          'Aí está você! É uma bússola! Sua agulha está girando para todo lado. O que aconteceu?',
+          '¡Ahí estás! ¡Eres una brújula! Tu aguja gira para todos lados. ¿Qué pasó?',
+          magnetized
+        ),
+        compass(
+          'I was walking along when I felt something strange. Suddenly I couldn’t tell which way to go!',
+          'Eu estava passeando quando senti algo estranho. De repente, não sabia mais para que lado ir!',
+          'Estaba paseando cuando sentí algo extraño. ¡De pronto, ya no sabía hacia dónde ir!'
+        ),
+        compass(
+          'I kept turning around and bumping into the flags, again and again. ' +
+          'I didn’t mean to move them. I’m sorry!',
+          'Eu não parava de dar voltas e esbarrar nas bandeiras, uma vez após outra. ' +
+          'Não queria tirá-las do lugar. Desculpem!',
+          'No paraba de dar vueltas y chocar con las banderas, una y otra vez. ' +
+          'No quería moverlas. ¡Lo siento!'
+        ),
+        globe(
+          'Look, there’s a magnet stuck to your case! That’s what’s confusing your needle.',
+          'Olhe, há um ímã grudado em você! É isso que está confundindo sua agulha.',
+          '¡Mira, tienes un imán pegado! Eso es lo que está confundiendo tu aguja.'
         ),
         {
-          speaker: 'visitor',
-          text: text(
-            'Could I come along next time? I’ll ask before moving anything.',
-            'Posso ir junto da próxima vez? Vou perguntar antes de mover qualquer coisa.',
-            '¿Puedo ir con ustedes la próxima vez? Preguntaré antes de mover nada.'
-          )
+          ...globe(
+            'We can help. Let’s take that magnet off together!',
+            'Podemos ajudar. Vamos tirar esse ímã juntos!',
+            'Podemos ayudar. ¡Quitemos ese imán juntos!'
+          ),
+          action: 'removeMagnet'
         },
+        compass(
+          'It’s off! My needle has settled. I can find my way again. Thank you both!',
+          'Saiu! Minha agulha se acalmou. Consigo me orientar de novo. Valeu pela ajuda!',
+          '¡Ya no está! Mi aguja se ha calmado. Puedo orientarme otra vez. ¡Gracias a los dos!',
+          relieved
+        ),
         globe(
-          'Of course. The world is more fun to explore with a friend.',
-          'Claro. Explorar o mundo é mais divertido com um amigo.',
-          'Claro. Explorar el mundo es más divertido con un amigo.'
+          'You weren’t trying to mix up the flags—you needed help! We’re glad we found you.',
+          'Você não queria misturar as bandeiras: precisava de ajuda! Que bom que encontramos você.',
+          'No querías mezclar las banderas: ¡necesitabas ayuda! Nos alegra haberte encontrado.'
+        ),
+        compass(
+          'Could I explore with you both? I’d like to learn about the countries too.',
+          'Posso explorar com vocês? Também quero aprender sobre os países.',
+          '¿Puedo explorar con ustedes? También quiero aprender sobre los países.',
+          friends
+        ),
+        globe(
+          'Of course! You, me, and our new friend. The flags are home, and our friendship is just beginning!',
+          'Claro! Agora somos três amigos. As bandeiras estão no lugar, e nossa amizade está só começando!',
+          '¡Claro! Ahora somos tres amigos. ¡Las banderas están en su sitio y nuestra amistad acaba de empezar!'
         )
       ]
     }
@@ -167,28 +205,47 @@ function localizedStoryText (value, locale, params = {}) {
   return result
 }
 
+function countryCuriosity (code, tour) {
+  // Only discuss a flag actually on this authored board. A new country without a fact is simply silent.
+  const countries = [...new Set(storyLevel(code)?.goals.map(goal => goal.country) ?? [])]
+    .filter(country => facts[country])
+  if (!countries.length) return null
+
+  const country = countries[(tour - 1) % countries.length]
+
+  return { speaker: 'globe', text: facts[country], country }
+}
+
 export function getStoryScene (code, phase, locale) {
   const chapter = storyStop(storyIndex(code))
   if (!chapter || !['before', 'after'].includes(phase)) return null
 
   const slot = `${chapter.tour}:${chapter.region.id}`
   const authored = STORY_SCENES[slot]?.[phase]
-  const fallback = phase === 'before'
-    ? { lines: [{ speaker: 'globe', text: translate(locale, `story${chapter.region.id}`) }] }
-    : { lines: [] }
-  const definition = authored ?? fallback
-  if (!definition.lines.length) return null
+  // An explicitly empty scene stays silent, including its country curiosity.
+  if (authored && !authored.lines.length) return null
+
+  const briefing = phase === 'before'
+    ? [{ speaker: 'globe', text: translate(locale, `story${chapter.region.id}`) }]
+    : []
+  const content = [...(authored?.lines ?? briefing)]
+  const curiosity = phase === 'after' ? countryCuriosity(code, chapter.tour) : null
+  if (curiosity) content.unshift(curiosity)
+  if (!content.length) return null
 
   const params = {
     region: translate(locale, chapter.region.name),
     tour: chapter.tour,
     stop: chapter.stop
   }
-  const lines = definition.lines.map(line => ({
-    ...line,
-    text: localizedStoryText(line.text, locale, params)
-  }))
-  const cast = definition.cast ?? [...new Set(lines.map(line => line.speaker))]
+  let stage = alone
+  const lines = content.map(line => {
+    stage = line.stage ?? stage
+    if (!(line.speaker in stage)) throw new Error(`Story speaker is not on stage: ${line.speaker}`)
+
+    return { ...line, stage: { ...stage }, text: localizedStoryText(line.text, locale, params) }
+  })
+  const cast = [...new Set(lines.flatMap(line => Object.keys(line.stage)))]
   const characters = Object.fromEntries(cast.map(id => {
     const character = STORY_CHARACTERS[id]
     if (!character) throw new Error(`Unknown story character: ${id}`)

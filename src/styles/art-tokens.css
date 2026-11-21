@@ -41,6 +41,16 @@
   --art-globe-shine: #f2f8de;
   --art-globe-cheek: #dd9c88;
 
+  /* Compass character. */
+  --art-compass-rim: #d6b56c;
+  --art-compass-rim-light: #f8dfad;
+  --art-compass-rim-shade: #a27b53;
+  --art-compass-dial: #fff6e9;
+  --art-compass-dial-mark: #7b9c98;
+  --art-compass-red: #c76353;
+  --art-compass-red-shade: #a54e43;
+  --art-compass-metal: #d5e6dc;
+
   /* Ground details. */
   --art-flower-stem: #7b9c72;
   --art-flower-petal: #f4f0d1;
@@ -90,18 +100,13 @@
   --art-boulder-highlight: #dce2cc;
   --art-sandstone-grain: #ecd4a5;
 
-  /* Story stage and existing placeholder portraits. */
+  /* Story stage and distant, anonymous figure. */
   --art-story-sky-top: #d7e9db;
   --art-story-sky-bottom: #a4c8be;
   --art-story-stage-border: #91b7ad;
   --art-story-horizon: #73a8a7;
   --art-story-horizon-edge: #e5f0d666;
-  --art-visitor-bg: #c9add3;
-  --art-visitor-border: #8d7ea7;
-  --art-visitor-symbol: #fcf2cf;
   --art-mystery-bg: #57747f;
-  --art-mystery-border: #466773;
-  --art-mystery-symbol: #d1dfce;
 
   /* Level-clear lettering. */
   --art-clear-fill: #fff1b8;

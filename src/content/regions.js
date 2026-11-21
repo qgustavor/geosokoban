@@ -107,3 +107,10 @@ export function storyCode (index) {
 export function storyIndex (code) {
   return chapters.findIndex(chapter => `${chapter.region.slug}-tour-${chapter.tour}` === code) + 1
 }
+
+/** Story teaches flag matching first, then asks players to remember destinations. */
+export function storyGuidance (code) {
+  const chapter = storyStop(storyIndex(code))
+
+  return chapter ? (chapter.tour === 1 ? 'learn' : 'remember') : null
+}

@@ -83,6 +83,7 @@ provide(gameContext, app)
       v-if="app.storyScene"
       :key="app.storyScene.id"
       :scene="app.storyScene"
+      :reduced-motion="app.reducedMotion"
       :t="app.t"
       @finish="app.finishStory"
     />

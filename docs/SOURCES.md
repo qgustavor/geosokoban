@@ -32,6 +32,10 @@ flag-icons source and license: https://github.com/lipis/flag-icons
 
 Country records use ISO-style identifiers to choose package assets. Those identifiers and the curriculum region groups are implementation/content conventions, not claims about sovereignty or a complete list of recognized states. Review the fixture's special cases and omitted small territories before publication.
 
+## Story country curiosities
+
+`STORY_FACTS.md` records the UNESCO World Heritage Centre references for the original country-curiosity lines. The mystery and magnet reveal follow the supplied story plot; the artwork adapts the approved centered compass mockup.
+
 ## Primary tooling references
 
 Vue single-file components: https://vuejs.org/guide/scaling-up/sfc.html
