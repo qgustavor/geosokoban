@@ -20,9 +20,17 @@ function useStorage (t, storage) {
 test('current preferences round-trip without reconstructing difficulty from obsolete fields', t => {
   useStorage(t, memoryStorage())
   const preferences = {
-    mode: 'archive', challenge: 'hard', locale: 'pt-BR', completed: [storyCode(1)],
-    pendingStory: storyCode(1), speedrun: true, reduced: true, music: true, sfx: false,
-    musicVolume: 20, sfxVolume: 50
+    mode: 'archive',
+    challenge: 'hard',
+    locale: 'pt-BR',
+    completed: [storyCode(1)],
+    pendingStory: storyCode(1),
+    speedrun: true,
+    reduced: true,
+    music: true,
+    sfx: false,
+    musicVolume: 20,
+    sfxVolume: 50
   }
   savePreferences(preferences)
   assert.deepEqual(readPreferences(), { ...preferences, storyRun: null, guidance: 'remember', planning: true })
