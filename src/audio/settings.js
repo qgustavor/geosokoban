@@ -1,4 +1,4 @@
-export const DEFAULT_AUDIO_SETTINGS = Object.freeze({
+const DEFAULT_AUDIO_SETTINGS = Object.freeze({
   music: false,
   sfx: true,
   musicVolume: 35,
@@ -11,7 +11,7 @@ function volume (value, fallback) {
   return Math.round(Math.max(0, Math.min(100, value)))
 }
 
-/** Older saves have no audio fields. Loading one must not opt the player into music. */
+/** Default to quiet music and clamp saved volume values to the slider range. */
 export function audioSettings (data) {
   return {
     music: data?.music === true,

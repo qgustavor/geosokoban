@@ -1,18 +1,15 @@
-export const DELIVERY_HOLD_MS = 1100
+const DELIVERY_HOLD_MS = 1100
 export const CLEAR_BANNER_MS = 2000
 
 /** Reading time is separate from animation so reduced motion still shows the last flag. */
-export function createCompletionSequence (update, {
-  schedule = (callback, delay) => setTimeout(callback, delay),
-  clear = timer => clearTimeout(timer)
-} = {}) {
+export function createCompletionSequence (update) {
   let timer = null
   let revision = 0
 
   function reset () {
     // Invalidate callbacks as well as clearing the timer: an older sequence must not open results.
     revision++
-    clear(timer)
+    clearTimeout(timer)
     timer = null
 
     update('playing')
@@ -24,11 +21,11 @@ export function createCompletionSequence (update, {
 
     // Let the final delivery remain readable before replacing it with the clear banner.
     update('delivery')
-    timer = schedule(() => {
+    timer = setTimeout(() => {
       if (token !== revision) return
 
       update('clear')
-      timer = schedule(() => {
+      timer = setTimeout(() => {
         if (token !== revision) return
 
         timer = null

@@ -4,7 +4,7 @@ import { PALETTES, paletteForEcoregion } from './palettes.js'
 function seedFor (text) {
   let hash = 2166136261
 
-  // Keep this character iteration and 32-bit mixing stable so existing cells retain their artwork.
+  // Hash each cell independently so movement and rendering order cannot change its artwork.
   for (const character of text) {
     const mixed = hash ^ character.charCodeAt(0)
     hash = Math.imul(mixed, 16777619)
@@ -33,10 +33,10 @@ export function createScenery (level, data = atlas) {
 
   for (const position of level.floors) {
     const cell = map?.cells[position]
-    // Cells store [primary, secondary, classified land fraction, dominant share].
+    // Cells store [primary ecoregion ID, classified land fraction].
     // Use only the primary region, and require half the sampled land to be classified, not half the whole tile.
     const record = data.ecoregions?.[cell?.[0]]
-    const classified = !!record && (cell?.[2] ?? 0) >= 0.5
+    const classified = !!record && (cell?.[1] ?? 0) >= 0.5
 
     // Boat puzzles always use water art, even when the atlas classifies land underneath that cell.
     let paletteName = 'neutral'

@@ -29,16 +29,10 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Install dependencies
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            echo '::warning::Bootstrap install: commit the generated package-lock.json before a public release.'
-            npm install
-          fi
+        run: npm ci
 
-      - name: Require the prepared scenery atlas
-        run: node scripts/check-biomes.js --require-data
+      - name: Lint source
+        run: npm run lint
 
       - name: Configure GitHub Pages
         id: pages

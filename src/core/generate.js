@@ -10,13 +10,12 @@ import { addPuzzleLayout, LAYOUT_FAMILIES } from './layout-patterns.js'
 import { solve } from './solver.js'
 import { goalDependencies, analyzeDesign, meetsDesign } from './design-quality.js'
 
-import { GENERATOR_VERSION } from './generation-version.js'
-export { GENERATOR_VERSION } from './generation-version.js'
+import countryData from '../data/countries.json' with { type: 'json' }
 
 const THRESHOLDS = [0.36, 0.24, 0.48, 0.12]
 const goalCandidates = new WeakMap()
 
-export class GenerationExhausted extends Error {
+class GenerationExhausted extends Error {
   constructor (code, region, planning) {
     super('No certified puzzle within the generation budget')
     this.name = 'GenerationExhausted'
@@ -98,34 +97,15 @@ function createBase (definition, countries, rng, threshold, motif) {
     // still satisfy spacing, rather than placing a destination far from its anchor.
     const optionCount = Math.min(options.length, map.sea ? 6 : options.length)
     const selected = Math.floor(rng() * optionCount)
-    goals.push(options[selected])
+    const { position, anchor } = options[selected]
+    goals.push({ country, position, anchor })
   }
-
-  // These are puzzle obstacles, not claims about the location of real mountain ranges.
-  const eligible = map.floors.filter(position => {
-    const clearOfGoals = goals.every(goal => distance(map, position, goal.position) > 2)
-    if (!clearOfGoals) return false
-
-    return DIRECTIONS.every(direction => floor.has(neighbor(map, position, direction)))
-  })
-  const center = eligible[Math.floor(rng() * eligible.length)]
-  let pattern
-
-  if (motif === 'detour') {
-    pattern = [center, neighbor(map, center, 'right')]
-  } else if (motif === 'gate') {
-    pattern = [neighbor(map, center, 'left'), neighbor(map, center, 'right')]
-  } else {
-    pattern = [center]
-  }
-
-  const obstacles = [...new Set(pattern.filter(position => eligible.includes(position)))]
 
   return {
     width: map.width,
     height: map.height,
     floors: map.floors,
-    obstacles,
+    obstacles: [],
     goals,
     region: definition.id,
     mapVersion: MAP_VERSION,
@@ -243,25 +223,19 @@ export function generate (inputCode, {
   const parsed = parseCode(inputCode)
   if (!parsed) throw new Error('Invalid puzzle code')
 
-  const { code, region: regionId, planning, tour: stop } = parsed
-  const story = stop > 0
-  const rng = randomFrom(`${code}|${MAP_VERSION}|${GENERATOR_VERSION}`)
+  if (parsed.story) throw new Error('Story chapters must use authored boards')
 
-  // Keep this draw conditional: story stops and non-NA regions must not consume
-  // the random value reserved for choosing the Caribbean map on generated NA codes.
-  const useCaribbean = regionId === 'NA' && (stop === 3 || (!stop && rng() < 0.35))
-  const definition = regionById(useCaribbean ? 'CAR' : regionId)
-  let count = 3
-
-  if (!planning && story) {
-    count = regionId === 'SA' ? stop : stop === 1 ? 2 : 3
-  }
+  const { code, region: regionId, planning } = parsed
+  const rng = randomFrom(code)
+  const definition = regionById(regionId)
+  const count = 3
 
   const motif = LAYOUT_FAMILIES[Math.floor(rng() * LAYOUT_FAMILIES.length)]
 
-  // Deterministic work budgets: device speed never changes a shared code.
-  const limit = attemptLimit ?? (planning ? 24 : 18)
-  const workLimit = solverBudget ?? (planning ? 28000 : 18000)
+  // Bound candidates and search expansions, not wall-clock time. A slow device must
+  // explore the same sequence, and exhaustion is an error rather than a substitute board.
+  const limit = attemptLimit ?? (planning ? 240 : 180)
+  const workLimit = solverBudget ?? (planning ? 1200000 : 800000)
   const validBudgets = [limit, workLimit].every(value => Number.isSafeInteger(value) && value >= 0)
   if (!validBudgets) throw new RangeError('Invalid generation budget')
 
@@ -271,27 +245,28 @@ export function generate (inputCode, {
   for (let attempt = 0; attempt < limit && work < workLimit; attempt++) {
     if (attempt % 4 === 0) onProgress({ stage: 'search', attempt, limit })
 
-    let countries
-
-    if (story) {
-      countries = definition.story.slice(0, count)
-    } else {
-      // Assign random priorities to the entire pool before selecting countries;
-      // drawing only for selected entries would change every subsequent choice.
-      const ordered = [...definition.pool].map(country => ({ country, order: rng() })).sort((a, b) => a.order - b.order)
-      countries = ordered.slice(0, count).map(item => item.country)
-    }
-
-    // Divide retries into four threshold bands without changing their order.
     const thresholdIndex = Math.min(3, Math.floor(attempt * 4 / limit))
-    let base = createBase(definition, countries, rng, THRESHOLDS[thresholdIndex], motif)
+    const threshold = THRESHOLDS[thresholdIndex]
+    const map = rasterize(definition.id, threshold)
+    const floor = new Set(map.floors)
+    // A country needs a usable goal inside it, or a nearby water dock on sea boards.
+    // Small or disconnected land shapes are excluded by geometry, not by their flags.
+    const eligible = map.regions.filter(region =>
+      countryData[region.id] && candidateGoals(map, region.id, floor).length
+    )
+    const ordered = eligible.map(region => ({ country: region.id, order: rng() }))
+    ordered.sort((a, b) => a.order - b.order)
+    const countries = ordered.slice(0, count).map(item => item.country)
+    if (countries.length < count) continue
+
+    let base = createBase(definition, countries, rng, threshold, motif)
     if (base) base = addPuzzleLayout(base, rng, planning, motif)
     if (!base) continue
 
     const result = scramble(base, rng, planning ? 35 : 18, planning)
     if (!result) continue
 
-    const level = { ...base, ...result, planning, id: code, generatorVersion: GENERATOR_VERSION }
+    const level = { ...base, ...result, planning, id: code }
     if (validateLevel(level).length) continue
 
     const certificate = replay(level, level.solution)
@@ -312,7 +287,7 @@ export function generate (inputCode, {
     // Certification runs two move-optimal searches. Give each at most half the
     // remaining work so their combined expansions stay within the total budget.
     const remainingWork = Math.max(0, workLimit - work)
-    const certificateBudget = Math.min(planning ? 10000 : 7000, Math.floor(remainingWork / 2))
+    const certificateBudget = Math.min(planning ? 100000 : 60000, Math.floor(remainingWork / 2))
     const gap = certifyMoveGap(level, { minimum: minimumExtraMoves, maxStates: certificateBudget })
     work += gap.expanded
     if (gap.status !== 'accepted') continue
@@ -321,10 +296,7 @@ export function generate (inputCode, {
 
     return {
       ...level,
-      solution: gap.certificate.solution,
-      designSolution: checked.moves,
-      quality,
-      moveCertificate: gap.certificate
+      solution: gap.solution
     }
   }
 

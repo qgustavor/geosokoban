@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto'
 import { gzipSync, gunzipSync } from 'node:zlib'
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
-import { REGIONS, CARIBBEAN } from '../src/content/regions.js'
+import { REGIONS } from '../src/content/regions.js'
 import { rasterize, countryAt, MAP_VERSION } from '../src/geo/rasterize.js'
 import { setGeography } from '../src/geo/world.js'
 import { createBiomeLookup, sampleRegion } from './lib/biome-sampling.js'
@@ -23,7 +23,7 @@ async function download () {
     const url = new URL(endpoint)
     url.search = new URLSearchParams({
       where: '1=1',
-      outFields: 'ECO_ID,ECO_NAME,BIOME_NUM,BIOME_NAME,REALM,LICENSE',
+      outFields: 'ECO_ID,ECO_NAME,BIOME_NUM,BIOME_NAME,LICENSE',
       returnGeometry: 'true',
       outSR: '4326',
       f: 'geojson',
@@ -98,13 +98,13 @@ async function main () {
   const licenses = [...new Set(sourceLicenses)]
   if (licenses.some(license => !/^CC[- ]BY[- ]?4\.0$/i.test(license))) throw new Error('Expected a CC BY 4.0 RESOLVE export, including its LICENSE field')
 
-  // Hash the exact JSON stored in the cache so the check script can reproduce this atlas offline.
+  // Record the exact source used so the derived atlas has auditable provenance.
   const sourceBytes = JSON.stringify(collection)
   const sha256 = createHash('sha256').update(sourceBytes).digest('hex')
 
   const worldBytes = await readFile(new URL('src/data/world.geojson.gz', root))
   setGeography(JSON.parse(gunzipSync(worldBytes)))
-  const regions = Object.fromEntries([...REGIONS, CARIBBEAN].map(definition => {
+  const regions = Object.fromEntries([...REGIONS].map(definition => {
     const map = rasterize(definition.id)
     const sampled = sampleRegion(definition, lookup, (x, y) => countryAt(map, x, y) !== null)
     return [definition.id, sampled]
@@ -114,8 +114,11 @@ async function main () {
     if (!map.cells.some(cell => cell !== null)) throw new Error(`No classified land samples for ${region}; refusing an empty atlas`)
   }
 
+  // Only primary records referenced by a rendered cell belong in the browser asset.
+  const used = new Set(Object.values(regions).flatMap(region => region.cells.filter(Boolean).map(cell => cell[0])))
+  const ecoregions = Object.fromEntries(Object.entries(lookup.records).filter(([id]) => used.has(Number(id))))
+
   const result = {
-    version: 1,
     mapVersion: MAP_VERSION,
     status: 'prepared',
     source: {
@@ -128,7 +131,7 @@ async function main () {
       samplesPerCell: 16,
       preparedAt: new Date().toISOString().slice(0, 10)
     },
-    ecoregions: lookup.records,
+    ecoregions,
     regions
   }
 

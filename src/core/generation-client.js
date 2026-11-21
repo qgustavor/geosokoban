@@ -27,7 +27,7 @@ export function createGenerationClient (createWorker) {
       const message = { code }
       if (geographySent !== geography) message.geography = geography
 
-      const task = generationTask(worker, message, onProgress, { terminateOnComplete: false })
+      const task = generationTask(worker, message, onProgress)
       pending = task
 
       try {

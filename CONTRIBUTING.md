@@ -6,9 +6,9 @@ Write source and project documentation in English. UI strings belong in the thre
 
 Use Vue `.vue` single-file components with `<script setup>` for interface elements. Keep movement, solving, generation and validation in framework-independent JavaScript. Keep shared styles small and component-specific styles with their components. Follow Neostandard's semicolon-free JavaScript style. Comments should explain the adjacent code or an invariant, not narrate a refactor.
 
-Keep the default gentle and challenge presets optional. Do not add a gameplay timer to the prototype. Do not cap undo, charge for hints, penalize resetting, or call a budget-limited search a proven deadlock. Preserve country identity in every solver and generator check. Keep geography geometry distinct from the schematic puzzle terrain.
+Keep the default gentle and challenge presets optional. Keep Speedrun optional; do not introduce a compulsory timer or score pressure. Do not cap undo, charge for hints, penalize resetting, or call a budget-limited search a proven deadlock. Preserve country identity in every solver and generator check. Keep geography geometry distinct from the schematic puzzle terrain.
 
-Run `npm test`, `npm run lint` and `npm run build` before a release. Add a regression test for a rules bug. Preserve existing puzzle codes; version intentional generator/content changes. Commit a reviewed lockfile after installing dependencies. Keep third-party notices and map provenance current. No telemetry or new external requests without an explicit design decision.
+Run `npm run lint` and `npm run build`, then play through `docs/MANUAL_CHECKLIST.md` before a release. There is no automated test suite. Prototype seeds and saves may break; do not add compatibility aliases, migrations, replacement boards, or archived content. Commit a reviewed lockfile after changing dependencies. Keep third-party notices and map provenance current. No telemetry or new external requests without an explicit design decision.
 
 ## Coding Standards & Architecture Guidelines
 

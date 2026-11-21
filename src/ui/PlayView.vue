@@ -19,21 +19,18 @@ const props = defineProps({
   name: { type: Function, required: true },
   guidance: { type: String, required: true },
   revealed: { type: Array, required: true },
-  selected: { type: String, default: '' },
   requested: { type: String, default: '' },
   notice: { type: String, default: '' },
-  fact: { type: String, default: '' },
   fallbackText: { type: String, default: '' },
   timerText: { type: String, default: '' },
   totals: { type: Object, default: () => ({ levels: 0, moves: 0 }) },
   storyFinished: Boolean,
-  assisted: Boolean,
   panelOpen: Boolean,
   reducedMotion: Boolean
 })
 const emit = defineEmits([
-  'home', 'key', 'step', 'undo', 'restart', 'inspect', 'destination', 'reveal', 'revealAll',
-  'guidance', 'next', 'share', 'copy', 'dismissShare', 'panel', 'transition'
+  'home', 'key', 'step', 'undo', 'restart', 'inspect', 'destination', 'reveal',
+  'next', 'share', 'copy', 'dismissShare', 'panel', 'transition'
 ])
 
 const board = ref(null)
@@ -303,7 +300,7 @@ onBeforeUnmount(() => {
           :help="help"
           :t="t"
           :name="name"
-          :width="game.level.width"
+
           :solved="game.solved"
           @dismiss="closeHint"
         />
@@ -539,7 +536,6 @@ onBeforeUnmount(() => {
   background: #043b4ecc;
 }
 
-.hud-glyph {
   font-size: 20px;
   line-height: 1;
 }

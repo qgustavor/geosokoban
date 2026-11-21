@@ -1,122 +1,38 @@
-# Authoring the story
+# Story authoring
 
-## Campaign order
+The story is a handcrafted teaching mode, separate from date-seeded puzzles. The current 21 boards and draft dialogue are editable content; they are not procedurally generated when played. There is one board per chapter and no difficulty variants.
 
-The campaign makes **three complete world tours**, each visiting South America,
-North America, Eastern Europe, Western Europe, Africa, Asia, and Oceania.
-There are still 21 puzzles (42 stored boards including Hard variants).
+## Chapter order
 
-Tour 1 uses the former S1 boards, tour 2 uses S2, and tour 3 uses S3. North America's
-third-tour board is the Caribbean map. The certified puzzle geometry and solution
-paths have not been regenerated.
+`STORY_ITINERARY` in `src/content/regions.js` explicitly lists region IDs for each tour. The first two tours visit South America, North America, Eastern Europe, Western Europe, Africa, Asia and Oceania. The third visits the Caribbean in place of North America. Progress counts derive from these arrays, not from the number of daily-generation maps.
 
-## Write a scene
+The chapter ID is `<region-slug>-tour-<number>`. For example, `caribbean-tour-3` is the existing Caribbean board and uses the `3:CAR` dialogue slot. The JSON key, board `id`, Tiled `id` and route use exactly the same value. No aliases are accepted.
 
-Edit `src/content/story-dialogue.js`. `STORY_SCENES` is indexed by `tour:region`,
-for example `1:SA`, `2:AF`, or `3:OC`. Region IDs are listed in
-`src/content/regions.js`.
+To add a chapter, add its region to the itinerary, create a matching board, import it, and write its scenes. Each region can appear only once in a tour because the ID includes region and tour. Changing order or IDs may reset progress or invalidate links; this prototype does not migrate them.
 
-Each slot accepts `before` and `after` scenes:
+## Boards
 
-```js
-'2:WE': {
-  before: {
-    cast: ['globe'],
-    lines: [
-      {
-        speaker: 'globe',
-        expression: 'thinking',
-        text: {
-          en: 'Another clue in {region}. Let’s keep this passage open.',
-          'pt-BR': 'Outra pista em {region}. Vamos manter esta passagem livre.',
-          es: 'Otra pista en {region}. Mantengamos este paso libre.'
-        }
-      }
-    ]
-  },
-  after: {
-    lines: [
-      { speaker: 'globe', text: 'A note! Someone was trying to help.' }
-    ]
-  }
-}
+Runtime boards live in `src/content/story-levels.json`; their Tiled counterparts live in `levels/editable`. Export and import with:
+
+```sh
+npm run levels:export -- south-america-tour-2
+npm run levels:import -- levels/editable/south-america-tour-2.tmj --story
 ```
 
-The example is a property inside `STORY_SCENES`, not a separate module.
-`text` accepts a plain string or a dictionary with `en`, `pt-BR`, and `es`.
-A missing language falls back to English. `{region}`, `{tour}`, and `{stop}` are
-available as substitutions. Plain strings are displayed unchanged in every language.
+The importer validates geometry and country identities and searches for a solution. It refuses an unsolved or uncertified import. It does not judge whether the level teaches well or is enjoyable. Play the edited chapter from its direct route and through the preceding chapter's transition.
 
-A missing `before` scene uses the existing region briefing from
-`src/data/messages.json`. A missing `after` scene proceeds without dialogue.
-Use `{ lines: [] }` to deliberately suppress either scene. An omitted `cast` is
-inferred from the line speakers. When supplying a cast, include every speaker
-used in the scene.
+Keep the runtime board and its editable source together in the same commit. Missing authored content is an error, not permission to generate a replacement. See `EDITING.md` for layer and dock requirements.
 
-The included dialogue is replaceable prototype copy: it introduces a mystery,
-leaves clues during the second tour, and ends with a well-meaning, clumsy visitor
-becoming the protagonist's friend. No branching or puzzle-specific story logic is
-embedded in the components.
+## Dialogue and characters
 
-## Add a character and portraits
+`src/content/story-dialogue.js` owns `STORY_CHARACTERS` and `STORY_SCENES`. Scenes are keyed by `tour:region`, with optional `before` and `after` entries. A line supplies a `speaker` and text in `en`, `pt-BR` and `es`; optional portraits and expressions belong to the character data.
 
-Edit `STORY_CHARACTERS` in the same file. Each character has a localized `name`, a
-`side` (`left` or `right`), and a `portraits` dictionary:
+An absent before-scene uses the translated region briefing. An absent after-scene continues immediately. An explicit scene with `lines: []` is silent. Author the final chapter's after-scene to lead into the aggregate story result. The current visitor character and plot remain drafts.
 
-```js
-visitor: {
-  name: { en: 'Your character name', 'pt-BR': 'Nome da personagem', es: 'Nombre del personaje' },
-  side: 'right',
-  art: 'spark',
-  portraits: {
-    neutral: new URL('../assets/visitor-neutral.png', import.meta.url).href,
-    embarrassed: new URL('../assets/visitor-embarrassed.png', import.meta.url).href
-  }
-}
-```
+Keep movement instruction and geography lessons grounded in the actual board. Start with space to experiment and use later chapters to introduce planning gradually. Include countries beyond the most familiar examples where the geography and board permit them. Keep trivia sources in `SOURCES.md`, not as unsupported claims in dialogue.
 
-Supply those images in `src/assets/` before adding the URLs. Imported assets or
-`new URL(..., import.meta.url)` work with the project's deployment subpath; avoid
-root-relative URLs unless the site is hosted at the origin root.
+## Progress and review
 
-A line's `expression` selects the speaking character's portrait. Other cast members
-use `neutral`. Missing expressions also fall back to `neutral`. With no image,
-`art: 'globe'` uses the existing protagonist, `mystery` uses a question-mark
-placeholder, and `spark` uses a simple visitor placeholder. These placeholders
-are not intended to dictate your final character designs.
+Completed chapter IDs and unread after-scenes are saved separately so reloading cannot skip an ending. Story difficulty is fixed and does not overwrite the player's daily difficulty preference. The optional Speedrun setting times an entire run; normal story play does not require it.
 
-To hide the visitor's identity, use `unknown` in earlier scenes and `visitor` in
-the reveal. Cast is scene-wide: do not add the revealed character to an earlier
-scene's cast unless they should already be visible.
-
-## When scenes play
-
-`before` plays when a story puzzle is opened. After a solved board's clear/results
-sequence, **Next stop** opens `after`, then opens the next puzzle's `before` scene.
-The final puzzle instead offers **Meet the visitor**, which opens the ending and
-then returns to the menu. Daily and random modes have no story scenes.
-
-**Next**, **Back**, and left/right arrow keys navigate the lines. **Continue**
-finishes the last line. **Skip scene** (or Escape) skips the current scene, not the
-puzzle or the next chapter. Text is shown immediately and never advances on a
-timer. The native modal prevents background interaction, and game actions also
-check the dialogue lock. Reduced-motion settings cover the portraits and dialog.
-
-Solving a story puzzle saves both its completion and an unread-departure checkpoint.
-Resuming after a tab close opens that closing scene rather than losing it—even
-for the ending. Finishing or skipping it clears the checkpoint and travels on.
-Reloading during dialogue replays that scene from its first line. Undo/restart
-before departing clears the unread-departure checkpoint. Clearing progress clears
-both completed puzzles and that checkpoint.
-
-## Readable puzzle names
-
-New random codes look like `asia-calm-kite-42`; daily codes look like
-`south-america-2026-11-16`; story codes look like `oceania-tour-3`.
-Hard appends `-hard`. No public seed-version prefix is added. Seed words remain
-English across UI languages so copying a name always identifies the same board.
-
-The menu no longer contains a seed input or level selector. Links still open
-puzzles directly. The pause menu shows the readable code and offers **Copy puzzle
-link**. Existing `G2-...` codes remain accepted for bundled boards, saved progress,
-and project tools; no new versioning framework has been introduced.
+Use `MANUAL_CHECKLIST.md` to review a campaign. Story writing, a developed secondary character, and level progression are separate authoring work, not consequences of a successful solver run.

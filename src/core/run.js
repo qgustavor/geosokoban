@@ -1,10 +1,9 @@
-import { storyIndex, storyCode, STORY_COUNT } from '../content/regions.js'
+import { storyIndex, STORY_COUNT } from '../content/regions.js'
 
 /** Real elapsed time: pauses, dialogue, background tabs and reloads do not stop a run. */
 export function createRun (code, speedrun, now = Date.now()) {
   const chapter = storyIndex(code)
   return {
-    version: 1,
     kind: chapter ? 'story' : 'puzzle',
     code,
     // A link into the middle of Story is not a complete campaign speedrun.
@@ -17,18 +16,17 @@ export function createRun (code, speedrun, now = Date.now()) {
 export function finishRunLevel (run, code, state, assisted, now = Date.now()) {
   if (!run) return null
   const chapter = storyIndex(code)
-  const key = chapter ? storyCode(chapter) : code
   return {
     ...run,
     finishedAt: !chapter || chapter === STORY_COUNT ? now : null,
-    levels: { ...run.levels, [key]: { moves: state.moves, pushes: state.pushes, assisted: !!assisted } }
+    levels: { ...run.levels, [code]: { moves: state.moves, pushes: state.pushes, assisted: !!assisted } }
   }
 }
 
 export function reopenRunLevel (run, code) {
   if (!run) return null
   const levels = { ...run.levels }
-  delete levels[storyIndex(code) ? storyCode(storyIndex(code)) : code]
+  delete levels[code]
   return { ...run, finishedAt: null, levels }
 }
 
@@ -57,7 +55,7 @@ export function runTotals (run) {
 
 /** Storage is optional and may have been edited. Never display NaN or a fabricated full-run time. */
 export function restoreStoryRun (value) {
-  if (!value || value.version !== 1 || value.kind !== 'story' || !storyIndex(value.code)) return null
+  if (!value || value.kind !== 'story' || !storyIndex(value.code)) return null
   if (!value.levels || typeof value.levels !== 'object' || Array.isArray(value.levels)) return null
   const levels = {}
   for (const [code, result] of Object.entries(value.levels)) {
@@ -67,7 +65,7 @@ export function restoreStoryRun (value) {
       !Number.isSafeInteger(result?.pushes) || result.pushes < 0
     ) continue
 
-    levels[storyCode(storyIndex(code))] = {
+    levels[code] = {
       moves: result.moves,
       pushes: result.pushes,
       assisted: result.assisted === true
@@ -77,5 +75,5 @@ export function restoreStoryRun (value) {
   const finishedAt = Number.isFinite(value.finishedAt) && value.finishedAt >= (startedAt ?? 0)
     ? value.finishedAt
     : null
-  return { version: 1, kind: 'story', code: storyCode(storyIndex(value.code)), startedAt, finishedAt, levels }
+  return { kind: 'story', code: value.code, startedAt, finishedAt, levels }
 }

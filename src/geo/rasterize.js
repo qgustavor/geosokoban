@@ -3,7 +3,7 @@ import { projectionFor } from './projection.js'
 import { regionById } from '../content/regions.js'
 import { DIRECTIONS, neighbor } from '../core/engine.js'
 
-export const MAP_VERSION = 'world-fixture-v2'
+export const MAP_VERSION = 'world-map'
 
 // Coverage samples belong to a region; playable floors also depend on its requested threshold.
 const cache = new Map()
@@ -44,7 +44,7 @@ export function countryAt (map, x, y) {
   return country?.id ?? null
 }
 
-export function largestComponent (shape, candidates) {
+function largestComponent (shape, candidates) {
   let largest = []
   const seen = new Set()
 
@@ -79,9 +79,6 @@ function projectedMap (definition) {
   const { project } = projectionFor(definition)
 
   const features = getGeography().features.filter(feature => {
-    // An explicit country list replaces continent selection rather than adding to it.
-    if (definition.countries) return definition.countries.includes(feature.properties.id)
-
     return feature.properties.continent === definition.continent ||
       definition.extraCountries?.includes(feature.properties.id)
   })

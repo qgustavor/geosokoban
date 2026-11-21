@@ -59,7 +59,6 @@ defineEmits(['back', 'locale', 'reduced', 'speedrun', 'music', 'sfx', 'musicVolu
 </template>
 
 <style scoped>
-.speedrun-option small { display: block; margin-top: 7px; font-size: 12px; line-height: 1.5; opacity: .8; }
 .options-page { width: min(600px, calc(100vw - 36px)); margin: 45px auto 70px; }
 
 .options-page.embedded { width: 100%; margin: 0; text-align: left; }

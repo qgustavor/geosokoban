@@ -2,7 +2,6 @@ import { initialState, replay, isSolved } from './engine.js'
 import { solve } from './solver.js'
 
 export const MINIMUM_EXTRA_MOVES = 5
-export const MOVE_CERTIFICATE_VERSION = 1
 
 /** Compare walking plus pushes; retain coasts, islands, boxes, targets and start. */
 export function certifyMoveGap (level, {
@@ -44,53 +43,9 @@ export function certifyMoveGap (level, {
   // Every constrained solution is legal without the barriers, so the relaxed optimum cannot be worse.
   if (extraMoves < 0) throw new Error('Removing obstacles cannot increase the optimal move count')
 
-  const certificate = {
-    version: MOVE_CERTIFICATE_VERSION,
-    objective: 'moves',
-    baseline: 'same-floors-without-obstacles',
-    minimum,
-    optimalMoves: constrained.cost,
-    obstacleFreeMoves: baseline.cost,
-    extraMoves,
-    baselineSolution: baseline.moves,
-    solution: constrained.moves
+  return {
+    status: extraMoves >= minimum ? 'accepted' : 'too-small',
+    solution: constrained.moves,
+    expanded
   }
-
-  return { status: extraMoves >= minimum ? 'accepted' : 'too-small', certificate, expanded }
-}
-
-/** Frozen certificates are checked against their accompanying replayable paths. */
-export function validMoveCertificate (level, minimum = MINIMUM_EXTRA_MOVES) {
-  const certificate = level.moveCertificate
-  if (!certificate) return false
-
-  const supportedFormat = certificate.version === MOVE_CERTIFICATE_VERSION &&
-    certificate.objective === 'moves' &&
-    certificate.baseline === 'same-floors-without-obstacles'
-  if (!supportedFormat) return false
-
-  const moveCounts = [
-    certificate.optimalMoves,
-    certificate.obstacleFreeMoves,
-    certificate.extraMoves,
-    certificate.minimum
-  ]
-  if (!moveCounts.every(Number.isSafeInteger)) return false
-  if (!Array.isArray(certificate.solution) || !Array.isArray(certificate.baselineSolution)) return false
-
-  const pathsMatchCounts = certificate.optimalMoves === certificate.solution.length &&
-    certificate.obstacleFreeMoves === certificate.baselineSolution.length
-  if (!pathsMatchCounts) return false
-
-  const recordedGapMatches = certificate.extraMoves === certificate.optimalMoves - certificate.obstacleFreeMoves
-
-  // Apply the caller's current minimum, not the policy recorded when the certificate was created.
-  if (!recordedGapMatches || certificate.extraMoves < minimum) return false
-
-  // Runtime validation checks consistency and legal solutions; it does not rerun the optimality searches.
-  const constrained = replay(level, certificate.solution)
-  const relaxed = { ...level, obstacles: [] }
-  const baseline = replay(relaxed, certificate.baselineSolution)
-
-  return constrained.valid && baseline.valid && isSolved(level, constrained.state) && isSolved(relaxed, baseline.state)
 }

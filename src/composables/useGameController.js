@@ -3,7 +3,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { puzzleLocation, guardedPuzzleLocation } from '../router/locations.js'
 import { shareResult } from '../core/share.js'
 import { useStoryDialogue } from './useStoryDialogue.js'
-import { resumeStory, storyProgressCode } from '../content/story.js'
+import { resumeStory } from '../content/story.js'
 import { useSession } from './useSession.js'
 import { useAssistance } from './useAssistance.js'
 import { useGameAudio } from './useGameAudio.js'
@@ -11,7 +11,6 @@ import { movementSound } from '../audio/score.js'
 import { normalizeCode, puzzleDate, isPlanningCode } from '../core/seed.js'
 import { CHALLENGES, challengeSettings, challengeName } from '../core/challenge.js'
 import { storyCode, storyIndex, STORY_COUNT } from '../content/regions.js'
-import relations from '../content/relations.json' with { type: 'json' }
 import { translate, countryName } from '../data/i18n.js'
 import { readPreferences, savePreferences } from '../ui/storage.js'
 import { createRun, finishRunLevel, reopenRunLevel, elapsedRun, formatElapsed, runTotals } from '../core/run.js'
@@ -59,10 +58,8 @@ export function useGameController () {
   const notice = ref('')
   const fallbackText = ref('')
   const assisted = ref(false)
-  const selected = ref('')
   const requested = ref('')
   const revealed = ref([])
-  const factCountry = ref('')
   const boardTransitioning = ref(false)
 
   const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -86,26 +83,12 @@ export function useGameController () {
   const name = country => countryName(country, locale.value)
   const resumeCode = computed(() => resumeStory(completed.value, pendingStory.value))
 
-  const fact = computed(() => {
-    if (!factCountry.value) return ''
-
-    const relation = relations[factCountry.value]
-    if (!relation) return t('findCountry', { country: name(factCountry.value) })
-
-    const country = name(factCountry.value)
-    const directionKey = 'geo' + relation[0][0].toUpperCase() + relation[0].slice(1)
-    const direction = t(directionKey)
-    const other = name(relation[1])
-
-    return t('relation', { country, direction, other })
-  })
-
   function focusBoard () {
     // Wait for routed/panel DOM updates, then avoid stealing focus from an active overlay or transition.
     nextTick(() => {
       if (boardTransitioning.value || game.loading.value || panel.value || dialogue.scene.value) return
 
-      document.querySelector('.board-wrap:not(.board-preview)')?.focus({ preventScroll: true })
+      document.querySelector('.board-wrap')?.focus({ preventScroll: true })
     })
   }
 
@@ -152,9 +135,7 @@ export function useGameController () {
       storyFinished.value = false
       assisted.value = false
       revealed.value = []
-      selected.value = guidance.value === 'learn' ? level.value.goals[0].country : ''
       requested.value = ''
-      factCountry.value = ''
       notice.value = ''
       fallbackText.value = ''
       activeCode.value = code
@@ -166,7 +147,7 @@ export function useGameController () {
 
       if (storyIndex(code)) {
         const resumingDialogue = pendingStory.value &&
-          storyProgressCode(pendingStory.value) === storyProgressCode(code)
+          pendingStory.value === code
 
         if (resumingDialogue) {
           // The puzzle was solved before leaving. Resume its unread scene, then travel on.
@@ -186,7 +167,16 @@ export function useGameController () {
 
       return true
     } catch (error) {
-      failure.value = { key: error.code === 'MAP_LOAD_FAILED' ? 'errorMap' : 'errorLevel', code }
+      const key = error.code === 'MAP_LOAD_FAILED' ? 'errorMap' : 'errorLevel'
+      const location = router.resolve(puzzleLocation(code, guidance.value))
+      const url = new URL(location.href, window.location.href).href
+      const report = `GeoSokoban prototype
+Puzzle: ${code}
+Link: ${url}
+${error.name}: ${error.message}`
+      failure.value = { key, code, report }
+      fallbackText.value = ''
+      notice.value = ''
       console.error('Puzzle preparation failed', error)
 
       return false
@@ -265,7 +255,7 @@ export function useGameController () {
 
   function step (direction) {
     // During navigation the route can name a board that has not replaced the old session yet.
-    if (view.value !== 'puzzle' || activeCode.value !== route.params.code) return
+    if (failure.value || view.value !== 'puzzle' || activeCode.value !== route.params.code) return
     if (boardTransitioning.value || panel.value || dialogue.scene.value || storyFinished.value) return
     if (game.loading.value || solved.value) return
 
@@ -283,11 +273,11 @@ export function useGameController () {
     notice.value = ''
     fallbackText.value = ''
 
-    // Reveal facts only for a new arrival, not for flags already resting on their destinations.
+    // A newly delivered flag reveals its destination for the rest of this attempt.
     const arrived = level.value.goals.find(goal => !previouslyDelivered.has(goal.country) && hasDeliveredFlag(goal))
 
     if (arrived) {
-      factCountry.value = arrived.country
+
       revealed.value = [...new Set([...revealed.value, arrived.country])]
     }
 
@@ -297,7 +287,7 @@ export function useGameController () {
   function recordCompletion () {
     updateRun(finishRunLevel(activeRun.value, level.value.id, state.value, assisted.value))
     if (!chapter.value) return
-    const storyId = storyProgressCode(level.value.id)
+    const storyId = level.value.id
     completed.value = [...new Set([...completed.value, storyId])]
     // Save separately so an unread scene, including the ending, survives a reload.
     pendingStory.value = storyId
@@ -310,7 +300,7 @@ export function useGameController () {
       audio.play('undo')
       clearUndoneCheckpoint()
     }
-    factCountry.value = ''
+
     notice.value = ''
     focusBoard()
   }
@@ -323,7 +313,7 @@ export function useGameController () {
       clearUndoneCheckpoint()
     }
     help.clearHint()
-    factCountry.value = ''
+
     notice.value = ''
     fallbackText.value = ''
     focusBoard()
@@ -362,42 +352,19 @@ export function useGameController () {
     }
   }
 
-  function inspect (country) {
+  function inspect () {
     requested.value = ''
-    factCountry.value = country
     if (guidance.value === 'remember') assisted.value = true
   }
 
   function selectDestination (country) {
     requested.value = country
-
-    // In Remember mode, asking for a hidden destination is not itself permission to reveal it.
-    if (guidance.value === 'learn' || revealed.value.includes(country)) {
-      selected.value = country
-      factCountry.value = country
-    }
   }
 
   function reveal (country) {
     requested.value = ''
     revealed.value = [...new Set([...revealed.value, country])]
-    selected.value = country
-    factCountry.value = country
     assisted.value = true
-  }
-
-  function revealAll () {
-    revealed.value = level.value.goals.map(goal => goal.country)
-    assisted.value = true
-  }
-
-  function setGuidance (value) {
-    if (chapter.value && view.value === 'puzzle') return
-    if (guidance.value === value) return
-
-    if (view.value === 'puzzle') assisted.value = true
-    guidance.value = value
-    if (view.value === 'puzzle') router.replace(puzzleLocation(level.value.id, value))
   }
 
   function setMode (value) {
@@ -445,11 +412,6 @@ export function useGameController () {
     }
   }
 
-  function sharePuzzle () {
-    // Sharing an unfinished puzzle is an invitation, not a result with a misleading move count.
-    return sendShare({ title: 'GeoSokoban', url: puzzleURL() })
-  }
-
   async function share () {
     if (chapter.value && !storyFinished.value) return
     const result = totals.value
@@ -476,11 +438,11 @@ export function useGameController () {
     if (!solved.value) {
       storyFinished.value = false
       updateRun(reopenRunLevel(activeRun.value, level.value.id))
-      const current = storyProgressCode(level.value.id)
+      const current = level.value.id
       if (current) completed.value = completed.value.filter(code => code !== current)
     }
     // Undo/restart after solving is a return to play, not a pending departure.
-    if (!solved.value && storyProgressCode(pendingStory.value) === storyProgressCode(level.value.id)) {
+    if (!solved.value && pendingStory.value === level.value.id) {
       pendingStory.value = ''
     }
   }
@@ -557,7 +519,7 @@ export function useGameController () {
 
     // A guidance-only URL change must not restart the current puzzle or discard its history.
     if (activeCode.value === code) {
-      if (pendingStory.value && storyProgressCode(pendingStory.value) === storyProgressCode(code)) {
+      if (pendingStory.value && pendingStory.value === code) {
         playAfterStory(code)
       }
       focusBoard()
@@ -587,7 +549,6 @@ export function useGameController () {
       reduced: reduced.value,
       mode: mode.value,
       challenge: challenge.value,
-      ...challengeSettings(challenge.value),
       music: audio.music,
       sfx: audio.sfx,
       musicVolume: audio.musicVolume,
@@ -644,11 +605,8 @@ export function useGameController () {
     challenge,
     notice,
     fallbackText,
-    assisted,
-    selected,
     requested,
     revealed,
-    fact,
     reducedMotion,
     boardTransitioning,
     activeCode,
@@ -667,6 +625,7 @@ export function useGameController () {
     closePanel,
     cancelGeneration,
     retry,
+    copyFailure: () => copyText(failure.value.report),
     step,
     key,
     undo,
@@ -674,15 +633,11 @@ export function useGameController () {
     inspect,
     selectDestination,
     reveal,
-    revealAll,
-    setGuidance,
     setMode,
     setChallenge,
     nextPuzzle,
     share,
-    sharePuzzle,
     copyText,
-    puzzleURL,
     setBoardTransitioning,
     dismissShare: () => {
       fallbackText.value = ''

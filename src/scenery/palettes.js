@@ -126,15 +126,13 @@ const BIOME_PALETTES = {
 export function paletteForEcoregion (record) {
   if (!record) return 'neutral'
 
-  // Accept both prepared-atlas fields and source attributes, including the two Rock and Ice spellings.
-  const sourceName = record.name ?? record.ECO_NAME ?? ''
-  const name = String(sourceName).trim().toLowerCase().replace(/\s*&\s*/g, ' and ')
+  const name = String(record.name ?? '').trim().toLowerCase().replace(/\s*&\s*/g, ' and ')
 
   // Cacti and snowy rock belong to these named rules, not to all arid or mountain biomes.
   if (name === 'caatinga') return 'caatinga'
   if (name === 'rock and ice') return 'ice'
 
-  const biome = Number(record.biome ?? record.BIOME_NUM)
+  const biome = Number(record.biome)
 
   return BIOME_PALETTES[biome] ?? 'neutral'
 }

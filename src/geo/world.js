@@ -1,6 +1,6 @@
 let geography
 
-export class MapLoadError extends Error {
+class MapLoadError extends Error {
   constructor (message, cause) {
     super(message, { cause })
     this.name = 'MapLoadError'
@@ -27,7 +27,7 @@ export function getGeography () {
 }
 
 /** Fetch may have already decoded Content-Encoding, regardless of the asset suffix. */
-export async function readGeographyResponse (response) {
+async function readGeographyResponse (response) {
   if (!response.ok) throw new Error(`Map request failed: ${response.status}`)
 
   // Inspect the body signature, not the URL or headers, to avoid decompressing decoded JSON twice.

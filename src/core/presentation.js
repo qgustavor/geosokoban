@@ -18,18 +18,6 @@ export function boardViewport (level, size) {
   return { x, y, width: viewWidth, height: viewHeight }
 }
 
-/** Normalize the diagonal sweep so small and large maps reveal at the same pace. */
-export function diagonalDelay (level, position) {
-  const x = position % level.width
-  const y = Math.floor(position / level.width)
-
-  // Row-major cells with the same x + y reveal together. Guard the divisor for a 1x1 board.
-  const lastDiagonal = Math.max(1, level.width + level.height - 2)
-  const sweepProgress = (x + y) / lastDiagonal
-
-  return Math.round(sweepProgress * 600)
-}
-
 export function labelPlacement (level, position, viewport, size) {
   // Labels live in screen pixels, while their anchors use the board's SVG coordinate space.
   // Anchor horizontally at the tile center and vertically at its top edge.

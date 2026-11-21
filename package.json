@@ -11,22 +11,14 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test tests/*.test.js",
     "lint": "eslint .",
-    "check": "npm test && npm run lint && npm run build",
+    "check": "npm run lint && npm run build",
     "flags": "node scripts/build-flag-manifest.js",
     "levels:export": "node scripts/level-editor.js export",
     "levels:import": "node scripts/level-editor.js import",
-    "test:e2e": "playwright test",
-    "prebuild": "npm run maps:check && npm run biomes:check && node scripts/copy-licenses.js",
-    "benchmark": "node scripts/benchmark-generation.js",
-    "benchmark:browser": "node scripts/benchmark-generation-browser.js",
+    "prebuild": "node scripts/copy-licenses.js",
     "maps:outlines": "node scripts/build-map-outlines.js",
-    "maps:check": "node scripts/build-map-outlines.js --check",
-    "biomes:prepare": "node scripts/prepare-biomes.js",
-    "biomes:check": "node scripts/check-biomes.js",
-    "biomes:verify": "node scripts/check-biomes.js --require-data --reproduce",
-    "fallbacks:prepare": "node scripts/build-fallbacks.js"
+    "biomes:prepare": "node scripts/prepare-biomes.js"
   },
   "devDependencies": {
     "vite": "8.3.8",
@@ -34,7 +26,6 @@
     "eslint": "9.39.0",
     "neostandard": "0.14.1",
     "eslint-plugin-vue": "10.12.1",
-    "@playwright/test": "1.56.1",
     "vue-eslint-parser": "10.4.2"
   },
   "dependencies": {

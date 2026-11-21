@@ -1,8 +1,7 @@
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { challengeSettings, withPlanning } from '../core/challenge.js'
-import { REGIONS, storyCode, storyIndex, storyStop, STORY_COUNT, STORY_TOURS } from '../content/regions.js'
-import { storyProgressCode } from '../content/story.js'
+import { STORY_ITINERARY, storyCode, storyIndex, storyStop, STORY_COUNT } from '../content/regions.js'
 import { dailyCode } from '../core/seed.js'
 import { utcDay, shiftDay, isAvailableDay } from '../core/dates.js'
 import ChallengePicker from './ChallengePicker.vue'
@@ -34,13 +33,14 @@ function changeDay (offset) {
   if (isAvailableDay(day, today.value)) archiveDate.value = day
 }
 const symbols = ['↗', '◷', '⤨']
-const finished = computed(() => new Set(props.completed.map(storyProgressCode).filter(Boolean)))
+const finished = computed(() => new Set(props.completed.filter(code => storyIndex(code))))
 const nextStop = computed(() => storyStop(storyIndex(props.resumeCode)))
-const tours = computed(() => Array.from({ length: STORY_TOURS }, (_, offset) => {
-  const first = offset * REGIONS.length + 1
-  const stops = REGIONS.map((region, index) => finished.value.has(storyCode(first + index)))
+// Count chapters from the explicit itinerary rather than from every map available to daily play.
+const tours = computed(() => STORY_ITINERARY.map((regions, offset) => {
+  const preceding = STORY_ITINERARY.slice(0, offset).reduce((total, stops) => total + stops.length, 0)
+  const stops = regions.map((region, index) => finished.value.has(storyCode(preceding + index + 1)))
 
-  return { number: offset + 1, completed: stops.filter(Boolean).length }
+  return { number: offset + 1, completed: stops.filter(Boolean).length, total: stops.length }
 }))
 const playLabel = computed(() => {
   if (props.mode !== 'story') return props.t('playNow')
@@ -93,13 +93,13 @@ function play () {
       </p>
       <section v-if="mode === 'story'" class="journey-progress" :aria-label="t('journeyProgress')">
         <ol class="tour-stamps">
-          <li v-for="tour in tours" :key="tour.number" :class="{ complete: tour.completed === REGIONS.length }">
+          <li v-for="tour in tours" :key="tour.number" :class="{ complete: tour.completed === tour.total }">
             <span class="tour-number" aria-hidden="true">
-              {{ tour.completed === REGIONS.length ? '✓' : tour.number }}
+              {{ tour.completed === tour.total ? '✓' : tour.number }}
             </span>
             <div>
               <strong>{{ t('tourLabel', { n: tour.number }) }}</strong>
-              <span>{{ t('tourStops', { n: tour.completed, total: REGIONS.length }) }}</span>
+              <span>{{ t('tourStops', { n: tour.completed, total: tour.total }) }}</span>
             </div>
           </li>
         </ol>

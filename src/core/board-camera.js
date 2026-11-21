@@ -3,7 +3,7 @@ import { boardViewport } from './presentation.js'
 const TILE = 40
 const clamp = (value, low, high) => Math.max(low, Math.min(high, value))
 
-export function cameraLimits (level, size) {
+function cameraLimits (level, size) {
   const fit = boardViewport(level, size)
   const tilePixels = TILE * Math.max(1, size.width) / fit.width
   return { maxZoom: Math.max(4, Math.min(8, 64 / tilePixels)), tilePixels }

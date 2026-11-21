@@ -3,7 +3,7 @@ import { translate } from '../data/i18n.js'
 
 // Prototype names and dialogue are deliberately kept here, not inside components.
 // A portrait can be a URL in public/ or an imported asset; expressions select its key.
-export const STORY_CHARACTERS = {
+const STORY_CHARACTERS = {
   globe: {
     name: { en: 'Globe', 'pt-BR': 'Globo', es: 'Globo' },
     side: 'left',
@@ -30,7 +30,7 @@ const globe = (en, pt, es) => ({ speaker: 'globe', text: text(en, pt, es) })
 // Keys are "tour:region". Missing before scenes use the region briefing below;
 // missing after scenes are silent. An explicit { lines: [] } disables a scene.
 // Add or replace any of the 21 stops without touching routing or game logic.
-export const STORY_SCENES = {
+const STORY_SCENES = {
   '1:SA': {
     before: {
       lines: [
@@ -157,7 +157,7 @@ export const STORY_SCENES = {
   }
 }
 
-export function localizedStoryText (value, locale, params = {}) {
+function localizedStoryText (value, locale, params = {}) {
   let result = typeof value === 'string' ? value : value?.[locale] ?? value?.en ?? ''
 
   for (const [key, replacement] of Object.entries(params)) {

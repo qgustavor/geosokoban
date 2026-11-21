@@ -56,6 +56,18 @@ provide(gameContext, app)
     >
       <section v-if="app.failure" class="load-error" role="alert">
         <p>{{ app.t(app.failure.key) }}</p>
+        <p>{{ app.t('reportPuzzle', { code: app.failure.code }) }}</p>
+        <button class="button secondary" @click="app.copyFailure">
+          {{ app.t('copyReport') }}
+        </button>
+        <p v-if="app.notice" role="status">{{ app.notice }}</p>
+        <textarea
+          v-if="app.fallbackText"
+          :value="app.fallbackText"
+          :aria-label="app.t('copyReport')"
+          readonly
+          @focus="$event.target.select()"
+        />
         <button v-if="app.failure.code" class="button secondary" @click="app.retry">
           {{ app.t('retry') }}
         </button>
@@ -131,33 +143,6 @@ provide(gameContext, app)
 .gesture-help { margin: 0 0 4px; font-size: 13px; line-height: 1.6; color: #547477; }
 
 .pause-actions { display: grid; gap: 12px; }
-
-.puzzle-code { display: grid; gap: 6px; margin-bottom: 10px; }
-
-.puzzle-code > span { font-size: 12px; color: #547477; }
-
-.puzzle-code code {
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 650;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
-
-.puzzle-share-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px 16px;
-}
-
-.puzzle-share-actions button {
-  text-wrap: balance;
-}
-
-.puzzle-code p { font-size: 12px; margin: 0; }
-
-.puzzle-code textarea { width: 100%; min-height: 80px; }
 
 .header-tools { flex-wrap: wrap; }
 

@@ -5,8 +5,6 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   --ink: #254c59;
-  --muted: #547477;
-  --paper: #f3efdc;
   --line: #a2cbc14d;
   --sea: #397c89;
 }
@@ -126,7 +124,6 @@ h1, h2, h3 { font-family: inherit; font-weight: 750; }
 
 .notice { font-size: 14px; text-align: center; }
 
-.small-note { font-size: 12px; color: inherit; opacity: .8; }
 
 .eyebrow { font-size: 12px; font-weight: 750; }
 

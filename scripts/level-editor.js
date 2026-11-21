@@ -5,6 +5,7 @@ import { setGeography } from '../src/geo/world.js'
 import { rasterize, countryAt } from '../src/geo/rasterize.js'
 import { normalizeCode } from '../src/core/seed.js'
 import { generate } from '../src/core/generate.js'
+import { storyIndex } from '../src/content/regions.js'
 import { initialState } from '../src/core/engine.js'
 import { solve } from '../src/core/solver.js'
 import { toTiled, fromTiled } from '../src/core/tiled.js'
@@ -19,9 +20,10 @@ const [operation, input, option] = process.argv.slice(2)
 try {
   if (operation === 'export') {
     const code = normalizeCode(input)
-    if (!code) throw new Error('Supply a valid G2 puzzle code')
+    if (!code) throw new Error('Supply a story chapter ID or a dated puzzle code')
 
     // Preserve curated story boards; only codes without stored content invoke generation.
+    if (storyIndex(code) && !stories[code]) throw new Error('Missing authored story board')
     const level = stories[code] ?? generate(code)
     const output = resolve(option ?? `levels/editable/${code}.tmj`)
     await mkdir(dirname(output), { recursive: true })
@@ -62,7 +64,8 @@ try {
     const certified = { ...level, solution: result.moves }
 
     if (option === '--story') {
-      if (!stories[level.id]) throw new Error('Use an existing story code when replacing a chapter')
+      if (!storyIndex(level.id)) throw new Error('Add the chapter to STORY_ITINERARY before importing it')
+      if (level.planning) throw new Error('Story chapters do not have hard variants')
       stories[level.id] = certified
       await writeFile(storyPath, JSON.stringify(stories) + '\n')
       console.log(`Saved ${level.id} to story content`)

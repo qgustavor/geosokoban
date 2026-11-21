@@ -16,7 +16,6 @@ const props = defineProps({
   state: { type: Object, required: true },
   labels: { type: Array, default: () => [] },
   facing: { type: String, default: 'down' },
-  preview: Boolean,
   label: { type: String, default: '' },
   description: { type: String, default: '' },
   showFlags: { type: Boolean, default: true },
@@ -29,7 +28,7 @@ const board = ref(null)
 const stage = ref(null)
 // The initial size supplies a viewport before the first ResizeObserver notification.
 const size = ref({ width: 800, height: 800 })
-const camera = ref(initialCamera(props.level, size.value, props.state.player, !props.preview))
+const camera = ref(initialCamera(props.level, size.value, props.state.player))
 let measured = false
 let resizeObserver
 
@@ -40,7 +39,7 @@ onMounted(() => {
     size.value = { width: entry.contentRect.width, height: entry.contentRect.height }
     camera.value = measured
       ? clampCamera(props.level, size.value, camera.value)
-      : initialCamera(props.level, size.value, props.state.player, !props.preview)
+      : initialCamera(props.level, size.value, props.state.player)
     measured = true
   })
   resizeObserver.observe(stage.value)
@@ -118,7 +117,7 @@ function capturePointers () {
 }
 
 function pointerDown (event) {
-  if (props.preview || event.button !== 0 || event.target.closest('button')) return
+  if (event.button !== 0 || event.target.closest('button')) return
   const { x, y } = point(event)
   input.down(event.pointerId, x, y)
   capturePointers()
@@ -162,7 +161,6 @@ function click (event) {
 }
 
 function wheel (event) {
-  if (props.preview) return
   event.preventDefault()
   resetInput()
   const from = point(event)
@@ -177,7 +175,6 @@ function wheel (event) {
 const regions = computed(() => outlinesForLevel(props.level))
 const context = computed(() => contextForLevel(props.level))
 const scenery = computed(() => createScenery(props.level))
-const prefix = computed(() => props.preview ? 'preview' : 'puzzle')
 
 // Artwork uses a 40-unit tile grid. The SVG viewport handles screen scaling, so input and
 // labels must not treat these coordinates as physical pixels on the resized board.
@@ -206,10 +203,9 @@ defineExpose({
     class="board-wrap"
     :data-level="level.id"
     :data-zoom="camera.zoom"
-    :class="{ 'board-preview': preview }"
     :style="{ '--tile-enter-duration': `${TILE_ENTER_MS}ms`, '--tile-leave-duration': `${TILE_LEAVE_MS}ms` }"
-    :tabindex="preview ? -1 : 0"
-    :role="preview ? undefined : 'group'"
+    tabindex="0"
+    role="group"
     :aria-label="label"
     @keydown="$emit('key', $event)"
     @pointerdown="pointerDown"
@@ -229,9 +225,9 @@ defineExpose({
         class="board-svg"
         role="img"
         :aria-label="label"
-        :aria-describedby="preview ? undefined : `${prefix}-description`"
+        aria-describedby="puzzle-description"
       >
-        <desc v-if="!preview" :id="`${prefix}-description`">{{ description }}</desc>
+        <desc id="puzzle-description">{{ description }}</desc>
         <g
           class="map-outline"
           :class="{ islands: level.sea }"
@@ -423,7 +419,7 @@ defineExpose({
               width="40"
               height="44"
               :direction="facing"
-              :uid="`${prefix}-globe`"
+              uid="puzzle-globe"
             />
           </g>
         </g>
@@ -579,14 +575,6 @@ defineExpose({
   height: 9px;
   background: #f5f0d9;
   transform: translateX(-50%) rotate(45deg);
-}
-
-.board-preview {
-  height: 100%;
-}
-
-.board-preview .board-stage {
-  inset: 0;
 }
 
 .islands path {

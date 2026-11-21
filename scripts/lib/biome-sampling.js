@@ -49,7 +49,7 @@ export function createBiomeLookup (collection) {
 
     if (!validAttributes) throw new Error('Ecoregion attributes are missing or invalid')
 
-    records[id] = { name: properties.ECO_NAME, biome, realm: String(properties.REALM ?? '') }
+    records[id] = { name: properties.ECO_NAME, biome }
     if (!feature.geometry) continue
 
     const { type, coordinates } = feature.geometry
@@ -146,11 +146,9 @@ export function sampleRegion (definition, lookup, landAt, samples = 4) {
     }
 
     const primary = ranked[0][0]
-    const secondary = ranked[1]?.[0] ?? null
-    // Coverage measures classified land; dominance measures the primary share of classified samples.
+    // Coverage measures classified land, not the water portion of a coastal tile.
     const coverage = Number((classified / land).toFixed(3))
-    const dominance = Number((ranked[0][1] / classified).toFixed(3))
-    cells.push([primary, secondary, coverage, dominance])
+    cells.push([primary, coverage])
   }
 
   return { width: definition.width, height: definition.height, cells }

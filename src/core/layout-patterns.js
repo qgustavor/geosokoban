@@ -10,7 +10,7 @@ const SHAPES = {
   islands: [[[0, 0], [1, 0], [0, 1], [1, 1]], [[0, 0], [1, 0], [0, 1]]]
 }
 
-export function layoutConnected (base, obstacles) {
+function layoutConnected (base, obstacles) {
   const open = walkable({ ...base, obstacles: [...obstacles] })
   const queue = [base.goals[0].position]
   const seen = new Set(queue)
@@ -32,14 +32,13 @@ export function layoutConnected (base, obstacles) {
 }
 
 /** Deterministic polyomino stamps; never wrap a stamp across the grid boundary. */
-export function layoutStamps (base, rng, family) {
+function layoutStamps (base, rng, family) {
   const shapes = SHAPES[family]
   if (!shapes) throw new RangeError('Unknown layout family')
 
   const floor = new Set(base.floors)
 
-  // Draw all anchor priorities before drawing shapes and rotations. Changing
-  // this order would assign different structures to an existing shared seed.
+  // Independent random priorities shuffle floor anchors before shapes and rotations are selected.
   const anchors = base.floors.map(position => ({ position, order: rng() })).sort((a, b) => a.order - b.order)
 
   return anchors.map(({ position }) => {

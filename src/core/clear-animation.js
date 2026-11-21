@@ -1,7 +1,7 @@
 // Keep the last letter's pop + a readable hold inside the completion sequence.
 export const CLEAR_LETTER_POP_MS = 540
-export const CLEAR_LETTER_STAGGER_MS = 42
-export const CLEAR_LETTER_SWEEP_MS = 560
+const CLEAR_LETTER_STAGGER_MS = 42
+const CLEAR_LETTER_SWEEP_MS = 560
 export const CLEAR_FADE_MS = 180
 
 /** Keep grapheme clusters intact when supported, and group words for wrapping. */

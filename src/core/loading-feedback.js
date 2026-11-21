@@ -1,21 +1,16 @@
-export const LOADER_DELAY_MS = 500
-export const LOADER_FINISH_MS = 400
+const LOADER_DELAY_MS = 500
+const LOADER_FINISH_MS = 400
 
 // Presentation estimates are deliberately independent of puzzle selection and search budgets.
-// Rounded development-worker p75 values; replace these after representative browser measurements.
-export const SEARCH_ESTIMATE_MS = { gentle: 1000, puzzle: 900 }
+// Estimates affect only the progress animation; they are not generation deadlines.
+const SEARCH_ESTIMATE_MS = { gentle: 1000, puzzle: 900 }
 export const emptyFeedback = () => ({ visible: false, stage: 'map', fraction: 0, indeterminate: false })
 
 const LOADING_STAGES = ['map', 'search', 'ready']
 
-/** The clock is injectable so fast completion, cancellation and delayed replies are testable. */
+/** Delay the loader to avoid flashing it for fast work, and release every pending hold on cancellation. */
 export function createLoadingFeedback (onChange, {
-  now = () => performance.now(),
-  schedule = (callback, delay) => setTimeout(callback, delay),
-  unschedule = id => clearTimeout(id),
-  reducedMotion = () => false,
-  delay = LOADER_DELAY_MS,
-  finishDelay = LOADER_FINISH_MS
+  reducedMotion = () => false
 } = {}) {
   let state = emptyFeedback()
   let active = false
@@ -33,7 +28,7 @@ export function createLoadingFeedback (onChange, {
   function tick () {
     if (!active || completing) return
 
-    const elapsed = now() - started
+    const elapsed = performance.now() - started
     const indeterminateAfter = Math.max(8000, estimate * 3)
     state.indeterminate = elapsed > indeterminateAfter
 
@@ -45,14 +40,14 @@ export function createLoadingFeedback (onChange, {
     state.fraction = Math.max(state.fraction, cappedEstimate)
 
     publish()
-    tickHandle = schedule(tick, 100)
+    tickHandle = setTimeout(tick, 100)
   }
 
   function cancel () {
     active = false
     completing = false
 
-    for (const handle of [showHandle, tickHandle, finishHandle]) unschedule(handle)
+    for (const handle of [showHandle, tickHandle, finishHandle]) clearTimeout(handle)
     showHandle = undefined
     tickHandle = undefined
     finishHandle = undefined
@@ -68,16 +63,16 @@ export function createLoadingFeedback (onChange, {
   function start (planning = false) {
     cancel()
     active = true
-    started = now()
+    started = performance.now()
     estimate = planning ? SEARCH_ESTIMATE_MS.puzzle : SEARCH_ESTIMATE_MS.gentle
 
     // Fast requests finish before this timer, avoiding a brief flash of the loader.
-    showHandle = schedule(() => {
+    showHandle = setTimeout(() => {
       if (!active) return
 
       state.visible = true
       tick()
-    }, delay)
+    }, LOADER_DELAY_MS)
   }
 
   function progress ({ stage }) {
@@ -98,8 +93,8 @@ export function createLoadingFeedback (onChange, {
     if (!active) return Promise.resolve(false)
 
     completing = true
-    unschedule(showHandle)
-    unschedule(tickHandle)
+    clearTimeout(showHandle)
+    clearTimeout(tickHandle)
 
     // An unseen loader needs neither a final frame nor an animation hold.
     if (!state.visible) return Promise.resolve(true)
@@ -112,10 +107,10 @@ export function createLoadingFeedback (onChange, {
     // Only the visible completion animation delays the caller; the search estimate never does.
     return new Promise(resolve => {
       resolveFinish = resolve
-      finishHandle = schedule(() => {
+      finishHandle = setTimeout(() => {
         resolveFinish = null
         resolve(true)
-      }, finishDelay)
+      }, LOADER_FINISH_MS)
     })
   }
 

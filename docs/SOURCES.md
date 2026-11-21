@@ -14,7 +14,7 @@ The welcoming-default/optional-challenge direction was requested in the discussi
 
 Mic, “How to build a good Sokoban level?”: https://www.games4brains.de/sokoban-leveldesign.php
 
-This describes goal-area methods, alternating loops, trapdoors/sliding doors, parking and the need for human testing. The prototype's first one-opening and two-opening barriers are inspired by those strategies; they do not guarantee every sophisticated pattern discussed in the article.
+This describes goal-area methods, alternating loops, trapdoors/sliding doors, parking and the need for human testing. The prototype uses delivery-order gates and additional obstacle structures inspired by those strategies; it does not implement every pattern discussed in the article.
 
 Other references provided in the brief, retained for further design work rather than presented as fully implemented methods:
 
@@ -26,7 +26,7 @@ Other references provided in the brief, retained for further design work rather 
 
 Natural Earth terms: https://www.naturalearthdata.com/about/terms-of-use/
 
-The world fixture contains 177 source features. `map-source.json` identifies its actual local provenance; it is not a pinned fresh upstream release. Relative-location prompts in `src/content/relations.json` are project-authored descriptions checked against the supplied map, not quotations from an external encyclopedia. Review them and the maps as educational content; they should not be mistaken for an independently researched trivia collection.
+The world fixture contains 177 source features. `map-source.json` identifies its actual local provenance; it is not a pinned fresh upstream release. Review maps and story claims as educational content; the bundled geometry is not an independently researched trivia collection.
 
 flag-icons source and license: https://github.com/lipis/flag-icons
 
@@ -48,9 +48,9 @@ Vite worker bundling: https://vite.dev/guide/features.html#web-workers
 
 Tiled JSON format: https://doc.mapeditor.org/en/stable/reference/json-map-format/
 
-Dependencies and GitHub Actions references are pinned in the project files, but installation, production compilation and deployment still require verification in a network-enabled environment. See `TESTING.md` rather than inferring build success from these references.
+Dependencies and GitHub Actions references are pinned in the project files, but installation, production compilation and deployment still require verification in a network-enabled environment. Use `MANUAL_CHECKLIST.md`; these references do not establish build or gameplay correctness.
 
-## Biome preparation added in 0.2.4
+## Biome preparation
 
 RESOLVE Ecoregions 2017 producer and CC BY 4.0 terms: https://ecoregions.world/
 
@@ -58,9 +58,9 @@ Catalog, schema and methodological limits: https://developers.google.com/earth-e
 
 Public GeoJSON service used by the importer: https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/Resolve_Ecoregions/FeatureServer/0
 
-The producer/catalog were inspected, but the actual polygon import could not complete
-in the development environment. The included atlas is explicitly unprepared.
-Unit-test polygons are synthetic fixtures, not source geography.
+The included runtime atlas records its source hash and preparation metadata. It contains
+only the classifications needed by the renderer; source caching and preparation are
+documented in `SCENERY_AND_ART.md`.
 
 Embrapa reference for the Caatinga/mandacaru art choice: https://www.infoteca.cnptia.embrapa.br/infoteca/handle/doc/1153737 . The stylized asset does not claim species-level occurrence at each tile.
 

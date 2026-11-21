@@ -1,6 +1,6 @@
 # Music and sound effects
 
-Music is off for a new player or an older save. Sound effects are on. Options,
+Music is off by default. Sound effects are on. Options,
 including the in-game Options dialog, has independent toggles and volume sliders.
 The existing preference save retains both choices and both volume levels.
 
@@ -14,7 +14,7 @@ it can sit behind a puzzle rather than direct the player's pace.
 Effects distinguish walking, pushing, blocked movement, delivering a flag,
 completing a board, undo, restart, and an accepted hint. A delivery replaces the
 push cue; the final delivery uses the completion cue instead. Undoing back onto a
-goal does not celebrate it again. There are no error penalties or gameplay timers.
+goal does not celebrate it again. There are no sound-based penalties; optional Speedrun timing is independent of audio.
 
 The dialogue and Options/Pause/Credits overlays lower music to 45% of its selected
 level without restarting the tune. Effects have their own gain and stay independent.
@@ -63,14 +63,6 @@ The scheduler refills a short window on the audio clock, rather than using a JS
 timer for every note. A delayed timer does not replay missed beats in a burst.
 These timers concern audio only; they do not time or penalize gameplay.
 
-## Tests
+## Manual review
 
-`node --test tests/audio.test.js` checks defaults, persistence, independent channels,
-activation, interruptions, races, cleanup, bounded scheduling, and cue selection
-across every fixed story board. Its platform double controls the audio clock;
-it does not claim to assess the perceptual quality of the music.
-
-`tests/e2e/audio.spec.js` covers real Options controls, reloads, board input,
-page-lifecycle handling, and missing Web Audio support in the installed application.
-It observes the browser's actual AudioContext rather than replacing audio with a
-mock. Device output and mobile interruptions still deserve manual checks.
+Try both channels and their volume sliders from the menu and in-game Options. Reload saved choices, mute during playback, switch tabs, and return after an interruption. Confirm that movement and accessible feedback work with audio disabled or unavailable. Listen on actual devices: source inspection cannot assess whether the loop is pleasant or effects are too loud.

@@ -6,7 +6,7 @@ Original project code and newly drawn globe/scenery use the root MIT license. No
 
 ## Vue
 
-Vue is an MIT-licensed dependency obtained through npm. Its source and license are at https://github.com/vuejs/core . The exact requested version is recorded in `package.json`; the resolved dependency graph belongs in the lockfile after installation. There is no vendored Vue runtime or alternate offline build in this source archive.
+Vue is an MIT-licensed dependency obtained through npm. Its source and license are at https://github.com/vuejs/core . The exact requested version is recorded in `package.json`; the resolved dependency graph is recorded in `package-lock.json`. There is no vendored Vue runtime or alternate offline build in this source archive.
 
 ## Vue Router
 
@@ -38,9 +38,10 @@ samples in each puzzle-grid tile. A local export may have different generalizati
 its provenance and source SHA-256 are recorded in the atlas. Artwork choices and
 colors are original stylization, not original RESOLVE map artwork or a species survey.
 
-The source archive currently carries an explicit unprepared atlas rather than copied
-ecoregion geometry. The import adds the derived data and enables the in-game attribution.
-The copied production notices retain this section in either case.
+The source archive includes a prepared atlas of dominant ecoregion IDs and land
+coverage, not the source polygons. Runtime records are limited to the dominant
+ecoregions referenced by its cells. In-game attribution and the copied production
+notices identify this derived data and its license.
 
 ## Distributed notices
 

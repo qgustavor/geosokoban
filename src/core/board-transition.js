@@ -2,8 +2,8 @@
 // rather than ending the wrapper transition after a single tile's duration.
 export const TILE_ENTER_MS = 440
 export const TILE_LEAVE_MS = 260
-export const ENTER_SWEEP_MS = 480
-export const LEAVE_SWEEP_MS = 320
+const ENTER_SWEEP_MS = 480
+const LEAVE_SWEEP_MS = 320
 
 export function boardTransitionDuration (reducedMotion = false) {
   return reducedMotion

@@ -1,8 +1,6 @@
 import countries from './countries.json' with { type: 'json' }
 import messages from './messages.json' with { type: 'json' }
 
-export { messages }
-
 export function countryName (code, locale) {
   // Keep the country code visible when neither a localized nor an English name is available.
   return countries[code]?.names[locale] ?? countries[code]?.names.en ?? code

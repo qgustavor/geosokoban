@@ -1,4 +1,4 @@
-// Bounds are [west, south, east, north]. Each world tour visits these regions in this order.
+// Bounds are [west, south, east, north]. Map definitions also drive daily region selection.
 export const REGIONS = [
   {
     id: 'SA',
@@ -7,9 +7,7 @@ export const REGIONS = [
     bounds: [-82, -57, -33, 14],
     width: 18,
     height: 24,
-    continent: 'South America',
-    story: ['PER', 'BOL', 'COL'],
-    pool: ['BRA', 'PER', 'BOL', 'COL', 'ARG', 'VEN', 'PRY']
+    continent: 'South America'
   },
   {
     id: 'NA',
@@ -18,9 +16,7 @@ export const REGIONS = [
     bounds: [-145, 7, -50, 74],
     width: 25,
     height: 23,
-    continent: 'North America',
-    story: ['USA', 'CAN', 'MEX'],
-    pool: ['USA', 'CAN', 'MEX']
+    continent: 'North America'
   },
   {
     id: 'EE',
@@ -29,9 +25,7 @@ export const REGIONS = [
     bounds: [12, 35, 48, 61],
     width: 22,
     height: 22,
-    countries: ['POL', 'CZE', 'SVK', 'HUN', 'ROU', 'BGR', 'UKR', 'BLR', 'MDA', 'RUS', 'EST', 'LVA', 'LTU'],
-    story: ['POL', 'ROU', 'UKR'],
-    pool: ['POL', 'ROU', 'UKR', 'BLR', 'HUN', 'BGR']
+    continent: 'Europe'
   },
   {
     id: 'WE',
@@ -40,9 +34,7 @@ export const REGIONS = [
     bounds: [-12, 35, 18, 58],
     width: 23,
     height: 23,
-    countries: ['PRT', 'ESP', 'FRA', 'DEU', 'BEL', 'NLD', 'LUX', 'CHE', 'AUT', 'ITA', 'GBR', 'IRL', 'DNK'],
-    story: ['FRA', 'DEU', 'ESP'],
-    pool: ['FRA', 'DEU', 'ESP', 'PRT', 'CHE', 'AUT', 'ITA', 'BEL', 'NLD']
+    continent: 'Europe'
   },
   {
     id: 'AF',
@@ -51,9 +43,7 @@ export const REGIONS = [
     bounds: [-19, -36, 52, 38],
     width: 23,
     height: 24,
-    continent: 'Africa',
-    story: ['EGY', 'NGA', 'ZAF'],
-    pool: ['EGY', 'NGA', 'ZAF', 'DZA', 'MLI', 'NER', 'TCD', 'SDN', 'ETH', 'KEN', 'TZA', 'COD', 'AGO', 'NAM', 'BWA', 'ZMB']
+    continent: 'Africa'
   },
   {
     id: 'AS',
@@ -63,9 +53,7 @@ export const REGIONS = [
     width: 29,
     height: 23,
     continent: 'Asia',
-    extraCountries: ['RUS'],
-    story: ['IND', 'CHN', 'MNG'],
-    pool: ['IND', 'CHN', 'MNG', 'KAZ', 'PAK', 'IRN', 'SAU', 'MMR', 'THA', 'TUR', 'AFG', 'IRQ']
+    extraCountries: ['RUS']
   },
   {
     id: 'OC',
@@ -75,37 +63,38 @@ export const REGIONS = [
     width: 27,
     height: 21,
     continent: 'Oceania',
-    sea: true,
-    story: ['AUS', 'NZL', 'PNG'],
-    pool: ['AUS', 'NZL', 'PNG', 'FJI', 'SLB', 'VUT']
+    sea: true
+  },
+  {
+    id: 'CAR',
+    slug: 'caribbean',
+    name: 'caribbean',
+    bounds: [-90, 9, -59, 28],
+    width: 26,
+    height: 19,
+    continent: 'North America',
+    sea: true
   }
 ]
 
-export const CARIBBEAN = {
-  id: 'CAR',
-  name: 'caribbean',
-  bounds: [-90, 9, -59, 28],
-  width: 26,
-  height: 19,
-  continent: 'North America',
-  sea: true,
-  story: ['CUB', 'HTI', 'DOM'],
-  pool: ['CUB', 'HTI', 'DOM', 'JAM', 'BHS', 'TTO']
-}
+export const regionById = id => REGIONS.find(region => region.id === id) ?? null
 
-export const regionById = id => REGIONS.find(region => region.id === id) ?? (id === 'CAR' ? CARIBBEAN : null)
-export const STORY_TOURS = 3
-export const STORY_COUNT = REGIONS.length * STORY_TOURS
+// The itinerary names the map actually used by each authored chapter.
+export const STORY_ITINERARY = [
+  ['SA', 'NA', 'EE', 'WE', 'AF', 'AS', 'OC'],
+  ['SA', 'NA', 'EE', 'WE', 'AF', 'AS', 'OC'],
+  ['SA', 'CAR', 'EE', 'WE', 'AF', 'AS', 'OC']
+]
+export const STORY_TOURS = STORY_ITINERARY.length
+const chapters = STORY_ITINERARY.flatMap((stops, tour) => stops.map((id, stop) => ({
+  region: regionById(id), tour: tour + 1, stop: stop + 1
+})))
+export const STORY_COUNT = chapters.length
 
 export function storyStop (index) {
   if (!Number.isInteger(index) || index < 1 || index > STORY_COUNT) return null
 
-  // Visit the whole world before advancing to the next tour's puzzle variant.
-  const offset = index - 1
-  const region = REGIONS[offset % REGIONS.length]
-  const tour = Math.floor(offset / REGIONS.length) + 1
-
-  return { index, region, tour, stop: offset % REGIONS.length + 1 }
+  return { index, ...chapters[index - 1] }
 }
 
 export function storyCode (index) {
@@ -116,16 +105,5 @@ export function storyCode (index) {
 }
 
 export function storyIndex (code) {
-  if (typeof code !== 'string') return 0
-
-  // Frozen boards still have their original asset keys. Both forms identify the
-  // same chapter; their order is now tour-first instead of continent-first.
-  const legacy = /^G2-([A-Z]{2})-S([1-3])(?:-P)?$/.exec(code)
-  const readable = /^(.+)-tour-([1-3])(?:-hard)?$/.exec(code)
-  const match = legacy ?? readable
-  if (!match) return 0
-
-  const region = REGIONS.findIndex(item => legacy ? item.id === match[1] : item.slug === match[1])
-
-  return region >= 0 ? (Number(match[2]) - 1) * REGIONS.length + region + 1 : 0
+  return chapters.findIndex(chapter => `${chapter.region.slug}-tour-${chapter.tour}` === code) + 1
 }

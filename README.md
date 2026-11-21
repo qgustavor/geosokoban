@@ -1,104 +1,67 @@
 # GeoSokoban — prototype
 
-An independent, open-source geography puzzle inspired by GeoJogos. This experiment is not the official GeoSokoban, a replacement for it, or an endorsed collaboration. Its purpose is to explore ideas the original author can inspect and reuse.
-
-## Source update 0.2.6
-
-Generated puzzles now use bent partitions, switchbacks, courtyards, staggered rooms and obstacle islands rather than only a straight wall with a goal-sized gap. A new pool of 48 independently certified templates supplies bounded-search fallbacks; safe seeded additions vary their scenery-independent obstacle layouts. Existing story drafts are preserved.
-
-Generation reuses warm workers, geographic samples and solver buffers. A versioned, bounded memory/local-storage cache restores previously generated boards without another search. On the same 14-code development corpus, fresh-worker median time changed from **5.23 s to 0.57 s**. The new run used certified templates for 12/14 requests: the gain includes a smaller search budget, not just lower-level optimization. These are Node measurements, not browser or phone timings.
-
-Level changes dismantle the outgoing board and assemble the next one tile by tile. The clear banner uses bold outlined letters with staggered scale, upward hop and landing squash. The first hint is immediate; subsequent requests require at least **10 seconds**, with a translated countdown. Map context and country borders use **4 × 4 logical pixels per gameplay cell**, aligned to the same grid origin and prebuilt into compact orthogonal SVG paths.
-
-**Verification:** 134 Node tests pass, including independent template certification, caching, hint cooldowns and pixel-map alignment. Isolated Chromium checks cover the banner's CSS in three languages and four viewport sizes. Dependency installation failed in this environment; the official lint, Vite build and Playwright application suite remain unverified. See `docs/V2_6_TESTING.md`, `docs/V2_6_CHANGES.md` and `docs/BENCHMARKS.md`.
+An independent, open-source geography puzzle inspired by GeoJogos. This is an exploration for the original author to inspect and reuse, not the official game, a replacement, or an endorsed collaboration. The supplied brief is in `DESIGN_DOCUMENT.md`.
 
 ## Develop
 
 Use Node 22.13+ on the Node 22 line, or Node 24+.
 
 ```sh
-npm install
+npm ci
 npm run dev
+npm run lint
+npm run build
+npm run preview
 ```
 
-This is a normal **Vue + Vite** application. Every interface component is a `.vue` single-file component using **`<script setup>`**. There is no standalone HTML export, alternate application, handwritten SFC compiler, runtime-template build, backend, or CDN dependency during play.
+`npm run check` runs lint and the production build. There is no automated test suite. Use `docs/MANUAL_CHECKLIST.md` for release playthroughs. Lint and build success do not establish that the game feels right or that every generated puzzle succeeds.
+
+The application uses Vue single-file components, Vue Router and Vite. It has no server, accounts, telemetry, remote assets during play, or component library.
+
+## Play
+
+The menu offers Story, Daily and Past puzzles. Daily and past puzzles have Easy, Medium and Hard settings. Easy shows destination clues; Medium hides them on the same board; Hard uses stronger puzzle constraints and hidden clues. Dates use UTC. Future dates cannot be opened.
+
+Story uses only the 21 authored standard boards. Its explicit itinerary is in `src/content/regions.js`; the Caribbean chapter is `caribbean-tour-3`, the second stop of the third tour. There is no story difficulty setting or procedural story generation. The current story and character drafts are starting points for further authoring, not a finished educational campaign.
+
+Keyboard or one-finger swipes move the globe. Undo is unlimited; Restart is free and undoable. Progressive hints have a ten-second cooldown after each request. Two-finger gestures pan and zoom the map. Optional Speedrun timing does not change puzzles. English, Brazilian Portuguese and Spanish are included. Music starts disabled; sound effects and music have independent settings.
+
+Level changes use tile transitions. Story dialogue leads to the next chapter, with an aggregate result after the ending. Sharing uses the platform share sheet, clipboard, or selectable text when those APIs are unavailable.
+
+## Generated puzzles and country coverage
+
+A date deterministically chooses a region and seeds its generator. Regions include the Caribbean directly. There is no hand-picked country pool: every country in the map with a usable destination can be selected. Land destinations need playable floor with pushing room; sea destinations need a nearby island outline and room for a dock. Goal spacing and the solver impose additional constraints on a particular board.
+
+This does not make every country in the world playable. The bundled map is coarse, projections cover limited bounds, and land boards use their largest connected floor area. Very small shapes, islands outside that component, and countries beyond those bounds can remain unavailable. Country metadata and flag assets are retained for map content and authored levels rather than being deleted because a country was absent from an old selection pool.
+
+Generation uses bounded candidate and search work, verifies a solution, and checks puzzle structure. The bounds allow direct generation and certification rather than assuming a replacement pool; difficult seeds can take longer and remain cancellable. It never substitutes a saved board. Exhausted searches, map failures and worker failures show an error with the puzzle code and a copyable report. The report includes the requested link and the technical cause; send it to the prototype developer. Retrying a deterministic search with unchanged code and data will not fix search exhaustion.
+
+Generated boards are not persisted. Workers and geographic samples are reused within the current session, and cancellation terminates active work. The full map loads only when generation needs it; story boards open from bundled content.
+
+## Codes and storage
+
+Supported puzzle IDs are `YYYY-MM-DD`, `YYYY-MM-DD-hard`, and the chapter IDs in the current story itinerary. A link such as `#/puzzle/2026-11-19?g=remember` opens Medium; story links need no guidance query.
+
+Prototype changes may break seeds, links and progress. No old-format aliases, migrations, archived generators, or hard-story variants are shipped. Preferences use `geosokoban.preferences`; they store the current difficulty, not redundant derived guidance settings. Saved data is validated but not migrated.
+
+## Edit and prepare content
 
 ```sh
-npm test                       # Rules, geography, generation, optima, hints and workers
-npm run lint                   # Neostandard and Vue rules
-npm run build                  # Production assets in dist/
-npm run preview                # Local HTTP preview of dist/
-npm run test:e2e                # Playwright dev/production tests
-npm run benchmark -- --samples 2
-npm run benchmark:browser -- --samples 2
-```
-
-The patch adds no dependencies. Existing installations can retain node_modules and their lockfile. This source environment could not resolve the npm registry; no lockfile has been fabricated. For a new checkout, install, review and commit the generated lockfile before switching to `npm ci`.
-
-## Prepare scenery
-
-The distributed biome atlas is **unprepared** because the source service could not be reached here. Until preparation succeeds, land scenery uses neutral boulders and pebbles, not invented biome boundaries.
-
-```sh
+npm run levels:export -- south-america-tour-2
+npm run levels:import -- levels/editable/south-america-tour-2.tmj --story
+npm run flags
+npm run maps:outlines
 npm run biomes:prepare
-npm run biomes:verify
 ```
 
-These Node scripts need no installed npm libraries. Run once with source-data access, then commit `src/content/scenery-atlas.json`. A local RESOLVE GeoJSON export is supported; see `docs/SCENERY_AND_ART.md`. Players never download the source polygons. The publication workflow rejects an unprepared atlas. **The 0.2.5 → 0.2.6 patch does not modify an atlas you have already prepared.**
+The editor validates country destinations and solves a board before importing it. All 21 standard boards have editable Tiled files. See `docs/STORY_AUTHORING.md` and `docs/EDITING.md`.
 
-## Modes and difficulties
+Map outlines and the compact, prepared scenery atlas are committed. Regenerate outlines after editing map projections. Scenery preparation uses source geography and records its provenance; it is not part of a normal build. See `docs/SCENERY_AND_ART.md`. The runtime atlas contains only primary classifications used by the renderer.
 
-The selector offers Story / Daily / Past puzzles, with no seed or region controls. It remembers the last chosen mode and difficulty. Past puzzles has day arrows and a styled native date field, bounded by today's UTC date. Forced future puzzle routes return directly to the menu. Daily and archived puzzles use the date and difficulty, never the viewport, to choose their board.
+## Organization and deployment
 
-Story follows the 21 fixed standard boards across South America, North America/Caribbean, Eastern Europe, Western Europe, Africa, Asia and Oceania. There is no story difficulty picker, no procedural story generation and no per-level share dialog: dialogue leads to the next stop, with one aggregate result after the ending. Existing layouts and dialogue are unchanged; the unused hard story variants remain in the editing assets. Playing story does not overwrite the player's preferred daily/archive difficulty.
+`src/core` contains game rules, generation, solving and transitions. `src/geo` handles geographic loading, projection and rasterization. `src/content` holds current boards, story dialogue and prepared map data. `src/scenery` chooses decorative artwork without changing puzzle rules. `src/ui`, `src/pages`, `src/router` and `src/composables` implement the interface and session lifecycle.
 
-| Difficulty | Targets | Daily/archive layout |
-| --- | --- | --- |
-| Easy | Small faded flags | Delivery-order puzzles |
-| Medium | Question marks | Same layouts as Easy |
-| Hard | Question marks | Delivery order and stronger repositioning filters |
+Publish `dist/` with the manual GitHub Pages workflow. It installs the lockfile, lints, builds, and deploys; it does not run tests. Hash routing supports repository subpaths without server rewrites. Use `BASE_PATH=/repository-name/ npm run build` when reviewing such a deployment locally.
 
-All retain unlimited undo, zero-count restart, geography clues and progressive hints. Restart is undoable. Deadlock checks remain silent unless impossibility is proven. Keyboard and swipe input are available; Undo, Restart, Hint and Menu form the discreet HUD. An optional **Speedrun** setting times new runs and adds elapsed time to shared results. Story keeps one clock from the first board to the final solve, including dialogue, pauses and time away; its saved clock and aggregate results survive reloads. Restart and undo do not reset an active run's clock. There is no account, telemetry, ranking or server. Native sharing has a visible in-app fallback.
-
-Portuguese, English and Spanish are included. Options contains language, reduced motion, audio and the optional Speedrun setting. Hint requests have a non-skippable ten-second cooldown; opening or hiding the hint panel does not reset it. The globe's facing animation and plane artwork are preserved; level changes use tile transitions.
-
-Single-finger swipes move the character. Two-finger pinches and drags operate the board camera, not the page or HUD. Large maps start closer on narrow screens, with a Full map / Closer view button; the next movement brings the player into view. Menu browser zoom remains available. See `docs/MODES_TOUCH_TESTING.md` for timing rules, verification and remaining checks.
-
-## Loading and generation
-
-The selector and fixed story boards open without loading world geography. Daily/archive preparation requests it on demand and accepts both raw gzip and HTTP-decoded JSON. A loader appears only after 500 ms without a completed board, including map download. Fast completion has no display hold; a visible bar finishes over 400 ms. Story mode does not use generation feedback.
-
-Deterministic candidate/state budgets select a validated fallback when exhausted, not an error caused by elapsed time. Slower devices do not receive easier boards. Previously generated codes are read from the versioned cache before requesting geography or a worker. Successful workers stay warm; cancellation terminates active work. Fresh searches use smaller deterministic work budgets and the new varied certified pool. See `docs/LOADING.md` and `docs/BENCHMARKS.md`.
-
-Generator algorithm version 5 and fallback version 5 are included. Existing `G2` code syntax remains a prototype identifier, **not a promise that old seeds produce old layouts across releases**. No legacy generator is shipped. Compare scores only within the same source/content version. Raising the minimum move gap requires rebuilding and verifying the fallback pool as well as updating the generator.
-
-## Routes and hosting
-
-Vue Router uses hash history. A puzzle link looks like `#/puzzle/2026-11-19-hard?g=remember`; story uses names such as `#/puzzle/south-america-tour-1`. The selector is `#/`; standalone `#/options` and `#/credits` routes also exist for direct entry. In-game and selector buttons use dialogs, not navigation. Active session state is owned above routed components; full page reload restores the puzzle start, not saved move history.
-
-Publish `dist/` using the manual GitHub Pages workflow. No server rewrite rules, custom headers, cross-origin isolation or standalone export are needed. Module workers exchange normal messages. The workflow and live deployment remain unverified here.
-
-```sh
-BASE_PATH=/geosokoban-test/ npm run build
-BASE_PATH=/geosokoban-test/ npm run test:e2e
-```
-
-## Project organization
-
-`src/core` contains framework-independent rules, generator, solver and certificates; `src/geo` handles loading and projection; `src/scenery` chooses deterministic artwork without changing topology; `src/ui` contains SFCs; `src/composables` owns sessions/assistance; `src/pages` and `src/router` handle navigation. Prepared content is in `src/content`. Scripts prepare outlines, biomes, flags, fallbacks and editor files. Tests and documentation distinguish actual results from unexecuted browser specifications.
-
-## Edit content
-
-All 42 fixed layouts have Tiled maps in `levels/editable`.
-
-```sh
-npm run levels:export -- G2-SA-S2 levels/editable/G2-SA-S2.tmj
-npm run levels:import -- levels/editable/G2-SA-S2.tmj --story
-npm run fallbacks:prepare
-```
-
-The story importer validates and solves a board before replacing it; see `docs/EDITING.md`. Fallback preparation is a separate, potentially expensive offline process, never part of browser startup. Story editing does not silently change daily fallbacks.
-
-The world fixture contains 177 Natural Earth features, not an exhaustive current atlas. Its exact upstream release was not recorded; hashes and transformations are in `docs/map-source.json`. Review boundaries, territories, flags, missing small islands and curriculum suitability before deployment. Do not infer real mountain ranges from schematic puzzle barriers. See `docs/DESIGN.md`, `docs/SCENERY_AND_ART.md` and `docs/SOURCES.md`.
-
-Original code and artwork are MIT-licensed. Third-party data/assets retain their own attribution and terms. The full game's optional hidden ranking tie-breaker, including resetting elapsed time with moves on restart, is documented in `docs/INTEGRATION.md`.
+Keep `LICENSE`, `THIRD_PARTY_NOTICES.md`, `docs/SOURCES.md` and map provenance with the project. Git stores development history; the source tree contains current documentation and content only.

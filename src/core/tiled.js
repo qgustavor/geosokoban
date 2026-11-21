@@ -69,7 +69,7 @@ export function toTiled (level) {
     objects
   })
 
-  const metadata = ['id', 'region', 'mapVersion', 'generatorVersion', 'threshold', 'sea', 'motif', 'planning']
+  const metadata = ['id', 'region', 'mapVersion', 'threshold', 'sea', 'motif', 'planning']
   const metadataProperties = metadata
     .filter(name => level[name] !== undefined)
     .map(name => property(name, level[name]))

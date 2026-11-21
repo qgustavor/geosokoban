@@ -7,7 +7,7 @@ const MAX_VOICES = 32
 const SILENCE = 0.0001
 
 function browserContext () {
-  const Context = globalThis.AudioContext ?? globalThis.webkitAudioContext
+  const Context = globalThis.AudioContext
   return Context ? new Context() : null
 }
 
@@ -18,11 +18,7 @@ function frequency (note) {
 }
 
 /** A single lazy context serves both channels. Audio is optional and must never block game input. */
-export function createAudioPlayer (initial, {
-  createContext = browserContext,
-  schedule = setInterval,
-  clear = clearInterval
-} = {}) {
+export function createAudioPlayer (initial) {
   let settings = audioSettings(initial)
   let context = null
   let musicBus = null
@@ -74,7 +70,7 @@ export function createAudioPlayer (initial, {
   }
 
   function stopMusic () {
-    if (timer !== null) clear(timer)
+    if (timer !== null) clearInterval(timer)
     timer = null
     stopVoices('music')
   }
@@ -193,7 +189,7 @@ export function createAudioPlayer (initial, {
       // A restored tab starts a new phrase; it never resumes a half-played, stale chord.
       beat = 0
       nextBeat = context.currentTime + 0.025
-      timer = schedule(tick, SCHEDULER_MS)
+      timer = setInterval(tick, SCHEDULER_MS)
       tick()
     }
 
@@ -218,7 +214,7 @@ export function createAudioPlayer (initial, {
 
     if (context) return true
 
-    const created = createContext()
+    const created = browserContext()
     if (!created) return false
 
     // Publish the context only after its graph exists. A failed device setup must remain retryable.

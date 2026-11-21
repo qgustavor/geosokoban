@@ -1,5 +1,5 @@
 /** Progress messages keep the worker alive. Cancellation never changes the previous board. */
-export function generationTask (worker, message, onProgress = () => {}, { terminateOnComplete = true } = {}) {
+export function generationTask (worker, message, onProgress = () => {}) {
   let finished = false
   let cancel
 
@@ -14,8 +14,7 @@ export function generationTask (worker, message, onProgress = () => {}, { termin
       worker.onmessageerror = null
 
       // Only a successful result may leave the worker available for another board.
-      const shouldTerminate = terminateOnComplete || error || !value
-      if (shouldTerminate) worker.terminate()
+      if (error || !value) worker.terminate()
 
       if (error) reject(error)
       else resolve(value)
@@ -31,7 +30,9 @@ export function generationTask (worker, message, onProgress = () => {}, { termin
       } else if (data?.type === 'complete' && data.level) {
         settle(data.level)
       } else {
-        settle(null, new Error('Generation failed'))
+        const error = new Error(data?.message ?? 'Generation failed')
+        error.name = data?.reason ?? 'GenerationError'
+        settle(null, error)
       }
     }
 

@@ -6,7 +6,6 @@ import { storyLevel } from '../content/story.js'
 import { isPlanningCode } from '../core/seed.js'
 import { storyCode, storyIndex } from '../content/regions.js'
 import { createGenerationClient } from '../core/generation-client.js'
-import { createLevelCache } from '../core/level-cache.js'
 import { createLoadingFeedback, emptyFeedback } from '../core/loading-feedback.js'
 
 export function useSession ({ reducedMotion = () => false } = {}) {
@@ -26,7 +25,6 @@ export function useSession ({ reducedMotion = () => false } = {}) {
 
   const solved = computed(() => isSolved(level.value, state.value))
   const chapter = computed(() => storyIndex(level.value.id))
-  const cache = createLevelCache()
   const generator = createGenerationClient(() => {
     return new Worker(new URL('../core/generate.worker.js', import.meta.url), { type: 'module' })
   })
@@ -52,13 +50,13 @@ export function useSession ({ reducedMotion = () => false } = {}) {
   async function start (code) {
     cancel()
     const current = revision
-    // Story and cached boards are already prepared, so they need neither geography nor a loader.
-    const cached = storyLevel(code) ?? cache.get(code)
+    const authored = storyLevel(code)
 
     try {
-      let next = cached
+      if (storyIndex(code) && !authored) throw new Error('Missing authored story board')
+      let next = authored
 
-      if (!cached) {
+      if (!authored) {
         loading.value = true
         feedback.start(isPlanningCode(code))
 
@@ -72,9 +70,6 @@ export function useSession ({ reducedMotion = () => false } = {}) {
         next = await generator.generate(code, geography, feedback.progress)
         if (current !== revision || !next) return false
 
-        // Cache completed work before the visual finish hold; cancelling that hold
-        // should not discard a board that has already been successfully prepared.
-        cache.set(next)
         cancelRequest = null
         if (!await feedback.finish()) return false
       }

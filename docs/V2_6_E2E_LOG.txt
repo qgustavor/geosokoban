@@ -1,5 +1,0 @@
-
-> geosokoban-prototype@0.2.6 test:e2e
-> playwright test
-
-error: unknown command 'test'

@@ -1,7 +1,7 @@
 /** The underlay uses a fixed 4 × 4 pixel lattice per 40-unit gameplay cell. */
 export const MAP_PIXELS_PER_CELL = 4
 export const MAP_TILE_SIZE = 40
-export const MAP_PIXEL_SIZE = MAP_TILE_SIZE / MAP_PIXELS_PER_CELL
+const MAP_PIXEL_SIZE = MAP_TILE_SIZE / MAP_PIXELS_PER_CELL
 
 /** Read the absolute, polygon-only paths emitted by the geography projection. */
 function pathRings (path) {
