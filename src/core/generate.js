@@ -1,14 +1,18 @@
-import { certifyMoveGap, MINIMUM_EXTRA_MOVES } from './difficulty.js'
-import { stageGateFlag } from './reverse-park.js'
+import { stageGateFlag, planGateCrossing } from './reverse-park.js'
 import { createWalkingSearch } from './walking-search.js'
 import { rasterize, MAP_VERSION } from '../geo/rasterize.js'
 import { regionById } from '../content/regions.js'
-import { DIRECTIONS, OPPOSITE, neighbor, reachable, walkable, replay, isSolved, validateLevel, initialState } from './engine.js'
+import {
+  DIRECTIONS, OPPOSITE, neighbor, reachable, walkable, replay, isSolved, validateLevel, initialState
+} from './engine.js'
 import { randomFrom, parseCode } from './seed.js'
-import { challengeDistances, pushLowerBound } from './challenge.js'
-import { addPuzzleLayout, LAYOUT_FAMILIES } from './layout-patterns.js'
+import { challengeDistances } from './challenge.js'
+import { chooseGoals, startGuides, footprint } from './placement.js'
+import { addPuzzleLayout, trimUnusedClusters, LAYOUT_FAMILIES } from './layout-patterns.js'
 import { solve } from './solver.js'
-import { goalDependencies, analyzeDesign, meetsDesign } from './design-quality.js'
+import { solveDeliveries, solveWithParking } from './delivery-plan.js'
+import { hardCandidates } from './hard-variant.js'
+import { chooseDesign, goalDependencies, analyzeDesign, meetsDesign } from './design-quality.js'
 
 import countryData from '../data/countries.json' with { type: 'json' }
 
@@ -17,18 +21,12 @@ const goalCandidates = new WeakMap()
 
 class GenerationExhausted extends Error {
   constructor (code, region, planning) {
-    super('No certified puzzle within the generation budget')
+    super('No verified puzzle within the generation budget')
     this.name = 'GenerationExhausted'
     this.code = code
     this.region = region
     this.planning = planning
   }
-}
-
-const distance = (map, a, b) => {
-  const horizontal = Math.abs(a % map.width - b % map.width)
-  const vertical = Math.abs(Math.floor(a / map.width) - Math.floor(b / map.width))
-  return horizontal + vertical
 }
 
 function candidateGoals (map, country, floor) {
@@ -82,24 +80,10 @@ function findCandidateGoals (map, country, floor) {
   return candidates.filter(goal => goal.nearest <= 2.8).sort((a, b) => a.nearest - b.nearest).slice(0, 16)
 }
 
-function createBase (definition, countries, rng, threshold, motif) {
+function createBase (definition, pools, rng, threshold, motif) {
   const map = rasterize(definition.id, threshold)
-  const floor = new Set(map.floors)
-  const goals = []
-
-  for (const country of countries) {
-    const options = candidateGoals(map, country, floor).filter(candidate =>
-      goals.every(goal => distance(map, goal.position, candidate.position) >= 3)
-    )
-    if (!options.length) return null
-
-    // Sea candidates are distance-sorted; choose among the closest six that
-    // still satisfy spacing, rather than placing a destination far from its anchor.
-    const optionCount = Math.min(options.length, map.sea ? 6 : options.length)
-    const selected = Math.floor(rng() * optionCount)
-    const { position, anchor } = options[selected]
-    goals.push({ country, position, anchor })
-  }
+  const goals = chooseGoals(map, pools, rng)
+  if (!goals) return null
 
   return {
     width: map.width,
@@ -116,11 +100,17 @@ function createBase (definition, countries, rng, threshold, motif) {
 }
 
 /** Each reverse pull records the exact forward moves that undo it. */
-function scramble (base, rng, pulls, planning = false) {
+function scramble (base, rng, design) {
   const floor = walkable(base)
   const walkSearch = createWalkingSearch(base, floor, { reuseBuffers: true })
   const goalPositions = new Set(base.goals.map(goal => goal.position))
   const lowerBounds = challengeDistances(base)
+  const targets = design.ranges.map(([minimum, maximum]) => minimum + Math.floor(rng() * (maximum - minimum + 1)))
+  const needsOrder = ['delivery-order', 'parking'].includes(design.style)
+  const crossing = needsOrder ? planGateCrossing(base, lowerBounds, rng) : null
+  if (needsOrder && !crossing) return null
+  if (crossing) targets[crossing.index] = crossing.pushes
+  const guides = startGuides(base, lowerBounds, targets, crossing, floor, rng)
 
   // Start with every flag delivered. Pick the first non-goal tile in the
   // goal's wall-connected area before placing the flags for reverse play.
@@ -137,7 +127,7 @@ function scramble (base, rng, pulls, planning = false) {
   const seen = new Set()
   let best = null
   const moved = new Set()
-  const stepLimit = pulls + (planning ? 180 : 100)
+  const stepLimit = 100
 
   for (let step = 0; step < stepLimit; step++) {
     const paths = walkSearch(state)
@@ -156,12 +146,24 @@ function scramble (base, rng, pulls, planning = false) {
         const key = positions.join(',')
         if (seen.has(key)) continue
 
-        const goal = base.goals[index].position
-        const distanceFromGoal = distance(base, stand, goal)
-        if (distanceFromGoal > (planning ? 14 : 10)) continue
+        const distances = lowerBounds.get(box.country)
+        const before = distances.get(box.position)
+        const after = distances.get(stand)
+        const target = targets[index]
+        if (after === undefined || after > target + 2) continue
 
-        // Prefer flags not yet moved so the scramble involves the whole puzzle.
-        options.push({ index, direction, stand, back, key, priority: moved.has(index) ? 1 : 4 })
+        // Pull toward a chosen terrain-aware distance, rather than taking a
+        // random walk that usually leaves every flag beside its destination.
+        let improvement = Math.abs(before - target) - Math.abs(after - target)
+        const guide = guides[index]
+        if (guide) {
+          const nextDistance = guide.get(stand)
+          if (nextDistance === undefined) continue
+          improvement = guide.get(box.position) - nextDistance
+        }
+
+        const priority = (improvement > 0 ? 6 : 1) * (moved.has(index) ? 1 : 3)
+        options.push({ index, direction, stand, back, key, priority })
       }
     })
 
@@ -189,23 +191,22 @@ function scramble (base, rng, pulls, planning = false) {
     }
 
     const uncovered = !goalPositions.has(state.player) && state.boxes.every(box => !goalPositions.has(box.position))
-    const enoughPulls = step >= pulls - 1
-    if (!uncovered || moved.size !== state.boxes.length || !enoughPulls) continue
+    if (!uncovered || moved.size !== state.boxes.length) continue
 
-    // Reject trivial or overly long independent deliveries before paying for
-    // staging and optimal searches. A dependency adds a delivery-order decision.
-    const lowerBound = pushLowerBound(lowerBounds, state)
-    const minimumPushes = planning ? 16 : 10
-    const maximumPushes = planning ? 55 : 24
-    const withinPushRange = lowerBound >= minimumPushes && lowerBound <= maximumPushes
-    if (!withinPushRange || goalDependencies(base, state).length < 1) continue
+    const distances = state.boxes.map(box => lowerBounds.get(box.country).get(box.position))
+    const closeToTargets = distances.every((value, index) => value >= targets[index] - 1)
+    const totalDistance = distances.reduce((sum, value) => sum + value, 0)
+    if (!closeToTargets || totalDistance > design.maximumPushes) continue
 
-    const staged = planning ? stageGateFlag(base, state, solution) : { ...state, solution }
+    if (needsOrder && !goalDependencies(base, state).length) continue
+
+    const staged = design.style === 'parking' ? stageGateFlag(base, state, solution) : { ...state, solution }
     if (!staged) continue
+    if (goalPositions.has(staged.player) || staged.boxes.some(box => goalPositions.has(box.position))) continue
+    if (needsOrder && !goalDependencies(base, staged).length) continue
 
-    const stagedGoalsUncovered = !goalPositions.has(staged.player) &&
-      staged.boxes.every(box => !goalPositions.has(box.position))
-    if (!stagedGoalsUncovered || !goalDependencies(base, staged).length) continue
+    const spread = footprint(base, staged.boxes)
+    if (spread.x < 0.55 || spread.y < 0.55) continue
 
     best = { player: staged.player, boxes: staged.boxes, solution: staged.solution }
     break
@@ -214,10 +215,37 @@ function scramble (base, rng, pulls, planning = false) {
   return best
 }
 
+/** Certify the intended plan; failed limited searches are not deadlock proofs. */
+function verifyCandidate (level, design, planning, budget) {
+  let work = 0
+  const dependencies = goalDependencies(level)
+  if (design.style === 'journey' && dependencies.length) return { work }
+  if (['delivery-order', 'parking'].includes(design.style) && !dependencies.length) return { work }
+
+  let checked = solveDeliveries(level, Math.min(4000, budget))
+  work += checked.expanded
+  if (design.style === 'parking' && checked.status === 'solved') return { work }
+
+  if (checked.status !== 'solved' && design.style !== 'journey') {
+    const remaining = Math.min(planning ? 8000 : 6000, budget - work)
+    checked = design.style === 'parking'
+      ? solveWithParking(level, remaining, planning ? 3 : 2)
+      : solve(level, initialState(level), remaining)
+    work += checked.expanded
+  }
+
+  if (checked.status !== 'solved') return { work }
+  const result = replay(level, checked.moves)
+  if (!result.valid || !isSolved(level, result.state)) return { work }
+  const quality = analyzeDesign(level, checked.moves)
+  if (!meetsDesign(quality, planning, design)) return { work }
+
+  return { work, level: { ...level, solution: checked.moves }, quality }
+}
+
 export function generate (inputCode, {
   onProgress = () => {},
   attemptLimit,
-  minimumExtraMoves = MINIMUM_EXTRA_MOVES,
   solverBudget
 } = {}) {
   const parsed = parseCode(inputCode)
@@ -225,17 +253,17 @@ export function generate (inputCode, {
 
   if (parsed.story) throw new Error('Story chapters must use authored boards')
 
-  const { code, region: regionId, planning } = parsed
-  const rng = randomFrom(code)
+  const { code, date, region: regionId, planning } = parsed
+  const rng = randomFrom(date)
   const definition = regionById(regionId)
-  const count = 3
 
+  const design = chooseDesign(rng)
   const motif = LAYOUT_FAMILIES[Math.floor(rng() * LAYOUT_FAMILIES.length)]
 
   // Bound candidates and search expansions, not wall-clock time. A slow device must
   // explore the same sequence, and exhaustion is an error rather than a substitute board.
-  const limit = attemptLimit ?? (planning ? 240 : 180)
-  const workLimit = solverBudget ?? (planning ? 1200000 : 800000)
+  const limit = attemptLimit ?? 160
+  const workLimit = solverBudget ?? 200000
   const validBudgets = [limit, workLimit].every(value => Number.isSafeInteger(value) && value >= 0)
   if (!validBudgets) throw new RangeError('Invalid generation budget')
 
@@ -245,59 +273,66 @@ export function generate (inputCode, {
   for (let attempt = 0; attempt < limit && work < workLimit; attempt++) {
     if (attempt % 4 === 0) onProgress({ stage: 'search', attempt, limit })
 
-    const thresholdIndex = Math.min(3, Math.floor(attempt * 4 / limit))
+    const thresholdIndex = Math.floor(attempt / 8) % THRESHOLDS.length
     const threshold = THRESHOLDS[thresholdIndex]
     const map = rasterize(definition.id, threshold)
     const floor = new Set(map.floors)
     // A country needs a usable goal inside it, or a nearby water dock on sea boards.
     // Small or disconnected land shapes are excluded by geometry, not by their flags.
-    const eligible = map.regions.filter(region =>
-      countryData[region.id] && candidateGoals(map, region.id, floor).length
-    )
-    const ordered = eligible.map(region => ({ country: region.id, order: rng() }))
-    ordered.sort((a, b) => a.order - b.order)
-    const countries = ordered.slice(0, count).map(item => item.country)
-    if (countries.length < count) continue
+    const pools = map.regions.filter(region => countryData[region.id]).map(region => {
+      const candidates = candidateGoals(map, region.id, floor)
+      return map.sea ? candidates.slice(0, 6) : candidates
+    }).filter(candidates => candidates.length)
 
-    let base = createBase(definition, countries, rng, threshold, motif)
-    if (base) base = addPuzzleLayout(base, rng, planning, motif)
+    let base = createBase(definition, pools, rng, threshold, motif)
+    if (base) base = addPuzzleLayout(base, rng, motif, design.style)
     if (!base) continue
 
-    const result = scramble(base, rng, planning ? 35 : 18, planning)
+    const result = scramble(base, rng, design)
     if (!result) continue
 
-    const level = { ...base, ...result, planning, id: code }
+    const level = { ...base, ...result, planning: false, id: date }
     if (validateLevel(level).length) continue
 
     const certificate = replay(level, level.solution)
     if (!certificate.valid || !isSolved(level, certificate.state)) continue
 
-    // First verify a push-optimal design solution within the shared work budget.
-    const pushSearchBudget = Math.min(4000, Math.max(0, workLimit - work))
-    const checked = solve(level, initialState(level), pushSearchBudget)
-    work += checked.expanded
-    if (checked.status !== 'solved') continue
+    let verified = verifyCandidate(level, design, false, workLimit - work)
+    work += verified.work
+    if (!verified.level) continue
 
-    const checkedReplay = replay(level, checked.moves)
-    if (!checkedReplay.valid || !isSolved(level, checkedReplay.state)) continue
+    // Keep only stamps near a delivery. Re-solve after removal: opening space
+    // can change the intended ordering or make parking unnecessary.
+    for (let pass = 0; pass < level.layout.clusters.length; pass++) {
+      const trimmed = trimUnusedClusters(verified.level, verified.level.solution)
+      if (trimmed === verified.level) break
+      verified = verifyCandidate(trimmed, design, false, workLimit - work)
+      work += verified.work
+      if (!verified.level) break
+    }
+    if (!verified.level) continue
 
-    const quality = analyzeDesign(level, checked.moves)
-    if (!meetsDesign(quality, planning)) continue
-
-    // Certification runs two move-optimal searches. Give each at most half the
-    // remaining work so their combined expansions stay within the total budget.
-    const remainingWork = Math.max(0, workLimit - work)
-    const certificateBudget = Math.min(planning ? 100000 : 60000, Math.floor(remainingWork / 2))
-    const gap = certifyMoveGap(level, { minimum: minimumExtraMoves, maxStates: certificateBudget })
-    work += gap.expanded
-    if (gap.status !== 'accepted') continue
+    // Build both variants from this candidate, even when requesting standard,
+    // so request order and device speed cannot change the pairing.
+    let hard = null
+    const hardDesign = { ...design, maximumPushes: 38 }
+    const candidates = hardCandidates(verified.level, randomFrom(`${date}:hard:${attempt}`), verified.quality)
+    for (const candidate of candidates) {
+      if (work >= workLimit) break
+      const checked = verifyCandidate(candidate, hardDesign, true, workLimit - work)
+      work += checked.work
+      if (!checked.level) continue
+      if (checked.quality.pushes > verified.quality.pushes + 6) continue
+      if (checked.quality.revisits > verified.quality.revisits) continue
+      const spread = footprint(checked.level, checked.level.boxes)
+      if (spread.x < 0.55 || spread.y < 0.55) continue
+      hard = checked.level
+      break
+    }
+    if (!hard) continue
 
     onProgress({ stage: 'ready', attempt: attempt + 1, limit })
-
-    return {
-      ...level,
-      solution: gap.solution
-    }
+    return planning ? hard : verified.level
   }
 
   throw new GenerationExhausted(code, definition.id, planning)

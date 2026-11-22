@@ -2,7 +2,6 @@
 
 :root {
   /* Board geography, destinations and hints. */
-  --art-board-focus: #f5d39f;
   --art-land-grid: #657f60;
   --art-water-grid: #d6efeb;
   --art-map-context: #a5bca0;
@@ -32,7 +31,8 @@
   --art-boat-fill: #f8dfad;
   --art-boat-outline: #294e52;
 
-  /* Globe character. */
+  /* Globe character and local keyboard-focus ring. */
+  --art-player-focus: #f5d39f;
   --art-object-shadow: #173f4733;
   --art-globe-sea: #87cbd3;
   --art-globe-outline: #234b55;

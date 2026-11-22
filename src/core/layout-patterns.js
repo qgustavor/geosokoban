@@ -1,5 +1,6 @@
 import { addGoalGatePattern } from './challenge.js'
-import { DIRECTIONS, neighbor, walkable } from './engine.js'
+import { DIRECTIONS, neighbor, walkable, initialState, move } from './engine.js'
+import { gridDistance } from './placement.js'
 
 export const LAYOUT_FAMILIES = ['switchbacks', 'courtyards', 'staggered-rooms', 'islands']
 
@@ -68,73 +69,39 @@ function layoutStamps (base, rng, family) {
   }).filter(Boolean)
 }
 
-/** Bent partitions plus independently placed rooms, baffles or obstacle islands. */
-export function addPuzzleLayout (base, rng, planning, family) {
-  const gate = addGoalGatePattern(base, rng, planning)
-  if (!gate) return null
+/** Spacious structures share the map with its natural coastline and islands. */
+export function addPuzzleLayout (base, rng, family, style) {
+  const gatePocket = ['delivery-order', 'parking'].includes(style)
+  const layout = gatePocket ? addGoalGatePattern(base, rng) : base
+  if (!layout) return null
 
-  const floor = new Set(base.floors)
-  const { axis, position: cut } = gate.cut
+  const obstacles = new Set(layout.obstacles)
+  const protectedCells = new Set(base.goals.map(goal => goal.position))
 
-  // Express either orientation in partition coordinates: across measures the
-  // barrier's displacement, along advances from one end of the barrier to the other.
-  const across = position => axis === 'x' ? position % base.width : Math.floor(position / base.width)
-  const along = position => axis === 'x' ? Math.floor(position / base.width) : position % base.width
-  const position = (a, b) => axis === 'x' ? b * base.width + a : a * base.width + b
-  const gateAlong = along(gate.gates[0])
-  const span = axis === 'x' ? base.height : base.width
-  const acrossSpan = axis === 'x' ? base.width : base.height
-  const sign = rng() < 0.5 ? -1 : 1
-  const period = 3 + Math.floor(rng() * 3)
-  const obstacles = new Set()
-  let previous = cut
-
-  for (let t = 0; t < span; t++) {
-    // Leave the gate's immediate approach straight; farther away, alternate
-    // the barrier's offset to create bends without touching the outer edge.
-    const nearGate = Math.abs(t - gateAlong) <= 2
-    const delta = nearGate ? 0 : sign * (1 + Math.floor(t / period) % 2)
-    const current = Math.max(1, Math.min(acrossSpan - 2, cut + delta))
-
-    // Join successive slices to avoid diagonal holes in a stepped partition.
-    const sliceStart = Math.min(previous, current)
-    const sliceEnd = Math.max(previous, current)
-
-    for (let a = sliceStart; a <= sliceEnd; a++) {
-      const cell = position(a, t)
-      if (floor.has(cell) && cell !== gate.gates[0]) obstacles.add(cell)
+  // Keep turning space around destinations. The pocket's gate is the one
+  // deliberate exception, and is already present before independent stamps.
+  for (let step = 0; step < 2; step++) {
+    for (const cell of [...protectedCells]) {
+      for (const direction of DIRECTIONS) {
+        const next = neighbor(base, cell, direction)
+        if (next >= 0) protectedCells.add(next)
+      }
     }
-
-    previous = current
   }
 
-  const protectedCells = new Set(base.goals.flatMap(goal => {
-    const neighbors = DIRECTIONS.map(direction => neighbor(base, goal.position, direction))
-    return [goal.position, ...neighbors]
-  }))
-  const blocksProtectedApproach = [...obstacles].some(cell => {
-    if (!protectedCells.has(cell)) return false
-
-    // The two slices beside the gate may form its walls. Other protected
-    // destination approaches must remain clear of the bent partition.
-    const alongPosition = along(cell)
-    return alongPosition !== gateAlong - 1 && alongPosition !== gateAlong + 1
-  })
-
-  if (blocksProtectedApproach) return null
-  if (base.goals.some(goal => obstacles.has(goal.position)) || !layoutConnected(base, obstacles)) return null
-
   const clusters = []
-  const desired = planning ? 4 : 3
+  const desired = 2
 
   for (const cells of layoutStamps(base, rng, family)) {
     if (cells.some(cell => protectedCells.has(cell) || obstacles.has(cell))) continue
 
-    // Keep a usable aisle around independent structures rather than dense noise.
-    const touchesExistingObstacle = cells.some(cell =>
-      DIRECTIONS.some(direction => obstacles.has(neighbor(base, cell, direction)))
-    )
-    if (touchesExistingObstacle) continue
+    // Independent structures leave a two-tile aisle where land permits, so a
+    // flag does not consume the player's only way around the next obstacle.
+    const crowdsStructure = cells.some(cell => DIRECTIONS.some(direction => {
+      const next = neighbor(base, cell, direction)
+      return next >= 0 && (obstacles.has(next) || DIRECTIONS.some(side => obstacles.has(neighbor(base, next, side))))
+    }))
+    if (crowdsStructure) continue
 
     const candidate = new Set([...obstacles, ...cells])
     if (!layoutConnected(base, candidate)) continue
@@ -144,13 +111,35 @@ export function addPuzzleLayout (base, rng, planning, family) {
     if (clusters.length >= desired) break
   }
 
-  const offAxis = [...obstacles].filter(cell => across(cell) !== cut).length
-  if (!clusters.length || offAxis < 4) return null
-
+  // Coastlines can supply the routing problem without extra artificial walls.
   return {
-    ...gate,
+    ...layout,
     obstacles: [...obstacles].sort((a, b) => a - b),
     motif: family,
-    layout: { family, clusters, bentPartition: true }
+    layout: { family, style, clusters, gatePocket }
+  }
+}
+
+/** Remove independent stamps remote from every flag route in a verified plan. */
+export function trimUnusedClusters (level, directions) {
+  const routes = new Set(level.boxes.map(box => box.position))
+  let state = initialState(level)
+  const floor = walkable(level)
+
+  for (const direction of directions) {
+    state = move(level, state, direction, floor)
+    for (const box of state.boxes) routes.add(box.position)
+  }
+
+  const clusters = level.layout.clusters.filter(cells => {
+    return cells.some(cell => [...routes].some(position => gridDistance(level, cell, position) <= 2))
+  })
+  if (clusters.length === level.layout.clusters.length) return level
+
+  const removed = new Set(level.layout.clusters.filter(cells => !clusters.includes(cells)).flat())
+  return {
+    ...level,
+    obstacles: level.obstacles.filter(position => !removed.has(position)),
+    layout: { ...level.layout, clusters }
   }
 }

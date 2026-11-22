@@ -1,5 +1,5 @@
 import { getGeography } from './world.js'
-import { projectionFor } from './projection.js'
+import { projectRegions } from './projection.js'
 import { regionById } from '../content/regions.js'
 import { DIRECTIONS, neighbor } from '../core/engine.js'
 
@@ -31,7 +31,7 @@ function pointInRing (x, y, ring) {
 
 export function countryAt (map, x, y) {
   // Feature order breaks any overlaps: the first containing country wins.
-  const country = map.regions.find(region => region.polygons.some(polygon => {
+  const country = (map.landRegions ?? map.regions).find(region => region.polygons.some(polygon => {
     const insideOutline = pointInRing(x, y, polygon[0])
     if (!insideOutline) return false
 
@@ -76,45 +76,14 @@ function largestComponent (shape, candidates) {
 
 function projectedMap (definition) {
   const { width, height } = definition
-  const { project } = projectionFor(definition)
-
-  const features = getGeography().features.filter(feature => {
-    return feature.properties.continent === definition.continent ||
-      definition.extraCountries?.includes(feature.properties.id)
+  const landRegions = projectRegions(getGeography(), definition)
+  const regions = landRegions.filter(region => {
+    return region.continent === definition.continent || definition.extraCountries?.includes(region.id)
   })
 
-  const projectedRegions = features.map(feature => {
-    const geometry = feature.geometry
-    const sourcePolygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates
-    const projectedPolygons = sourcePolygons.map(polygon => polygon.map(ring => ring.map(project)))
-
-    // This is a coarse vertex-in-bounds check, not polygon clipping; retain its boundary-inclusive rule.
-    const polygons = projectedPolygons.filter(polygon => polygon[0].some(([x, y]) => {
-      const insideWidth = x >= 0 && x <= width
-
-      return insideWidth && y >= 0 && y <= height
-    }))
-
-    const ringPaths = polygons.flatMap(polygon => polygon.map(ring => {
-      const vertices = ring.map(([x, y], index) => {
-        const command = index ? 'L' : 'M'
-        // Sampling uses cell coordinates; the outline renderer uses 40 SVG units per gameplay cell.
-        const svgX = (x * 40).toFixed(2)
-        const svgY = (y * 40).toFixed(2)
-
-        return `${command}${svgX},${svgY}`
-      })
-
-      return vertices.join(' ') + 'Z'
-    }))
-    const path = ringPaths.join(' ')
-
-    return { id: feature.properties.id, polygons, path }
-  })
-
-  const regions = projectedRegions.filter(region => region.polygons.length)
-
-  return { width, height, regions, definition }
+  // All neighboring land blocks boats, including countries not eligible for
+  // destinations. The eligible subset still defines land-board floor and goals.
+  return { width, height, landRegions, regions, definition }
 }
 
 export function rasterize (regionId = 'SA', threshold = 0.36) {
@@ -138,6 +107,7 @@ export function rasterize (regionId = 'SA', threshold = 0.36) {
   if (!sample) {
     const map = projectedMap(definition)
     const cells = []
+    const terrain = definition.sea ? map : { regions: map.regions }
 
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
@@ -149,14 +119,14 @@ export function rasterize (regionId = 'SA', threshold = 0.36) {
             const sampleX = x + (sx + 0.5) / 4
             const sampleY = y + (sy + 0.5) / 4
 
-            if (countryAt(map, sampleX, sampleY)) land++
+            if (countryAt(terrain, sampleX, sampleY)) land++
           }
         }
 
         const position = y * map.width + x
         const coverage = land / 16
         // Country ownership uses the cell center, not whichever country supplied most coverage samples.
-        const country = countryAt(map, x + 0.5, y + 0.5)
+        const country = countryAt(terrain, x + 0.5, y + 0.5)
 
         cells.push({ position, coverage, country })
       }

@@ -15,7 +15,7 @@ Leave a solved chapter before its after-scene finishes, reload, and resume. Fini
 
 ## Daily and past puzzles
 
-Try dates for several regions at each difficulty. Easy and Medium must share a board, with different destination clues. Hard must use its own board and hidden clues. Reload a date and compare its layout. Try the current UTC day, past days, invalid dates and a future link.
+Try dates for several regions at each difficulty. Easy and Medium must share a board, with different destination clues. Hard must use hidden clues and a small additional routing structure, with the same countries, destinations and actor starts. Compare the actual route with the standard variant: extra distance alone must not be the difference. Reload a date and compare its layout. Try the current UTC day, past days, invalid dates and a future link.
 
 A failed search must display an error, not a substitute level. Copy its report and check that the code, difficulty link and cause are present. Deny clipboard access and select the report manually. After a previous successful level, a failed replacement must not leave that previous board playable beneath the error.
 
@@ -23,7 +23,7 @@ Cancel generation, navigate away during map loading, and retry a failed map requ
 
 ## Interaction and presentation
 
-Use desktop and narrow mobile viewports. Try one-finger swipes, two-finger pan/zoom, the overview toggle, keyboard shortcuts and focus navigation. Verify that opening a menu or dialogue blocks movement, and that touch movement does not also inspect a flag.
+Use desktop and narrow mobile viewports. Try one-finger swipes, two-finger pan/zoom, the overview toggle, keyboard shortcuts and focus navigation. Verify that opening a menu or dialogue blocks movement, and that touch movement does not also inspect a flag. Keyboard focus on gameplay should mark Little Globe with a small ring, never frame the entire viewport. Tab to HUD/menu controls and confirm their normal outlines remain, the player ring disappears, and controls still work. Check returning from another browser tab and closing a menu, on both land and sea boards.
 
 Exercise all hint stages, reveal a hidden destination, make and undo a delivery, restart and undo that restart. Check completion timing and result sharing. A search-budget limit must not be presented as proof of a deadlock.
 

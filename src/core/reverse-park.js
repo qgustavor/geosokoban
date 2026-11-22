@@ -1,5 +1,7 @@
 import { DIRECTIONS, OPPOSITE, neighbor, walkable } from './engine.js'
+import { reverseDistances } from './solver.js'
 import { createWalkingSearch } from './walking-search.js'
+import { pullDistances } from './placement.js'
 
 /** Reverse-pull the gate flag to its approach, leaving a forward parking decision. */
 export function stageGateFlag (level, start, solution) {
@@ -27,21 +29,23 @@ export function stageGateFlag (level, start, solution) {
   for (let cursor = 0; cursor < queue.length && cursor < 450; cursor++) {
     const node = queue[cursor]
     const box = node.state.boxes[index]
-    const atGateApproach = destinations.some(target =>
-      target.box === box.position && target.player === node.state.player
+    const paths = search(node.state)
+    const approach = destinations.find(target =>
+      target.box === box.position && paths.has(target.player) && !goals.has(target.player)
     )
 
-    if (atGateApproach && !goals.has(node.state.player)) {
-      const chunks = []
+    if (approach) {
+      // The last pull can arrive sideways. Walk to the pushing side before
+      // finishing reverse staging instead of demanding a particular last pull.
+      const returnWalk = paths.pathTo(approach.player).toReversed().map(direction => OPPOSITE[direction])
+      const chunks = [returnWalk]
 
       // These segments undo reverse pulls. Following parents already produces
       // the forward order, so unlike an ordinary BFS path they are not reversed.
       for (let current = node; current.parent; current = current.parent) chunks.push(current.segment)
 
-      return { ...node.state, solution: [...chunks.flat(), ...solution] }
+      return { ...node.state, player: approach.player, solution: [...chunks.flat(), ...solution] }
     }
-
-    const paths = search(node.state)
 
     for (const direction of DIRECTIONS) {
       const stand = neighbor(level, box.position, direction)
@@ -66,4 +70,30 @@ export function stageGateFlag (level, start, solution) {
   }
 
   return null
+}
+
+/** Give one flag a reverse-play destination across the delivery gate. */
+export function planGateCrossing (level, distances, rng) {
+  const floor = walkable(level)
+  const closed = new Set(floor)
+  closed.delete(level.gates[0])
+  const goals = new Set(level.goals.map(goal => goal.position))
+  const options = []
+
+  level.goals.forEach((goal, index) => {
+    if (level.gates.includes(goal.position)) return
+    const withoutGate = reverseDistances(level, goal, closed)
+    const candidates = [...distances.get(goal.country)].filter(([position, pushes]) => {
+      return !goals.has(position) && !withoutGate.has(position) && pushes <= 16
+    }).sort((a, b) => a[1] - b[1])
+    if (!candidates.length) return
+    const [position, pushes] = candidates[Math.floor(rng() * Math.min(4, candidates.length))]
+    options.push({ index, position, pushes })
+  })
+
+  if (!options.length) return null
+  const choice = options[Math.floor(rng() * options.length)]
+  const toward = pullDistances(level, choice.position, floor)
+
+  return { ...choice, toward }
 }

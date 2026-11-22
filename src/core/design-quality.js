@@ -38,7 +38,7 @@ export function goalDependencies (level, state = initialState(level)) {
   return blockedDeliveries.map(({ before, after }) => ({ before, after }))
 }
 
-/** Metrics describe a verified push-optimal solution, not a human difficulty rating. */
+/** Metrics describe a verified solution, not a human difficulty rating or a proof of necessity. */
 export function analyzeDesign (level, directions) {
   const floor = walkable(level)
   const distances = new Map(level.goals.map(goal => [goal.country, reverseDistances(level, goal, floor)]))
@@ -53,6 +53,7 @@ export function analyzeDesign (level, directions) {
 
   const runs = []
   const counts = Object.fromEntries(level.boxes.map(box => [box.country, 0]))
+  const perFlagTurns = Object.fromEntries(level.boxes.map(box => [box.country, 0]))
   let awayPushes = 0
   let turns = 0
   const lastDirection = new Map()
@@ -68,7 +69,10 @@ export function analyzeDesign (level, directions) {
 
       // Walking between pushes does not end a run; switching to another flag does.
       if (runs.at(-1) !== box.country) runs.push(box.country)
-      if (lastDirection.has(box.country) && lastDirection.get(box.country) !== direction) turns++
+      if (lastDirection.has(box.country) && lastDirection.get(box.country) !== direction) {
+        turns++
+        perFlagTurns[box.country]++
+      }
       lastDirection.set(box.country, direction)
 
       const flagDistances = distances.get(box.country)
@@ -93,27 +97,49 @@ export function analyzeDesign (level, directions) {
     turns,
     revisits,
     perFlag: counts,
+    perFlagTurns,
     dependencies: goalDependencies(level),
     pushRuns: runs
   }
 }
 
-export function meetsDesign (metrics, planning) {
-  // Every flag must matter, and at least one delivery must constrain another flag's route.
-  const hasUnderusedFlag = Object.values(metrics.perFlag).some(count => count < 2)
-  if (hasUnderusedFlag || metrics.dependencies.length < 1) return false
-
-  if (!planning) {
-    const withinPushRange = metrics.pushes >= 10 && metrics.pushes <= 28
-
-    return withinPushRange && metrics.turns >= 2
+/** Choose an intention, not a claim that the resulting board will be fun. */
+export function chooseDesign (rng) {
+  // One shared intention per date: a Hard parking puzzle must not be paired
+  // with a standard routing puzzle, or the reverse.
+  const styles = [
+    'journey', 'journey', 'journey', 'journey', 'mixed', 'mixed', 'mixed',
+    'delivery-order', 'delivery-order', 'parking'
+  ]
+  const style = styles[Math.floor(rng() * styles.length)]
+  const ranges = {
+    journey: [[5, 8], [5, 8], [5, 8]],
+    mixed: [[2, 3], [4, 6], [7, 9]],
+    'delivery-order': [[2, 5], [3, 6], [3, 6]],
+    parking: [[2, 5], [3, 6], [3, 6]]
   }
 
-  // Hard requires interaction and repositioning in this solution, not just a longer walk.
-  const withinPushRange = metrics.pushes >= 22 && metrics.pushes <= 65
+  return { style, ranges: ranges[style], maximumPushes: 32 }
+}
 
-  return withinPushRange &&
-    metrics.extraPushes >= 4 &&
-    metrics.awayPushes >= 2 &&
-    metrics.revisits >= 1
+export function meetsDesign (metrics, planning, design) {
+  // Simple deliveries count. Extra pushes and revisits are ceilings, not goals
+  // to maximize, and describe this solution rather than every possible plan.
+  if (Object.values(metrics.perFlag).some(count => count < 1)) return false
+  const extraLimit = (planning ? 4 : 2) + (design.style === 'parking' ? 2 : 0)
+  if (metrics.pushes > design.maximumPushes || metrics.extraPushes > extraLimit) return false
+  if (metrics.revisits > (planning ? 2 : 1)) return false
+
+  if (design.style === 'journey') {
+    // At least one verified plan completes each flag without returning to it.
+    return metrics.dependencies.length === 0 && metrics.revisits === 0 && metrics.extraPushes === 0
+  }
+
+  if (design.style === 'parking') {
+    return metrics.dependencies.length > 0 && metrics.extraPushes > 0 && metrics.revisits > 0
+  }
+
+  if (design.style === 'delivery-order') return metrics.dependencies.length > 0
+
+  return true
 }

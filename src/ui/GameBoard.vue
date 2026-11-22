@@ -408,6 +408,20 @@ defineExpose({
         </g>
         <g class="player-actor" :style="{ transform: `translate(${x(state.player)}px,${y(state.player) - 4}px)` }">
           <g class="piece-reveal" :style="tileDelay(state.player)">
+            <g class="player-focus" aria-hidden="true">
+              <circle
+                cx="20"
+                cy="23"
+                r="24"
+                class="player-focus-outer"
+              />
+              <circle
+                cx="20"
+                cy="23"
+                r="24"
+                class="player-focus-inner"
+              />
+            </g>
             <path
               v-if="level.sea"
               d="M-2 32h44l-8 11H7Z"
@@ -450,9 +464,29 @@ defineExpose({
   -webkit-user-select: none;
 }
 
+/* Keep the keyboard focus cue on the controllable character, not the viewport. */
 .board-wrap:focus-visible {
-  outline-offset: -6px;
-  outline-color: var(--art-board-focus);
+  outline: none;
+}
+
+.player-focus {
+  visibility: hidden;
+  pointer-events: none;
+  fill: none;
+}
+
+.board-wrap:focus-visible .player-focus {
+  visibility: visible;
+}
+
+.player-focus-outer {
+  stroke: var(--art-globe-outline);
+  stroke-width: 6;
+}
+
+.player-focus-inner {
+  stroke: var(--art-player-focus);
+  stroke-width: 3;
 }
 
 /* Reserve space for the HUD and controls, including device safe areas, before fitting the map. */

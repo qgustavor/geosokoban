@@ -39,11 +39,10 @@ export function projectionFor ({ bounds, width, height }) {
   return { project, unproject }
 }
 
-/** Context extends beyond the puzzle to cover wide screens; it never creates floor. */
-export function contextPaths (world, definition) {
+/** Project physical geography independently of which countries a puzzle can select. */
+export function projectRegions (world, definition, margin = 0) {
   const { project } = projectionFor(definition)
   const { width, height } = definition
-  const margin = Math.max(width, height) * 3
   const centerLongitude = (definition.bounds[0] + definition.bounds[2]) / 2
 
   const features = world.features.map(feature => {
@@ -122,8 +121,15 @@ export function contextPaths (world, definition) {
     }))
     const path = ringPaths.join(' ')
 
-    return { id: feature.properties.id, path }
+    return { id: feature.properties.id, continent: feature.properties.continent, polygons, path }
   })
 
   return features.filter(Boolean)
+}
+
+/** Context extends beyond the puzzle to cover wide screens; it never creates floor. */
+export function contextPaths (world, definition) {
+  const margin = Math.max(definition.width, definition.height) * 3
+
+  return projectRegions(world, definition, margin).map(({ id, path }) => ({ id, path }))
 }
