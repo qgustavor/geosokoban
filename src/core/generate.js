@@ -8,10 +8,12 @@ import {
 import { randomFrom, parseCode } from './seed.js'
 import { challengeDistances } from './challenge.js'
 import { chooseGoals, startGuides, footprint } from './placement.js'
-import { addPuzzleLayout, trimUnusedClusters, LAYOUT_FAMILIES } from './layout-patterns.js'
+import { addPuzzleLayout, LAYOUT_FAMILIES } from './layout-patterns.js'
 import { solve } from './solver.js'
 import { solveDeliveries, solveWithParking } from './delivery-plan.js'
 import { hardCandidates } from './hard-variant.js'
+import { routingTerrain, decorateTerrain } from './terrain.js'
+import { minimumRouteTurns } from './route-complexity.js'
 import { chooseDesign, goalDependencies, analyzeDesign, meetsDesign } from './design-quality.js'
 
 import countryData from '../data/countries.json' with { type: 'json' }
@@ -301,28 +303,37 @@ export function generate (inputCode, {
     work += verified.work
     if (!verified.level) continue
 
-    // Keep only stamps near a delivery. Re-solve after removal: opening space
-    // can change the intended ordering or make parking unnecessary.
-    for (let pass = 0; pass < level.layout.clusters.length; pass++) {
-      const trimmed = trimUnusedClusters(verified.level, verified.level.solution)
-      if (trimmed === verified.level) break
-      verified = verifyCandidate(trimmed, design, false, workLimit - work)
-      work += verified.work
-      if (!verified.level) break
+    // Add a small, readable bend where the map supports it. Decorative groups
+    // are handled separately; they need not increase solution length at all.
+    const before = challengeDistances(verified.level)
+    const turns = verified.level.boxes.map(box => minimumRouteTurns(verified.level, box))
+    for (const candidate of routingTerrain(verified.level, randomFrom(`${date}:easy:${attempt}`), { limit: 24 })) {
+      if (work >= workLimit) break
+      const after = challengeDistances(candidate)
+      const extra = candidate.boxes.reduce((sum, box) => {
+        return sum + (after.get(box.country).get(box.position) ?? Infinity) - before.get(box.country).get(box.position)
+      }, 0)
+      if (extra > 3) continue
+      const bends = candidate.boxes.map((box, index) => minimumRouteTurns(candidate, box) - turns[index])
+      if (bends.some(value => value > 2) || (extra === 0 && !bends.some(value => value > 0))) continue
+      const checked = verifyCandidate(candidate, design, false, workLimit - work)
+      work += checked.work
+      if (!checked.level || checked.quality.revisits > verified.quality.revisits) continue
+      verified = checked
+      break
     }
-    if (!verified.level) continue
 
     // Build both variants from this candidate, even when requesting standard,
     // so request order and device speed cannot change the pairing.
     let hard = null
-    const hardDesign = { ...design, maximumPushes: 38 }
+    const hardDesign = { ...design, maximumPushes: 42 }
     const candidates = hardCandidates(verified.level, randomFrom(`${date}:hard:${attempt}`), verified.quality)
     for (const candidate of candidates) {
       if (work >= workLimit) break
       const checked = verifyCandidate(candidate, hardDesign, true, workLimit - work)
       work += checked.work
       if (!checked.level) continue
-      if (checked.quality.pushes > verified.quality.pushes + 6) continue
+      if (checked.quality.pushes > verified.quality.pushes + 10) continue
       if (checked.quality.revisits > verified.quality.revisits) continue
       const spread = footprint(checked.level, checked.level.boxes)
       if (spread.x < 0.55 || spread.y < 0.55) continue
@@ -331,8 +342,35 @@ export function generate (inputCode, {
     }
     if (!hard) continue
 
+    // Landscape is useful even outside the solution. Protect both exact plans
+    // plus a one-tile margin, and keep the shared scenery in both variants.
+    const sceneryCount = Math.min(18, Math.max(6, Math.round(base.floors.length * 0.035)))
+    const standard = decorateTerrain(verified.level, randomFrom(`${date}:scenery:${attempt}`), sceneryCount,
+      [verified.level, hard])
+    const common = standard.layout.decoration
+    hard = {
+      ...hard,
+      obstacles: [...hard.obstacles, ...common].sort((a, b) => a - b),
+      layout: { ...hard.layout, decoration: common }
+    }
+    hard = decorateTerrain(hard, randomFrom(`${date}:hard-scenery:${attempt}`), Math.ceil(sceneryCount / 2))
+    // Scenery has ordinary collision. Recheck the final boards, not just the
+    // undecorated plans; a decorative intention is no guarantee of harmlessness.
+    const finalBoards = [standard, hard]
+    const valid = finalBoards.every(board => {
+      const played = replay(board, board.solution)
+      const metrics = analyzeDesign(board, board.solution)
+      return !validateLevel(board).length && played.valid && isSolved(board, played.state) &&
+        meetsDesign(metrics, board.planning, board.planning ? hardDesign : design)
+    })
+    if (!valid) continue
+    const standardQuality = analyzeDesign(standard, standard.solution)
+    const hardQuality = analyzeDesign(hard, hard.solution)
+    if (hardQuality.minimum - standardQuality.minimum > 8) continue
+    if (hardQuality.pushes > standardQuality.pushes + 10 || hardQuality.revisits > standardQuality.revisits) continue
+
     onProgress({ stage: 'ready', attempt: attempt + 1, limit })
-    return planning ? hard : verified.level
+    return planning ? hard : standard
   }
 
   throw new GenerationExhausted(code, definition.id, planning)

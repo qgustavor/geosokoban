@@ -46,6 +46,9 @@ export function useGameController () {
   const dialogue = useStoryDialogue(locale)
   const reduced = ref(saved.reduced)
   const panel = ref('')
+  const pageActive = ref(!document.hidden && document.hasFocus())
+  const awayPause = ref(false)
+  const pressedKeys = new Set()
   // Menu preferences are independent of a story's teaching rules or a shared link's difficulty.
   const mode = ref(saved.mode)
   const challenge = ref(saved.challenge)
@@ -83,9 +86,42 @@ export function useGameController () {
   const name = country => countryName(country, locale.value)
   const resumeCode = computed(() => resumeStory(completed.value, pendingStory.value))
 
+  const canAutoPause = computed(() => view.value === 'puzzle' && activeCode.value === route.params.code &&
+    Boolean(activeCode.value) && !game.loading.value && !boardTransitioning.value && !failure.value &&
+    !panel.value && !dialogue.scene.value && !fallbackText.value && !solved.value && !storyFinished.value)
+
+  function releaseKey (event) {
+    pressedKeys.delete(event.code || event.key)
+  }
+
+  function pageActivityChanged () {
+    pageActive.value = !document.hidden && document.hasFocus()
+    if (!pageActive.value) pressedKeys.clear()
+  }
+
+  // Block play immediately, but only mount the native pause dialog on return.
+  // showModal() must not try to focus a control while the browser is inactive.
+  watch([pageActive, canAutoPause], ([active, ready]) => {
+    if (!ready) {
+      // Another modal or a completed board already owns the player's attention.
+      if (panel.value || dialogue.scene.value || solved.value || storyFinished.value || failure.value) {
+        awayPause.value = false
+      }
+      return
+    }
+    if (!active) {
+      awayPause.value = true
+      audio.stopEffects()
+    } else if (awayPause.value) {
+      awayPause.value = false
+      panel.value = 'pause'
+    }
+  }, { flush: 'sync' })
+
   function focusBoard () {
     // Wait for routed/panel DOM updates, then avoid stealing focus from an active overlay or transition.
     nextTick(() => {
+      if (!pageActive.value || awayPause.value || document.hidden || !document.hasFocus()) return
       if (boardTransitioning.value || game.loading.value || panel.value || dialogue.scene.value) return
 
       document.querySelector('.board-wrap')?.focus({ preventScroll: true })
@@ -114,6 +150,7 @@ export function useGameController () {
     const code = destination.params.code
 
     failure.value = null
+    awayPause.value = false
     panel.value = ''
     dialogue.cancel()
     audio.stopEffects()
@@ -254,6 +291,7 @@ ${error.name}: ${error.message}`
   }
 
   function step (direction) {
+    if (!pageActive.value || awayPause.value) return
     // During navigation the route can name a board that has not replaced the old session yet.
     if (failure.value || view.value !== 'puzzle' || activeCode.value !== route.params.code) return
     if (boardTransitioning.value || panel.value || dialogue.scene.value || storyFinished.value) return
@@ -293,6 +331,7 @@ ${error.name}: ${error.message}`
   }
 
   function undo () {
+    if (!pageActive.value || awayPause.value || panel.value) return
     if (boardTransitioning.value || dialogue.scene.value || storyFinished.value) return
 
     if (game.undo()) {
@@ -305,6 +344,7 @@ ${error.name}: ${error.message}`
   }
 
   function restart () {
+    if (!pageActive.value || awayPause.value || panel.value) return
     if (boardTransitioning.value || dialogue.scene.value || storyFinished.value) return
 
     if (game.restart()) {
@@ -319,7 +359,11 @@ ${error.name}: ${error.message}`
   }
 
   function key (event) {
-    if (dialogue.scene.value) return
+    if (!pageActive.value || awayPause.value || panel.value || dialogue.scene.value) return
+    // A key held while leaving the page must be released before it can move again.
+    const signature = event.code || event.key
+    if (event.repeat && !pressedKeys.has(signature)) return
+    if (!event.repeat) pressedKeys.add(signature)
 
     // Leave shortcuts, composed text and editing controls to the browser or focused field.
     if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return
@@ -491,6 +535,7 @@ ${error.name}: ${error.message}`
   }
 
   watch(() => route.fullPath, async () => {
+    awayPause.value = false
     // Route changes supersede pending preparation even when the new route is not a puzzle.
     game.cancel()
     audio.stopEffects()
@@ -532,6 +577,7 @@ ${error.name}: ${error.message}`
   // Dialogue and menus need reading space, but the music loop should not restart on every panel change.
   watch([panel, dialogue.scene], ([panelName, scene]) => {
     audio.setQuiet(Boolean(panelName || scene))
+    if (panelName || scene) pressedKeys.clear()
   })
 
   // Audio choices share the existing save so they survive reloads without erasing story progress.
@@ -567,6 +613,11 @@ ${error.name}: ${error.message}`
     }, 200)
     document.documentElement.lang = locale.value
     mediaQuery.addEventListener('change', motionChanged)
+    window.addEventListener('blur', pageActivityChanged)
+    window.addEventListener('focus', pageActivityChanged)
+    window.addEventListener('keyup', releaseKey)
+    document.addEventListener('visibilitychange', pageActivityChanged)
+    pageActivityChanged()
   })
 
   let noticeTimer
@@ -586,6 +637,10 @@ ${error.name}: ${error.message}`
     clearInterval(clockTimer)
     dialogue.cancel()
     mediaQuery.removeEventListener('change', motionChanged)
+    window.removeEventListener('blur', pageActivityChanged)
+    window.removeEventListener('focus', pageActivityChanged)
+    window.removeEventListener('keyup', releaseKey)
+    document.removeEventListener('visibilitychange', pageActivityChanged)
   })
 
   return {

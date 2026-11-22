@@ -173,9 +173,13 @@ const description = computed(() => {
 })
 
 const resultDate = computed(() => puzzleDate(props.game.level.id))
-const resultTitle = computed(() => props.game.chapter ? 'finish' : resultDate.value === utcDay() ? 'dailyComplete' : 'archiveComplete')
+const resultTitle = computed(() => {
+  if (props.game.chapter) return 'finish'
+  return resultDate.value === utcDay() ? 'dailyComplete' : 'archiveComplete'
+})
 const resultMoves = computed(() => props.game.chapter ? props.totals.moves : props.game.state.moves)
-const showVictory = computed(() => (props.storyFinished || (!props.game.chapter && props.game.solved && phase.value === 'results')) &&
+const showVictory = computed(() =>
+  (props.storyFinished || (!props.game.chapter && props.game.solved && phase.value === 'results')) &&
   victoryOpen.value &&
   !props.fallbackText &&
   !props.panelOpen &&
@@ -195,13 +199,15 @@ function toggleHint () {
   }
 
   // The overlay changes the DOM; restore board keyboard control after that update.
-  nextTick(() => document.querySelector('.board-wrap')?.focus({ preventScroll: true }))
+  nextTick(() => {
+    if (!document.hidden && document.hasFocus()) document.querySelector('.board-wrap')?.focus({ preventScroll: true })
+  })
 }
 
 function boardKey (event) {
   if (event.key === 'Escape') {
     event.preventDefault()
-    emit('panel', 'pause')
+    if (!event.repeat) emit('panel', 'pause')
     return
   }
 
@@ -242,7 +248,7 @@ onBeforeUnmount(() => {
         :level="game.level"
         :state="game.state"
         :facing="game.facing"
-        :label="t('board')"
+        :label="`${t('board')}: ${regionName}`"
         :description="description"
         :labels="labels"
         :show-flags="guidance === 'learn'"
@@ -260,7 +266,7 @@ onBeforeUnmount(() => {
         <p v-if="storyChapter" class="journey-hud">
           {{ t('worldTour', { n: storyChapter.tour, total: STORY_TOURS }) }}
         </p>
-        <h1>{{ regionName }}</h1>
+        <h1 class="board-title">{{ regionName }}</h1>
       </div>
       <div class="hud-stats">
         <span class="move-counter">{{ t('moves') }} <b>{{ game.state.moves }}</b></span>
@@ -455,6 +461,13 @@ onBeforeUnmount(() => {
   gap: var(--space-3);
   pointer-events: none;
   color: var(--color-hud-text);
+}
+
+/* The heading labels the board; never draw focus into the character artwork. */
+.play-page:has(.board-wrap:focus-visible) .board-title {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+  border-radius: var(--radius-control);
 }
 
 .play-hud h1 {

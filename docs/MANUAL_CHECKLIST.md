@@ -15,7 +15,7 @@ Leave a solved chapter before its after-scene finishes, reload, and resume. Fini
 
 ## Daily and past puzzles
 
-Try dates for several regions at each difficulty. Easy and Medium must share a board, with different destination clues. Hard must use hidden clues and a small additional routing structure, with the same countries, destinations and actor starts. Compare the actual route with the standard variant: extra distance alone must not be the difference. Reload a date and compare its layout. Try the current UTC day, past days, invalid dates and a future link.
+Try dates for several regions at each difficulty. Easy and Medium must share a board, with different destination clues. Hard must use hidden clues, additional routing groups and some additional peripheral terrain, with the same countries, destinations and actor starts. Compare the actual route with the standard variant: extra distance alone must not be the difference. Reload a date and compare its layout. Try the current UTC day, past days, invalid dates and a future link.
 
 A failed search must display an error, not a substitute level. Copy its report and check that the code, difficulty link and cause are present. Deny clipboard access and select the report manually. After a previous successful level, a failed replacement must not leave that previous board playable beneath the error.
 
@@ -23,7 +23,9 @@ Cancel generation, navigate away during map loading, and retry a failed map requ
 
 ## Interaction and presentation
 
-Use desktop and narrow mobile viewports. Try one-finger swipes, two-finger pan/zoom, the overview toggle, keyboard shortcuts and focus navigation. Verify that opening a menu or dialogue blocks movement, and that touch movement does not also inspect a flag. Keyboard focus on gameplay should mark Little Globe with a small ring, never frame the entire viewport. Tab to HUD/menu controls and confirm their normal outlines remain, the player ring disappears, and controls still work. Check returning from another browser tab and closing a menu, on both land and sea boards.
+Use desktop and narrow mobile viewports. Try one-finger swipes, two-finger pan/zoom, the overview toggle, keyboard shortcuts and focus navigation. Verify that opening a menu or dialogue blocks movement, and that touch movement does not also inspect a flag. Keyboard focus on gameplay should mark the region heading, never frame the viewport or surround Little Globe. Tab to HUD/menu controls and confirm their normal outlines remain, the heading cue disappears, and controls still work. Merely focusing an in-game control must not open Pause.
+
+Leave an unfinished board via another tab, window, address bar or minimization. Gameplay input must stop; returning must show the existing Pause menu until Resume (or its existing dismissal action) is used. No modal should grab focus in the background. Hold a movement key across departure: returning must not continue moving until a fresh press. Check a board finishing loading/transitioning while away. Existing Options/Credits, story dialogue, generation/error screens and results must not acquire a second Pause dialog. Repeat on land and sea boards. Speedrun keeps counting real elapsed time, including the pause; this rule is unchanged.
 
 Exercise all hint stages, reveal a hidden destination, make and undo a delivery, restart and undo that restart. Check completion timing and result sharing. A search-budget limit must not be presented as proof of a deadlock.
 

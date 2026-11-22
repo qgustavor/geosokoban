@@ -51,7 +51,7 @@ Do not change palette selection order, map geometry, collision cells or random d
 
 ## Accessibility and workflow
 
-Keep keyboard focus indicators, accessible hidden labels, safe-area offsets and both saved and system reduced-motion preferences. Buttons and other controls retain the global outlines. The full-screen `GameBoard.vue` group uses a two-color ring around Little Globe instead; its scoped `:focus-visible` rule suppresses only the board outline and displays that local indicator. Keep the board focusable for keyboard movement. Never remove all focus indicators to hide the viewport frame. Component-specific motion exceptions stay in the SFC; document-wide overrides stay in `src/style.css`.
+Keep keyboard focus indicators, accessible hidden labels, safe-area offsets and both saved and system reduced-motion preferences. Buttons and other controls retain the global outlines. The full-screen `GameBoard.vue` group suppresses only its own viewport outline. `PlayView.vue` uses `:has(.board-wrap:focus-visible)` to outline the existing region heading instead, with the shared UI focus tokens. The board's accessible name includes that region. Do not draw focus cues into character artwork. Keep the board focusable for keyboard movement. Never remove all focus indicators to hide the viewport frame. Component-specific motion exceptions stay in the SFC; document-wide overrides stay in `src/style.css`.
 
 Run `npm run lint:fix` while editing and `npm run check` before committing. `npm run lint` remains a read-only check. No dependencies, formatter, hooks or test suite are required by this organization. Put each declaration on its own line with two-space indentation and blank lines between rules.
 

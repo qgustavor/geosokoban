@@ -53,12 +53,24 @@ export function addGoalGatePattern (base, rng) {
         const obstacles = new Set()
         const pocket = new Set()
 
-        for (let d = 0; d <= depth; d++) {
-          for (let side = -3; side <= 3; side++) {
+        // Vary the pocket's outline before tracing its banks. The mouth stays
+        // one tile wide, but the working area need not be a rectangular cage.
+        const bend = rng() < 0.5 ? -1 : 1
+        for (let d = 1; d < depth; d++) {
+          const offset = d > 2 ? bend : 0
+          const left = 1 + Math.floor(rng() * 2)
+          const right = 1 + Math.floor(rng() * 2)
+          for (let side = offset - left; side <= offset + right; side++) {
             const cell = position(d, side)
-            if (!floor.has(cell) || cell === goal.position) continue
-            if (d === 0 || d === depth || Math.abs(side) === 3) obstacles.add(cell)
-            else pocket.add(cell)
+            if (floor.has(cell)) pocket.add(cell)
+          }
+        }
+        // Required approach room remains open even at a tapered part of the bank.
+        for (const d of [1, 2]) pocket.add(position(d, 0))
+        for (const cell of pocket) {
+          for (const side of DIRECTIONS) {
+            const next = neighbor(base, cell, side)
+            if (floor.has(next) && !pocket.has(next) && next !== goal.position) obstacles.add(next)
           }
         }
 

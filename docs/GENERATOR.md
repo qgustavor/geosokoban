@@ -1,6 +1,6 @@
 # Generated puzzles
 
-Daily and Archive use the same dated generator. Easy and Medium share a board; destination clues differ. Hard is now a **paired variation of that board**, with a small routing constraint, not an independent draw of countries and design intention. Story loads authored boards and never enters this generator.
+Daily and Archive use the same dated generator. Easy and Medium share a board; destination clues differ. Hard is now a **paired variation of that board**, with additional terrain-routing decisions, not an independent draw of countries and design intention. Story loads authored boards and never enters this generator.
 
 ## Design intentions
 
@@ -35,29 +35,39 @@ The projection dimensions and backdrop artwork have not changed. Stored story fl
 
 Distances, map span, and independent destinations are different measurements. None establishes enjoyment, and a long empty corridor is not automatically a good puzzle. Open turning and recovery space remains desirable.
 
-`src/core/layout-patterns.js` adds at most two separated independent obstacle clusters. After solving, clusters more than two grid steps from every flag position in the verified plan are removed. The modified board is solved again, because removing walls can change ordering or eliminate a parking requirement. This removes remote filler without claiming that every retained obstacle is indispensable.
+## Terrain has three responsibilities
 
-Delivery-order and parking use a **local one-exit pocket**, not a bent partition spanning the board. `addGoalGatePattern()` in `challenge.js` considers pockets up to seven cells wide and four or five cells deep, keeps the other destinations clear, and checks that another country's flag can leave the pocket. Natural coastline can form part of its boundary. The open pocket must preserve access to at least 90% of unobstructed floor and every destination.
+`src/core/terrain.js` provides the placement helpers. Every resulting cell is an ordinary blocking obstacle; decorative trees and rocks do not become walk-through objects. Artwork still comes from the existing biome scenery system.
 
-`planGateCrossing()` guides a flag into the pocket during reverse play. `stageGateFlag()` is reserved for parking. It can finish by walking to the correct pushing side, rather than depending on the direction of the final reverse pull.
+**Landscape and Easy routing.** `layout-patterns.js` grows up to two separated groups of terrain, favoring elongated ridges, fuller groves or smaller outcrops. Groups of four or more cells must bend or thicken instead of extending a straight stamp indefinitely. After reverse play and verification, `generate()` considers up to 24 small two/three-cell routing additions. An accepted addition increases a relaxed route distance or bend count, but keeps independent extra distance at most three pushes and adds at most two relaxed bends per flag. It must still have a verified standard plan with no additional flag revisits. Where no suitable small addition fits, the existing verified terrain remains; this is optional placement on the same candidate, not a replacement level.
+
+**Hard routing.** `hard-variant.js` considers two or three separated additions, each grown from a delivery or pushing-approach location. Groups target three to six cells (a constrained group can stop earlier, at two). They need not be isolated from existing terrain: joining a ridge can make a meaningful detour. Flag starts, destinations and their immediate neighbors, plus the player's start, remain protected. At least 90% of the remaining walking floor and all actors/destinations must remain connected before the full solution check.
+
+**Decorative obstacles.** The old remote-cluster trimming rule is removed. After both routing plans are verified, `decorateTerrain()` adds small peripheral groups without requiring them to lengthen a solution. Shared decoration targets about 3.5% of floor cells, bounded to 6–18 cells, and Hard targets up to half that count again. These are upper placement targets, not quotas when the map has insufficient safe space.
+
+The common decoration avoids both verified solutions: every player and flag position, and a one-tile margin around those positions, is reserved. It also avoids existing obstacles in either variant. Additional Hard decoration protects its own complete plan. Each placement retains the main walking area, and both final solutions are replayed on the actual decorated boards. The final distance/push ceilings are checked again. These guards preserve known routes and some recovery room; they do not prove that every alternative solution or player's experience is unchanged.
+
+## Ordering pockets
+
+Delivery-order and parking use a local one-exit working area rather than a board-wide partition. `addGoalGatePattern()` in `challenge.js` varies its width and shifts the deeper part before tracing its banks. The approach and mouth remain usable, while the outline need not be a perfect rectangle. Coastline can supply part of the boundary. Other destinations stay outside the pocket and retain pushing access.
+
+`planGateCrossing()` guides a flag into the pocket during reverse play. `stageGateFlag()` is reserved for parking. It can finish by walking to the correct pushing side, rather than depending on the final reverse pull's direction. Irregularity is not a quality score: inspect pockets for visual repetition and readable working space.
 
 ## Paired Hard variation
 
-The generator first verifies a standard board. `src/core/hard-variant.js` keeps its countries, destinations, flag starts, player start, floor and design intention, but adds **one local obstacle cluster of two to four cells**. The former one-flag reverse extension and solution-turn comparison are removed. Hard must change a routing decision, not qualify merely by lengthening a delivery.
-
-Candidates use short bars, corners, small islands or staggered shapes, with rotations and seeded ordering. They intersect a delivery route or a pushing approach in the verified standard plan. They cannot cover flag starts, destinations or their immediate neighboring cells, cover the player start, touch an existing obstacle, or disconnect destinations from the main walking area. At least 90% of remaining floor stays in that area. This is an addition to the routing geometry, not another compulsory goal gate or parking maneuver.
+Both variants retain the same countries, destinations, flag starts, player start, physical floor and design intention. Hard keeps the standard obstacles and adds several routing groups and more peripheral scenery. A longer initial flag distance is not the definition of Hard.
 
 ### Checking an actual routing constraint
 
 `src/core/route-complexity.js` searches the finite graph of flag position and last push direction. Continuing in the same direction costs zero; changing direction costs one. Every push requires a free destination and a free support square behind the flag. The search ignores other flags and walking between pushing sides. It therefore gives a **lower bound** on turns for every real solution, rather than claiming to measure player difficulty. It searches all reachable states without treating a truncated search as evidence.
 
-For at least one flag, that Hard lower bound must exceed the number of turns used by the same flag in the standard board's verified solution, by one or two. This compares a lower bound for every Hard route with a concrete legal standard route. A solver simply choosing a more winding path cannot satisfy it. Because the starting flags and destinations are identical, the new terrain causes the difference. The remaining flags can retain straightforward deliveries.
+For at least one flag, that Hard lower bound must exceed the number of turns used by the same flag in the standard board's verified solution, by one to three before decorative placement. This compares a lower bound for every Hard route with a concrete legal standard route. A solver simply choosing a more winding path cannot satisfy it. Because the starting flags and destinations are identical, the new terrain causes the difference. The remaining flags can retain straightforward deliveries.
 
-The full Hard board is then solved and replayed. Its plan may use at most six more pushes than the standard plan, and no more returns to a previously moved flag. The sum of independent-delivery distance increases is capped at four. There is **no minimum push increase**: a different approach with more necessary turns can be valid without extra travel. Existing delivery dependencies are retained because the construction only adds walls and keeps actors and destinations fixed; complete-board solvability is still checked.
+The full Hard board is then solved and replayed. Its plan may use at most ten more pushes than the standard plan, and no more returns to a previously moved flag. The sum of independent-delivery distance increases is capped at eight. There is **no minimum push increase**: a different approach with more necessary turns can be valid without extra travel. Existing delivery dependencies are retained because the construction only adds walls and keeps actors and destinations fixed; complete-board solvability is still checked.
 
 These are modest mechanical constraints, **not a proof of fun or universal perceived difficulty**. A small island or corner can still be a repetitive idea across a sequence of dates. Review actual routes, free working space, the existing ordering/parking intention, and whether the change invites useful planning instead of tedious execution.
 
-Both variants are constructed before returning either one. The search offers at most 48 qualifying Hard layouts per standard candidate. A candidate without a verified routing variation is rejected; the date tries another candidate of the same intention. Results do not depend on request order, wall-clock time or a persisted cache. This still adds work to standard generation; it is not a performance refactor or a fallback mechanism.
+Both variants are constructed before returning either one. The terrain search examines at most 160 connected Hard additions and offers at most 48 routing-qualified layouts per standard candidate for full solving. A candidate without a verified routing variation is rejected; the date tries another candidate of the same intention. Results do not depend on request order, wall-clock time or a persisted cache. This still adds work to standard generation; it is not a performance refactor or a fallback mechanism.
 
 ## Verification and limits
 
@@ -65,7 +75,7 @@ Reverse play records a legal solution while moving flags out from completed dest
 
 Parking plans allow at most two initial parking pushes normally or three on Hard. Other intentions can use the general solver when a complete-delivery plan was not found; journey boards require a simple independent-delivery plan. Every accepted solution is replayed to completion on its actual board.
 
-`meetsDesign()` imposes ceilings: at most 32 pushes normally and 38 on Hard in the verified plan. Extra pushes above the independent-flag lower bound are capped at 2/4 respectively, or 4/6 for parking. Revisits are capped at 1/2. These are plan measurements, not human difficulty scores.
+`meetsDesign()` imposes ceilings: at most 32 pushes normally and 42 on Hard in the verified plan. Extra pushes above the independent-flag lower bound are capped at 2/4 respectively, or 4/6 for parking. Revisits are capped at 1/2. These are plan measurements, not human difficulty scores.
 
 `generate()` uses the same budgets for either requested variant: at most **160 candidate pairs** and **200,000 solver expansions**. Reverse scrambling, staging, and Hard terrain placement also have finite limits. Work is bounded by attempts and expansions, not elapsed time, so a slow device cannot change a seed's result. Raster, goal-candidate, and worker caches remain; no completed-board cache or fallback pool is added.
 
@@ -73,8 +83,8 @@ Exhaustion reports `GenerationExhausted` through the existing error/report inter
 
 ## Manual review
 
-Start by comparing both variants of November 19, 20, 21 and 22, 2026. Countries, destinations and actor starts should match within each pair; Hard should add a small obstacle structure that changes a delivery route, rather than just move a flag farther away. Check the southern Caribbean coastline as well as Oceania's northwestern edge for reefs or destinations centered on land.
+Start by comparing both variants of November 19, 20, 21 and 22, 2026. Countries, destinations and actor starts should match within each pair; Hard should develop the terrain in several places, with a meaningful routing change and some additional peripheral decoration. It should not just move a flag farther away. Check the southern Caribbean coastline as well as Oceania's northwestern edge for reefs or destinations centered on land.
 
 Then review a sequence across different maps. Distinguish approachable routing from repeated construction, and meaningful travel from extra walking. Evaluate whether the local gate pockets remain readable and whether the rest of the map participates without forcing unnecessary journeys. Difficulty labels, a verified solution, and numerical spread do not settle those judgments.
 
-A dedicated swapped-flags or three-way-exchange construction is still not implemented. Story, guidance choices, speedrun, UI, and bundle configuration remain separate.
+A dedicated swapped-flags or three-way-exchange construction is still not implemented. Story, guidance choices, speedrun and bundle configuration remain separate.
