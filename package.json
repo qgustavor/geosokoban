@@ -19,6 +19,7 @@
     "flags": "node scripts/build-flag-manifest.js",
     "levels:export": "node scripts/level-editor.js export",
     "levels:import": "node scripts/level-editor.js import",
+    "levels:watch": "node scripts/level-editor.js import levels/editable --story --watch",
     "prebuild": "node scripts/copy-licenses.js",
     "maps:outlines": "node scripts/build-map-outlines.js",
     "biomes:prepare": "node scripts/prepare-biomes.js"

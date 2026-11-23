@@ -266,7 +266,9 @@ onBeforeUnmount(() => {
         <p v-if="storyChapter" class="journey-hud">
           {{ t('worldTour', { n: storyChapter.tour, total: STORY_TOURS }) }}
         </p>
-        <h1 class="board-title">{{ regionName }}</h1>
+        <h1 class="board-title">
+          {{ regionName }}
+        </h1>
       </div>
       <div class="hud-stats">
         <span class="move-counter">{{ t('moves') }} <b>{{ game.state.moves }}</b></span>
