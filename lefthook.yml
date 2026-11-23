@@ -1,0 +1,14 @@
+glob_matcher: doublestar
+
+pre-commit:
+  piped: true
+  jobs:
+    - name: eslint
+      glob: "**/*.{js,mjs,cjs,vue}"
+      run: bun --bun eslint --fix {staged_files}
+      stage_fixed: true
+
+    - name: stylelint
+      glob: "src/**/*.{css,vue}"
+      run: bun --bun stylelint --fix {staged_files}
+      stage_fixed: true
