@@ -95,6 +95,7 @@ export function useGameController () {
   }
 
   function pageActivityChanged () {
+    if (import.meta.env.DEV) return false
     pageActive.value = !document.hidden && document.hasFocus()
     if (!pageActive.value) pressedKeys.clear()
   }
@@ -137,6 +138,14 @@ export function useGameController () {
     const resolved = router.resolve(puzzleLocation(chapter.value ? storyCode(1) : level.value.id, guidance.value))
 
     return new URL(resolved.href, window.location.href).href
+  }
+
+  function startDialogue (code, phase, onDone) {
+    if (speedrun.value) {
+      onDone?.()
+      return
+    }
+    dialogue.start(code, phase, onDone)
   }
 
   async function activate (input, navigate = true) {
@@ -196,7 +205,7 @@ export function useGameController () {
         ) {
           storyFinished.value = true
         } else {
-          dialogue.start(code, 'before', focusBoard)
+          startDialogue(code, 'before', focusBoard)
         }
       } else {
         focusBoard()
@@ -506,7 +515,7 @@ ${error.name}: ${error.message}`
 
   function playAfterStory (code) {
     // Missing/empty scenes continue immediately; authored scenes own the departure until dismissed.
-    dialogue.start(code, 'after', () => travelAfterStory(code))
+    startDialogue(code, 'after', () => travelAfterStory(code))
   }
 
   function nextPuzzle () {
