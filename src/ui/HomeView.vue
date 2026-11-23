@@ -155,6 +155,16 @@ function play () {
     <p v-if="notice" class="notice" role="status">
       {{ notice }}
     </p>
+    <div class="info-card">
+      <p>
+        {{ t('prototypeNotice') }}
+        <a
+          href="https://geojogos.app.br/"
+          target="_blank"
+          rel="noopener"
+        >{{ t('prototypeOriginalLink') }}</a>
+      </p>
+    </div>
   </main>
 </template>
 
@@ -201,13 +211,20 @@ function play () {
   padding-bottom: 40px;
 }
 
-.departure-card {
+.departure-card,
+.notice,
+.info-card {
   padding: clamp(var(--space-5), 4vw, 34px);
   border: 1px solid var(--color-panel-border);
   border-radius: var(--radius-panel);
   color: var(--color-ink);
   background: var(--color-panel-bg);
   box-shadow: var(--shadow-panel);
+  margin-bottom: clamp(var(--space-5), 4vw, 34px);
+}
+
+.info-card a {
+  color: var(--color-link-on-panel);
 }
 
 .mode-grid {
@@ -332,10 +349,6 @@ function play () {
 
 .start-game span {
   margin-left: var(--space-3);
-}
-
-.notice {
-  margin: 18px 0 0;
 }
 
 @media (max-width: 540px) {

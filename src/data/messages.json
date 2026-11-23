@@ -134,7 +134,9 @@
     "copyReport": "Copy error report",
     "storyCAR": "We are in the Caribbean. Push each flag to its dock beside the island.",
     "removeMagnet": "Remove magnet",
-    "compassWest": "W"
+    "compassWest": "W",
+    "prototypeNotice": "This is a prototype meant to reimagine GeoJogos' GeoSokoban with a bit more geographic flavor and new features. It isn't a replacement for the original—just a fun way to share ideas for where the mini-game could go next!",
+    "prototypeOriginalLink": "Check out the original game's website!"
   },
   "pt-BR": {
     "audio": "Áudio",
@@ -271,7 +273,9 @@
     "copyReport": "Copiar relato do erro",
     "storyCAR": "Estamos no Caribe. Empurre cada bandeira até seu cais ao lado da ilha.",
     "removeMagnet": "Tirar o ímã",
-    "compassWest": "O"
+    "compassWest": "O",
+    "prototypeNotice": "Este é um protótipo feito para reimaginar o GeoSokoban do GeoJogos com um toque mais geográfico e novos recursos. Ele não é um substituto para o original — é apenas um jeito divertido de compartilhar ideias para o futuro do minijogo!",
+    "prototypeOriginalLink": "Confira o site do jogo original!"
   },
   "es": {
     "audio": "Audio",
@@ -408,6 +412,8 @@
     "copyReport": "Copiar informe del error",
     "storyCAR": "Estamos en el Caribe. Empuja cada bandera hasta su muelle junto a la isla.",
     "removeMagnet": "Quitar el imán",
-    "compassWest": "O"
+    "compassWest": "O",
+    "prototypeNotice": "Este es un prototipo pensado para reimaginar el GeoSokoban de GeoJogos con un toque más geográfico y nuevas funciones. No es un reemplazo del original; es solo una forma divertida de compartir ideas sobre hacia dónde podría ir el minijuego.",
+    "prototypeOriginalLink": "¡Visita el sitio web del juego original!"
   }
 }

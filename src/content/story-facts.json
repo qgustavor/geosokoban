@@ -14,6 +14,26 @@
     "pt-BR": "Na Colômbia, Chiribiquete tem montanhas de topo plano acima da floresta. Parecem mesas gigantes de pedra!",
     "es": "En Colombia, Chiribiquete tiene montañas de cima plana sobre la selva. ¡Parecen mesas gigantes de piedra!"
   },
+  "BRA": {
+    "en": "Brazil’s Pantanal is a vast wetland that floods every rainy season. Jaguars, giant otters, and blue macaws all live there!",
+    "pt-BR": "O Pantanal brasileiro é uma grande planície alagável que enche na época das chuvas. Onças-pintadas, ariranhas e araras-azuis vivem ali!",
+    "es": "El Pantanal de Brasil es un gran humedal que se inunda en época de lluvias. ¡Allí viven jaguares, nutrias gigantes y guacamayos azules!"
+  },
+  "ARG": {
+    "en": "In Argentina, Los Glaciares National Park holds a huge field of ice. Slow-moving glaciers break into towering icebergs on icy lakes!",
+    "pt-BR": "Na Argentina, o Parque Nacional Los Glaciares guarda um enorme campo de gelo. Geleiras lentas se partem em icebergs sobre lagos gelados!",
+    "es": "En Argentina, el Parque Nacional Los Glaciares guarda un enorme campo de hielo. ¡Sus glaciares se rompen en témpanos sobre lagos helados!"
+  },
+  "CHL": {
+    "en": "Far out in the Pacific, Chile’s Rapa Nui is famous for giant stone statues called moai. Ancient carvers shaped them from volcanic rock!",
+    "pt-BR": "No meio do Pacífico, Rapa Nui, no Chile, é famosa pelas estátuas gigantes chamadas moais. Antigos escultores as talharam em rocha vulcânica!",
+    "es": "En medio del Pacífico, Rapa Nui, en Chile, es famosa por sus estatuas gigantes llamadas moáis. ¡Antiguos escultores las tallaron en roca volcánica!"
+  },
+  "ECU": {
+    "en": "Ecuador’s Galápagos Islands sit where ocean currents meet. Giant tortoises roam the hills, and marine iguanas dive into the sea!",
+    "pt-BR": "As Ilhas Galápagos, no Equador, ficam onde correntes marinhas se encontram. Tartarugas-gigantes andam pelas ilhas e iguanas-marinhas nadam no mar!",
+    "es": "Las Islas Galápagos, en Ecuador, están donde se cruzan corrientes marinas. ¡Tortugas gigantes recorren la tierra e iguanas marinas nadan en el mar!"
+  },
   "USA": {
     "en": "In the United States, the Colorado River carved the Grand Canyon. Water can shape an enormous landscape!",
     "pt-BR": "Nos Estados Unidos, o rio Colorado escavou o Grand Canyon. A água pode transformar uma paisagem enorme!",
@@ -28,6 +48,21 @@
     "en": "In the Dominican Republic, Santo Domingo’s old town has streets arranged in a grid. A little like our puzzles!",
     "pt-BR": "Na República Dominicana, as ruas do centro histórico de Santo Domingo formam uma grade. Um pouco como nossos quebra-cabeças!",
     "es": "En República Dominicana, las calles del casco antiguo de Santo Domingo forman una cuadrícula. ¡Un poco como nuestros puzles!"
+  },
+  "MEX": {
+    "en": "Every winter, millions of monarch butterflies fly to mountain forests in Mexico. They cluster so thickly that tree branches bend!",
+    "pt-BR": "Todo inverno, milhões de borboletas-monarcas voam para florestas nas montanhas do México. Elas se juntam tanto que os galhos até dobram!",
+    "es": "Cada invierno, millones de mariposas monarca vuelan a bosques de montaña en México. ¡Se agrupan tanto que hasta doblan las ramas!"
+  },
+  "CRI": {
+    "en": "In Costa Rica’s Diquís Delta, ancient people carved hundreds of stone spheres. Some are nearly two and a half meters wide!",
+    "pt-BR": "No delta de Diquís, na Costa Rica, povos antigos esculpiram centenas de esferas de pedra. Algumas chegam a quase dois metros e meio!",
+    "es": "En el delta del Diquís, en Costa Rica, pueblos antiguos tallaron cientos de esferas de piedra. ¡Algunas miden casi dos metros y medio!"
+  },
+  "CUB": {
+    "en": "Cuba’s Viñales Valley is dotted with tall, rounded limestone hills called mogotes. They rise abruptly above flat green fields!",
+    "pt-BR": "O Vale de Viñales, em Cuba, tem morros altos e arredondados de calcário chamados mogotes. Eles se erguem de repente sobre campos planos!",
+    "es": "El Valle de Viñales, en Cuba, está salpicado de altas colinas redondeadas llamadas mogotes. ¡Se alzan de golpe sobre campos planos!"
   },
   "POL": {
     "en": "Poland has underground sculptures carved from salt! They are in the salt mines of Wieliczka and Bochnia.",
@@ -59,6 +94,36 @@
     "pt-BR": "A Espanha inclui as Ilhas Canárias. Em La Gomera, a floresta verde de Garajonay costuma ficar envolta em neblina!",
     "es": "España incluye las Islas Canarias. En La Gomera, ¡el bosque de Garajonay suele estar envuelto en niebla!"
   },
+  "GBR": {
+    "en": "In Northern Ireland, the Giant’s Causeway has around 40,000 basalt columns. Most fit together like six-sided puzzle pieces!",
+    "pt-BR": "Na Irlanda do Norte, a Calçada dos Gigantes tem cerca de 40 mil colunas de basalto. A maioria se encaixa como peças de seis lados!",
+    "es": "En Irlanda del Norte, la Calzada del Gigante tiene unas 40.000 columnas de basalto. ¡La mayoría encaja como piezas de seis lados!"
+  },
+  "ITA": {
+    "en": "In Italy, Venice is built across more than a hundred small islands in a lagoon. Canals and bridges take the place of busy roads!",
+    "pt-BR": "Na Itália, Veneza foi construída sobre mais de cem pequenas ilhas em uma lagoa. Canais e pontes tomam o lugar das estradas!",
+    "es": "En Italia, Venecia se levantó sobre más de cien islas pequeñas en una laguna. ¡Canales y puentes reemplazan a las carreteras!"
+  },
+  "GRC": {
+    "en": "In Greece, the monasteries of Meteora sit atop towering sandstone pillars. From below, they look like they float in the sky!",
+    "pt-BR": "Na Grécia, os mosteiros de Meteora ficam no topo de altos pilares de rocha. De baixo, parece até que flutuam no céu!",
+    "es": "En Grecia, los monasterios de Meteora se alzan sobre enormes pilares de roca. ¡Desde abajo parece que flotan en el cielo!"
+  },
+  "NOR": {
+    "en": "Ancient glaciers carved Norway’s deep fjords into the coast. Today, seawater winds between steep cliffs and tumbling waterfalls!",
+    "pt-BR": "Antigas geleiras escavaram os profundos fiordes na costa da Noruega. Hoje, a água do mar serpenteia entre penhascos e cachoeiras!",
+    "es": "Antiguos glaciares excavaron los profundos fiordos en la costa de Noruega. ¡Hoy el mar serpentea entre acantilados y cascadas!"
+  },
+  "ISL": {
+    "en": "Iceland’s island of Surtsey was born from an undersea volcano in 1963. Scientists study how seeds and birds reach this brand-new land!",
+    "pt-BR": "A ilha de Surtsey, na Islândia, nasceu de um vulcão submarino em 1963. Cientistas estudam como sementes e aves chegam a essa terra nova!",
+    "es": "La isla de Surtsey, en Islandia, nació de un volcán submarino en 1963. ¡Científicos estudian cómo llegan semillas y aves a esa tierra nueva!"
+  },
+  "TUR": {
+    "en": "In Türkiye’s Cappadocia, wind and water shaped soft volcanic rock into tall cones. Ancient people carved whole homes and churches inside!",
+    "pt-BR": "Na Capadócia, na Turquia, vento e água moldaram rochas vulcânicas em cones altos. Povos antigos escavaram casas e igrejas lá dentro!",
+    "es": "En Capadocia, Turquía, el viento y el agua moldearon la roca volcánica en altos conos. ¡Pueblos antiguos excavaron casas e iglesias dentro!"
+  },
   "EGY": {
     "en": "Whales in a desert? Egypt’s Wadi Al-Hitan has fossils of ancient whales. They tell us about a very different past!",
     "pt-BR": "Baleias no deserto? Wadi Al-Hitan, no Egito, tem fósseis de baleias antigas. Eles contam um passado muito diferente!",
@@ -73,6 +138,31 @@
     "en": "South Africa’s Cape Floral Region has many plants that grow naturally nowhere else. A small place can hold a lot of variety!",
     "pt-BR": "A Região Floral do Cabo, na África do Sul, tem muitas plantas que só crescem naturalmente ali. Um lugar pequeno pode ter muita diversidade!",
     "es": "La Región Floral del Cabo, en Sudáfrica, tiene muchas plantas que solo crecen allí de forma natural. ¡Un lugar pequeño puede tener mucha diversidad!"
+  },
+  "MAR": {
+    "en": "In Morocco, Ait Benhaddou is a fortified village built from sun-dried clay. Its earthen towers stand above a desert river valley!",
+    "pt-BR": "No Marrocos, Ait Benhaddou é uma vila fortificada feita de barro seco ao sol. Suas torres de terra se erguem sobre um vale no deserto!",
+    "es": "En Marruecos, Ait Benhaddou es un pueblo fortificado hecho de barro secado al sol. ¡Sus torres de tierra se alzan sobre un valle del desierto!"
+  },
+  "KEN": {
+    "en": "Kenya’s Great Rift Valley holds shallow lakes rich in minerals. Huge flocks of pink flamingos gather there to feed!",
+    "pt-BR": "O Grande Vale do Rift, no Quênia, abriga lagos rasos ricos em minerais. Grandes bandos de flamingos-cor-de-rosa se reúnem ali para comer!",
+    "es": "El Gran Valle del Rift, en Kenia, tiene lagos poco profundos ricos en minerales. ¡Enormes bandadas de flamencos rosados se reúnen allí!"
+  },
+  "MDG": {
+    "en": "Madagascar’s Tsingy de Bemaraha is a forest of sharp limestone spires. Agile lemurs leap safely from rock peak to rock peak!",
+    "pt-BR": "Tsingy de Bemaraha, em Madagascar, é uma floresta de torres afiadas de calcário. Lêmures ágeis saltam de pico em pico com facilidade!",
+    "es": "Tsingy de Bemaraha, en Madagascar, es un bosque de agujas afiladas de piedra caliza. ¡Ágiles lémures saltan de pico en pico!"
+  },
+  "ETH": {
+    "en": "In Ethiopia, the churches of Lalibela were not stacked from bricks. Builders carved each one straight down out of solid rock!",
+    "pt-BR": "Na Etiópia, as igrejas de Lalibela não foram erguidas com tijolos. Construtores escavaram cada uma de cima para baixo na rocha maciça!",
+    "es": "En Etiopía, las iglesias de Lalibela no se levantaron con ladrillos. ¡Sus constructores las tallaron de arriba abajo en roca sólida!"
+  },
+  "NAM": {
+    "en": "Along Namibia’s coast, the Namib Sand Sea meets the Atlantic Ocean. Desert beetles collect drinking water straight from drifting sea fog!",
+    "pt-BR": "Na costa da Namíbia, o Mar de Areia do Namibe encontra o Atlântico. Besouros do deserto coletam água direto da neblina que vem do mar!",
+    "es": "En la costa de Namibia, el Mar de Arena del Namib toca el Atlántico. ¡Escarabajos del desierto recogen agua directo de la niebla marina!"
   },
   "IND": {
     "en": "India and Bangladesh share the Sundarbans, a great mangrove forest. Its trees grow among tidal waterways!",
@@ -89,6 +179,31 @@
     "pt-BR": "A Mongólia e a Rússia compartilham a bacia de Uvs Nuur. Seu lago salgado é uma parada para aves migratórias!",
     "es": "Mongolia y Rusia comparten la cuenca de Uvs Nuur. ¡Su lago salado es una parada para aves migratorias!"
   },
+  "JPN": {
+    "en": "Japan’s Mount Fuji is a volcanic cone rising above five sparkling lakes. Artists and travelers have admired its snowy peak for centuries!",
+    "pt-BR": "O Monte Fuji, no Japão, é um cone vulcânico cercado por cinco lagos. Artistas e viajantes admiram seu pico nevado há séculos!",
+    "es": "El Monte Fuji, en Japón, es un cono volcánico rodeado de cinco lagos. ¡Artistas y viajeros admiran su cima nevada desde hace siglos!"
+  },
+  "IDN": {
+    "en": "Indonesia’s Komodo National Park protects rugged islands between two seas. It is home to the Komodo dragon, the largest lizard on Earth!",
+    "pt-BR": "O Parque Nacional de Komodo, na Indonésia, protege ilhas entre dois mares. Lá vive o dragão-de-komodo, o maior lagarto da Terra!",
+    "es": "El Parque Nacional de Komodo, en Indonesia, protege islas entre dos mares. ¡Allí vive el dragón de Komodo, el lagarto más grande de la Tierra!"
+  },
+  "VNM": {
+    "en": "In Vietnam’s Ha Long Bay, over a thousand limestone islands rise from emerald water. Waves and rain have sculpted caves and arches inside them!",
+    "pt-BR": "Na Baía de Ha Long, no Vietnã, mais de mil ilhas de calcário saem da água verde-esmeralda. Ondas e chuva moldaram cavernas e arcos ali!",
+    "es": "En la bahía de Ha Long, Vietnam, más de mil islas de caliza emergen del agua esmeralda. ¡Olas y lluvia esculpieron cuevas y arcos en ellas!"
+  },
+  "JOR": {
+    "en": "Hidden among desert canyons in Jordan lies the ancient city of Petra. Its grand doorways were carved straight into rose-red cliffs!",
+    "pt-BR": "Escondida entre cânions no deserto da Jordânia fica a antiga cidade de Petra. Suas grandes fachadas foram esculpidas em paredões rosados!",
+    "es": "Escondida entre cañones del desierto de Jordania está la antigua ciudad de Petra. ¡Sus grandes portales se tallaron en acantilados rosados!"
+  },
+  "NPL": {
+    "en": "Nepal’s Sagarmatha National Park is home to Mount Everest, Earth’s highest peak. Deep valleys and glaciers around it shelter rare snow leopards!",
+    "pt-BR": "O Parque Nacional de Sagarmatha, no Nepal, abriga o Monte Everest, o pico mais alto da Terra. Seus vales e geleiras abrigam raros leopardos-das-neves!",
+    "es": "El Parque Nacional de Sagarmatha, en Nepal, alberga el Monte Everest, el pico más alto. ¡Sus valles y glaciares refugian a raros leopardos de las nieves!"
+  },
   "AUS": {
     "en": "The Great Barrier Reef lies off Australia’s northeast coast. It is made of many coral reefs, not just one!",
     "pt-BR": "A Grande Barreira de Corais fica perto da costa nordeste da Austrália. Ela é formada por muitos recifes, não apenas um!",
@@ -103,5 +218,15 @@
     "en": "People have grown food in Papua New Guinea’s highlands for thousands of years. The old gardens at Kuk help tell that story!",
     "pt-BR": "Há milhares de anos, pessoas cultivam alimentos nas terras altas de Papua-Nova Guiné. As antigas plantações de Kuk contam essa história!",
     "es": "Hace miles de años que se cultivan alimentos en las tierras altas de Papúa Nueva Guinea. ¡Los antiguos cultivos de Kuk cuentan esa historia!"
+  },
+  "PLW": {
+    "en": "Palau’s Rock Islands look like green mushrooms resting on turquoise water. Hidden inside the islands are marine lakes full of stingless jellyfish!",
+    "pt-BR": "As Ilhas Rochosas de Palau parecem cogumelos verdes sobre águas azul-turquesa. Dentro delas há lagos marinhos cheios de águas-vivas que não queimam!",
+    "es": "Las Islas Roca de Palaos parecen hongos verdes sobre aguas turquesas. ¡Esconden lagos marinos llenos de medusas que no pican!"
+  },
+  "SLB": {
+    "en": "In the Solomon Islands, East Rennell sits on the world’s largest raised coral atoll. Its forest surrounds a huge lake once open to the sea!",
+    "pt-BR": "Nas Ilhas Salomão, East Rennell fica no maior atol de coral elevado do mundo. Sua floresta cerca um grande lago que já foi ligado ao mar!",
+    "es": "En las Islas Salomón, East Rennell está en el atolón de coral elevado más grande del mundo. ¡Su selva rodea un gran lago que antes daba al mar!"
   }
 }
