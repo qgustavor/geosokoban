@@ -80,14 +80,8 @@
                  "id":3,
                  "name":"IND",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"IND"
-                        }],
                  "rotation":0,
-                 "type":"IND",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":480,
@@ -98,14 +92,8 @@
                  "id":4,
                  "name":"CHN",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"CHN"
-                        }],
                  "rotation":0,
-                 "type":"CHN",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":560,
@@ -116,14 +104,8 @@
                  "id":101,
                  "name":"IRN",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"IRN"
-                        }],
                  "rotation":0,
-                 "type":"IRN",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":280,
@@ -146,19 +128,8 @@
                  "id":6,
                  "name":"IND",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"IND"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"IND"
-                        }],
                  "rotation":0,
-                 "type":"IND",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":240,
@@ -169,19 +140,8 @@
                  "id":7,
                  "name":"CHN",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"CHN"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"CHN"
-                        }],
                  "rotation":0,
-                 "type":"CHN",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":720,
@@ -192,19 +152,8 @@
                  "id":100,
                  "name":"IRN",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"IRN"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"IRN"
-                        }],
                  "rotation":0,
-                 "type":"IRN",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":240,
@@ -227,7 +176,7 @@
                  "name":"globe",
                  "opacity":1,
                  "rotation":0,
-                 "type":"globe",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":440,

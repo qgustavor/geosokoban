@@ -82,14 +82,8 @@
                  "id":3,
                  "name":"EGY",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"EGY"
-                        }],
                  "rotation":0,
-                 "type":"EGY",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":560,
@@ -100,14 +94,8 @@
                  "id":4,
                  "name":"NGA",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"NGA"
-                        }],
                  "rotation":0,
-                 "type":"NGA",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":320,
@@ -118,14 +106,8 @@
                  "id":101,
                  "name":"AGO",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"AGO"
-                        }],
                  "rotation":0,
-                 "type":"AGO",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":400,
@@ -148,19 +130,8 @@
                  "id":6,
                  "name":"EGY",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"EGY"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"EGY"
-                        }],
                  "rotation":0,
-                 "type":"EGY",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":640,
@@ -171,19 +142,8 @@
                  "id":7,
                  "name":"NGA",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"NGA"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"NGA"
-                        }],
                  "rotation":0,
-                 "type":"NGA",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":520,
@@ -194,19 +154,8 @@
                  "id":100,
                  "name":"AGO",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"AGO"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"AGO"
-                        }],
                  "rotation":0,
-                 "type":"AGO",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":400,
@@ -229,7 +178,7 @@
                  "name":"globe",
                  "opacity":1,
                  "rotation":0,
-                 "type":"globe",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":320,

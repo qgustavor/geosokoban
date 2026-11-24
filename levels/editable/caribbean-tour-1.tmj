@@ -63,6 +63,17 @@
          "y":0
         }, 
         {
+         "id":13,
+         "name":"geography",
+         "type":"imagelayer",
+         "image":"geography-CAR.svg",
+         "locked":true,
+         "opacity":1,
+         "visible":true,
+         "x":0,
+         "y":0
+        },
+        {
          "draworder":"topdown",
          "id":6,
          "name":"targets",
@@ -72,24 +83,8 @@
                  "id":3,
                  "name":"CUB",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"anchorX",
-                         "type":"float",
-                         "value":10.4796129032258
-                        }, 
-                        {
-                         "name":"anchorY",
-                         "type":"float",
-                         "value":8.39339536235598
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"CUB"
-                        }],
                  "rotation":0,
-                 "type":"CUB",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":360,
@@ -100,24 +95,8 @@
                  "id":4,
                  "name":"HTI",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"anchorX",
-                         "type":"float",
-                         "value":13.4471741935484
-                        }, 
-                        {
-                         "name":"anchorY",
-                         "type":"float",
-                         "value":9.88288275548141
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"HTI"
-                        }],
                  "rotation":0,
-                 "type":"HTI",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":520,
@@ -128,24 +107,8 @@
                  "id":5,
                  "name":"DOM",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"anchorX",
-                         "type":"float",
-                         "value":17.4986064516129
-                        }, 
-                        {
-                         "name":"anchorY",
-                         "type":"float",
-                         "value":9.74075079870249
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"DOM"
-                        }],
                  "rotation":0,
-                 "type":"DOM",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":680,
@@ -161,25 +124,15 @@
          "draworder":"topdown",
          "id":10,
          "name":"flags",
+         "color":"#ff0000",
          "objects":[
                 {
                  "height":40,
                  "id":7,
                  "name":"CUB",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"CUB"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"CUB"
-                        }],
                  "rotation":0,
-                 "type":"CUB",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":360,
@@ -190,19 +143,8 @@
                  "id":8,
                  "name":"HTI",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"HTI"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"HTI"
-                        }],
                  "rotation":0,
-                 "type":"HTI",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":600,
@@ -213,19 +155,8 @@
                  "id":9,
                  "name":"DOM",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"DOM"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"DOM"
-                        }],
                  "rotation":0,
-                 "type":"DOM",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":760,
@@ -248,7 +179,7 @@
                  "name":"globe",
                  "opacity":1,
                  "rotation":0,
-                 "type":"globe",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":840,

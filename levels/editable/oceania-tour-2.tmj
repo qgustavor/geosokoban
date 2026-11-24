@@ -1223,6 +1223,17 @@
       ]
     },
     {
+      "id": 13,
+      "name": "geography",
+      "type": "imagelayer",
+      "image": "geography-OC.svg",
+      "locked": true,
+      "opacity": 1,
+      "visible": true,
+      "x": 0,
+      "y": 0
+    },
+    {
       "id": 6,
       "name": "targets",
       "type": "objectgroup",
@@ -1235,92 +1246,42 @@
         {
           "id": 3,
           "name": "AUS",
-          "type": "AUS",
+          "type": "",
           "x": 400,
           "y": 200,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "AUS"
-            },
-            {
-              "name": "anchorX",
-              "type": "float",
-              "value": 10.043585526315793
-            },
-            {
-              "name": "anchorY",
-              "type": "float",
-              "value": 6.127648222814727
-            }
-          ]
+          "visible": true
         },
         {
           "id": 4,
           "name": "NZL",
-          "type": "NZL",
+          "type": "",
           "x": 840,
           "y": 520,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "NZL"
-            },
-            {
-              "name": "anchorX",
-              "type": "float",
-              "value": 21.932894736842105
-            },
-            {
-              "name": "anchorY",
-              "type": "float",
-              "value": 14.291294355269084
-            }
-          ]
+          "visible": true
         },
         {
           "id": 5,
           "name": "PNG",
-          "type": "PNG",
+          "type": "",
           "x": 560,
           "y": 120,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "PNG"
-            },
-            {
-              "name": "anchorX",
-              "type": "float",
-              "value": 14.532828947368424
-            },
-            {
-              "name": "anchorY",
-              "type": "float",
-              "value": 3.6589913603773563
-            }
-          ]
+          "visible": true
         }
       ]
     },
     {
       "id": 10,
       "name": "flags",
+      "color": "#ff0000",
       "type": "objectgroup",
       "x": 0,
       "y": 0,
@@ -1331,71 +1292,35 @@
         {
           "id": 7,
           "name": "AUS",
-          "type": "AUS",
+          "type": "",
           "x": 360,
           "y": 200,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "AUS"
-            },
-            {
-              "name": "boxId",
-              "type": "string",
-              "value": "AUS"
-            }
-          ]
+          "visible": true
         },
         {
           "id": 8,
           "name": "NZL",
-          "type": "NZL",
+          "type": "",
           "x": 880,
           "y": 520,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "NZL"
-            },
-            {
-              "name": "boxId",
-              "type": "string",
-              "value": "NZL"
-            }
-          ]
+          "visible": true
         },
         {
           "id": 9,
           "name": "PNG",
-          "type": "PNG",
+          "type": "",
           "x": 560,
           "y": 80,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "PNG"
-            },
-            {
-              "name": "boxId",
-              "type": "string",
-              "value": "PNG"
-            }
-          ]
+          "visible": true
         }
       ]
     },
@@ -1412,14 +1337,13 @@
         {
           "id": 11,
           "name": "globe",
-          "type": "globe",
+          "type": "",
           "x": 920,
           "y": 520,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": []
+          "visible": true
         }
       ]
     }

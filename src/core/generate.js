@@ -1,6 +1,7 @@
 import { stageGateFlag, planGateCrossing } from './reverse-park.js'
 import { createWalkingSearch } from './walking-search.js'
 import { rasterize, MAP_VERSION } from '../geo/rasterize.js'
+import { MAX_DOCK_DISTANCE } from '../geo/anchors.js'
 import { regionById } from '../content/regions.js'
 import {
   DIRECTIONS, OPPOSITE, neighbor, reachable, walkable, replay, isSolved, validateLevel, initialState
@@ -79,7 +80,7 @@ function findCandidateGoals (map, country, floor) {
     return { country, position, anchor, nearest }
   })
 
-  return candidates.filter(goal => goal.nearest <= 2.8).sort((a, b) => a.nearest - b.nearest).slice(0, 16)
+  return candidates.filter(goal => goal.nearest <= MAX_DOCK_DISTANCE).sort((a, b) => a.nearest - b.nearest).slice(0, 16)
 }
 
 function createBase (definition, pools, rng, threshold, motif) {

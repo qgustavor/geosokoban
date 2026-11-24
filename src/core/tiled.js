@@ -1,4 +1,7 @@
 import { validateLevel } from './engine.js'
+import { rasterize, countryAt } from '../geo/rasterize.js'
+import { findOffshoreAnchor, MAX_DOCK_DISTANCE } from '../geo/anchors.js'
+import countryData from '../data/countries.json' with { type: 'json' }
 
 const TILE_SIZE = 40
 
@@ -21,7 +24,7 @@ export function toTiled (level) {
   // Layers and objects share this counter. Build them in the existing order so exported IDs stay stable.
   let id = 1
 
-  const object = (name, position, values = {}) => {
+  const object = (name, position) => {
     // The engine stores row-major indices; editor objects use the tile's top-left corner in pixels.
     const column = position % level.width
     const row = Math.floor(position / level.width)
@@ -29,14 +32,13 @@ export function toTiled (level) {
     return {
       id: id++,
       name,
-      type: name,
+      type: '',
       x: column * TILE_SIZE,
       y: row * TILE_SIZE,
       width: TILE_SIZE,
       height: TILE_SIZE,
       rotation: 0,
-      visible: true,
-      properties: Object.entries(values).map(([name, value]) => property(name, value))
+      visible: true
     }
   }
 
@@ -66,6 +68,8 @@ export function toTiled (level) {
     opacity: 1,
     visible: true,
     draworder: 'topdown',
+    // Tiled's object labels already identify countries; color distinguishes movable flags.
+    ...(name === 'flags' ? { color: '#ff0000' } : {}),
     objects
   })
 
@@ -82,6 +86,29 @@ export function toTiled (level) {
         property('gates', JSON.stringify(level.gates))
       ]
     : []
+
+  const layers = [
+    tileLayer('floor', floor, 1),
+    tileLayer('obstacles', obstacles, 2),
+    objectLayer('targets', level.goals.map(goal => object(goal.country, goal.position))),
+    objectLayer('flags', level.boxes.map(box => object(box.country, box.position))),
+    objectLayer('player', [object('globe', level.player)])
+  ]
+
+  if (level.sea) {
+    // Keep reference artwork above terrain but below editable actors without changing their IDs.
+    layers.splice(2, 0, {
+      id: id++,
+      name: 'geography',
+      type: 'imagelayer',
+      image: `geography-${level.region}.svg`,
+      locked: true,
+      opacity: 1,
+      visible: true,
+      x: 0,
+      y: 0
+    })
+  }
 
   return {
     type: 'map',
@@ -108,19 +135,7 @@ export function toTiled (level) {
       spacing: 0,
       margin: 0
     }],
-    layers: [
-      tileLayer('floor', floor, 1),
-      tileLayer('obstacles', obstacles, 2),
-      objectLayer('targets', level.goals.map(goal => object(goal.country, goal.position, {
-        country: goal.country,
-        ...(goal.anchor ? { anchorX: goal.anchor[0], anchorY: goal.anchor[1] } : {})
-      }))),
-      objectLayer('flags', level.boxes.map(box => object(box.country, box.position, {
-        country: box.country,
-        boxId: box.id
-      }))),
-      objectLayer('player', [object('globe', level.player)])
-    ],
+    layers,
     nextlayerid: 100,
     nextobjectid: 100
   }
@@ -161,7 +176,19 @@ export function fromTiled (map) {
     const row = object.y / TILE_SIZE
     const column = object.x / TILE_SIZE
 
+    if (column < 0 || column >= map.width || row < 0 || row >= map.height) {
+      throw new Error('Object is outside the map')
+    }
+
     return row * map.width + column
+  }
+
+  const countryOf = object => {
+    // Layer membership supplies the role; the name is the only authored country identity.
+    const country = (object.name ?? '').trim().toUpperCase()
+    if (!Object.hasOwn(countryData, country)) throw new Error(`Unknown country: ${object.name || '(unnamed)'}`)
+
+    return country
   }
 
   const players = layer('player').objects
@@ -175,17 +202,15 @@ export function fromTiled (map) {
     obstacles: occupied('obstacles'),
     player: position(players[0]),
     boxes: layer('flags').objects.map(object => {
-      const data = properties(object)
+      const country = countryOf(object)
 
-      return { id: data.boxId, country: data.country, position: position(object) }
+      return { id: country, country, position: position(object) }
     }),
-    goals: layer('targets').objects.map(object => {
-      const data = properties(object)
-      const goalPosition = position(object)
-      const anchor = data.anchorX === undefined ? null : [data.anchorX, data.anchorY]
-
-      return { country: data.country, position: goalPosition, anchor }
-    })
+    goals: layer('targets').objects.map(object => ({
+      country: countryOf(object),
+      position: position(object),
+      anchor: null
+    }))
   }
 
   // Reassemble the engine's barrier metadata from the editor's flat custom properties.
@@ -199,6 +224,31 @@ export function fromTiled (map) {
   // Grid alignment alone does not establish legal starting positions or matching flags and destinations.
   const errors = validateLevel(level)
   if (errors.length) throw new Error(errors.join('; '))
+
+  const geography = rasterize(level.region, level.threshold)
+  if (level.width !== geography.width || level.height !== geography.height) {
+    throw new Error('Preserve the region dimensions')
+  }
+  if (Boolean(level.sea) !== geography.sea) throw new Error('Preserve the region sea mode')
+
+  // Country containment and anchors use physical geometry, independent of authored terrain.
+  for (const goal of level.goals) {
+    const x = goal.position % level.width + 0.5
+    const y = Math.floor(goal.position / level.width) + 0.5
+    const country = countryAt(geography, x, y)
+
+    if (!geography.sea) {
+      if (country !== goal.country) throw new Error(`Target is outside ${goal.country}`)
+      continue
+    }
+
+    if (country) throw new Error(`Dock for ${goal.country} must be on water`)
+
+    goal.anchor = findOffshoreAnchor(geography, goal.country, goal.position)
+    if (!goal.anchor) {
+      throw new Error(`Dock for ${goal.country} is too far from its coastline (maximum ${MAX_DOCK_DISTANCE} tiles)`)
+    }
+  }
 
   return level
 }

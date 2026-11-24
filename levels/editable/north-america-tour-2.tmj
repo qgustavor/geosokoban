@@ -1251,62 +1251,42 @@
         {
           "id": 3,
           "name": "USA",
-          "type": "USA",
+          "type": "",
           "x": 520,
           "y": 520,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "USA"
-            }
-          ]
+          "visible": true
         },
         {
           "id": 4,
           "name": "CAN",
-          "type": "CAN",
+          "type": "",
           "x": 440,
           "y": 120,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "CAN"
-            }
-          ]
+          "visible": true
         },
         {
           "id": 5,
           "name": "MEX",
-          "type": "MEX",
+          "type": "",
           "x": 440,
           "y": 640,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "MEX"
-            }
-          ]
+          "visible": true
         }
       ]
     },
     {
       "id": 10,
       "name": "flags",
+      "color": "#ff0000",
       "type": "objectgroup",
       "x": 0,
       "y": 0,
@@ -1317,71 +1297,35 @@
         {
           "id": 7,
           "name": "USA",
-          "type": "USA",
+          "type": "",
           "x": 480,
           "y": 560,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "USA"
-            },
-            {
-              "name": "boxId",
-              "type": "string",
-              "value": "USA"
-            }
-          ]
+          "visible": true
         },
         {
           "id": 8,
           "name": "CAN",
-          "type": "CAN",
+          "type": "",
           "x": 400,
           "y": 80,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "CAN"
-            },
-            {
-              "name": "boxId",
-              "type": "string",
-              "value": "CAN"
-            }
-          ]
+          "visible": true
         },
         {
           "id": 9,
           "name": "MEX",
-          "type": "MEX",
+          "type": "",
           "x": 440,
           "y": 680,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "MEX"
-            },
-            {
-              "name": "boxId",
-              "type": "string",
-              "value": "MEX"
-            }
-          ]
+          "visible": true
         }
       ]
     },
@@ -1398,14 +1342,13 @@
         {
           "id": 11,
           "name": "globe",
-          "type": "globe",
+          "type": "",
           "x": 480,
           "y": 600,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": []
+          "visible": true
         }
       ]
     }

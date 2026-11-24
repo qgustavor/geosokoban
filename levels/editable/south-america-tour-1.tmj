@@ -82,14 +82,8 @@
                  "id":3,
                  "name":"PER",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"PER"
-                        }],
                  "rotation":0,
-                 "type":"PER",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":120,
@@ -105,25 +99,15 @@
          "draworder":"topdown",
          "id":6,
          "name":"flags",
+         "color":"#ff0000",
          "objects":[
                 {
                  "height":40,
                  "id":5,
                  "name":"PER",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"PER"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"PER"
-                        }],
                  "rotation":0,
-                 "type":"PER",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":280,
@@ -146,7 +130,7 @@
                  "name":"globe",
                  "opacity":1,
                  "rotation":0,
-                 "type":"globe",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":440,

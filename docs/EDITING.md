@@ -11,9 +11,13 @@ Exporting a story reads its exact authored board. Exporting a date invokes gener
 
 ## Layers
 
-Keep the `floor` and `obstacles` tile layers, plus `targets`, `flags` and `player` object layers. Each required layer must occur exactly once. Place one player. Align objects to the grid without rotation. Targets and flags must retain matching country IDs. `terrain.svg` is the local editor tileset, not a separate runtime renderer.
+Keep the `floor` and `obstacles` tile layers, plus `targets`, `flags` and `player` object layers. Each required layer must occur exactly once. Place one player. Align objects to the grid without rotation. The **Name** field is the only country identifier: name each target and matching flag with its three-letter country code (for example `NZL`). The `flags` layer is red by default; `targets` keeps Tiled's default color. Leave Class empty. The importer derives the internal box ID and country from Name; no object custom properties are required. `terrain.svg` is the local editor tileset, not a separate runtime renderer.
 
-The map properties identify `id`, `region`, projection, threshold, sea mode and puzzle metadata. Keep region dimensions and the country geometry aligned. Land targets belong inside their own country. Sea targets belong on water near their country's outline; preserve their `anchorX` and `anchorY` properties. An obstacle is schematic puzzle terrain, not a claim about a real mountain location.
+The map properties identify `id`, `region`, projection, threshold, sea mode and puzzle metadata. Keep region dimensions and the country geometry aligned. Land targets belong inside their own country. Sea targets belong on water, within 2.8 tiles of their named country's outer coastline. Move the target normally; every import (including watch mode) recomputes its anchor at the closest point along that coastline. Targets on land or too far from the named country are rejected. An obstacle is schematic puzzle terrain, not a claim about a real mountain location.
+
+Sea exports include a locked `geography` image layer above the terrain. It shows the projected country outlines and country codes without changing playable tiles. Toggle its visibility when editing obstacles or flags. Keep the corresponding `geography-<region>.svg` next to the map; exporting a sea board refreshes that reference image. The importer ignores the reference layer and uses the source geography instead.
+
+The editable story maps already use this format. Existing runtime story content changes only when a board is successfully imported.
 
 ## Import
 

@@ -1159,62 +1159,42 @@
         {
           "id": 3,
           "name": "FRA",
-          "type": "FRA",
+          "type": "",
           "x": 480,
           "y": 440,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "FRA"
-            }
-          ]
+          "visible": true
         },
         {
           "id": 4,
           "name": "DEU",
-          "type": "DEU",
+          "type": "",
           "x": 640,
           "y": 240,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "DEU"
-            }
-          ]
+          "visible": true
         },
         {
           "id": 5,
           "name": "ESP",
-          "type": "ESP",
+          "type": "",
           "x": 280,
           "y": 560,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "ESP"
-            }
-          ]
+          "visible": true
         }
       ]
     },
     {
       "id": 10,
       "name": "flags",
+      "color": "#ff0000",
       "type": "objectgroup",
       "x": 0,
       "y": 0,
@@ -1225,71 +1205,35 @@
         {
           "id": 7,
           "name": "FRA",
-          "type": "FRA",
+          "type": "",
           "x": 480,
           "y": 400,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "FRA"
-            },
-            {
-              "name": "boxId",
-              "type": "string",
-              "value": "FRA"
-            }
-          ]
+          "visible": true
         },
         {
           "id": 8,
           "name": "DEU",
-          "type": "DEU",
+          "type": "",
           "x": 640,
           "y": 200,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "DEU"
-            },
-            {
-              "name": "boxId",
-              "type": "string",
-              "value": "DEU"
-            }
-          ]
+          "visible": true
         },
         {
           "id": 9,
           "name": "ESP",
-          "type": "ESP",
+          "type": "",
           "x": 280,
           "y": 600,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "ESP"
-            },
-            {
-              "name": "boxId",
-              "type": "string",
-              "value": "ESP"
-            }
-          ]
+          "visible": true
         }
       ]
     },
@@ -1306,14 +1250,13 @@
         {
           "id": 11,
           "name": "globe",
-          "type": "globe",
+          "type": "",
           "x": 640,
           "y": 160,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": []
+          "visible": true
         }
       ]
     }

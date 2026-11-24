@@ -1435,62 +1435,42 @@
         {
           "id": 3,
           "name": "IND",
-          "type": "IND",
+          "type": "",
           "x": 440,
           "y": 480,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "IND"
-            }
-          ]
+          "visible": true
         },
         {
           "id": 4,
           "name": "CHN",
-          "type": "CHN",
+          "type": "",
           "x": 800,
           "y": 400,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "CHN"
-            }
-          ]
+          "visible": true
         },
         {
           "id": 5,
           "name": "MNG",
-          "type": "MNG",
+          "type": "",
           "x": 640,
           "y": 240,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "MNG"
-            }
-          ]
+          "visible": true
         }
       ]
     },
     {
       "id": 10,
       "name": "flags",
+      "color": "#ff0000",
       "type": "objectgroup",
       "x": 0,
       "y": 0,
@@ -1501,71 +1481,35 @@
         {
           "id": 7,
           "name": "IND",
-          "type": "IND",
+          "type": "",
           "x": 520,
           "y": 480,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "IND"
-            },
-            {
-              "name": "boxId",
-              "type": "string",
-              "value": "IND"
-            }
-          ]
+          "visible": true
         },
         {
           "id": 8,
           "name": "CHN",
-          "type": "CHN",
+          "type": "",
           "x": 720,
           "y": 400,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "CHN"
-            },
-            {
-              "name": "boxId",
-              "type": "string",
-              "value": "CHN"
-            }
-          ]
+          "visible": true
         },
         {
           "id": 9,
           "name": "MNG",
-          "type": "MNG",
+          "type": "",
           "x": 640,
           "y": 280,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "country",
-              "type": "string",
-              "value": "MNG"
-            },
-            {
-              "name": "boxId",
-              "type": "string",
-              "value": "MNG"
-            }
-          ]
+          "visible": true
         }
       ]
     },
@@ -1582,14 +1526,13 @@
         {
           "id": 11,
           "name": "globe",
-          "type": "globe",
+          "type": "",
           "x": 680,
           "y": 280,
           "width": 40,
           "height": 40,
           "rotation": 0,
-          "visible": true,
-          "properties": []
+          "visible": true
         }
       ]
     }

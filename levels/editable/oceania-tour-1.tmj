@@ -67,6 +67,17 @@
          "y":0
         }, 
         {
+         "id":11,
+         "name":"geography",
+         "type":"imagelayer",
+         "image":"geography-OC.svg",
+         "locked":true,
+         "opacity":1,
+         "visible":true,
+         "x":0,
+         "y":0
+        },
+        {
          "draworder":"topdown",
          "id":5,
          "name":"targets",
@@ -76,24 +87,8 @@
                  "id":3,
                  "name":"AUS",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"anchorX",
-                         "type":"float",
-                         "value":14.5
-                        }, 
-                        {
-                         "name":"anchorY",
-                         "type":"float",
-                         "value":14.5
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"AUS"
-                        }],
                  "rotation":0,
-                 "type":"AUS",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":600,
@@ -104,24 +99,8 @@
                  "id":4,
                  "name":"NZL",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"anchorX",
-                         "type":"float",
-                         "value":23.043552631579
-                        }, 
-                        {
-                         "name":"anchorY",
-                         "type":"float",
-                         "value":16.7255998029139
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"NZL"
-                        }],
                  "rotation":0,
-                 "type":"NZL",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":840,
@@ -144,19 +123,8 @@
                  "id":6,
                  "name":"AUS",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"AUS"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"AUS"
-                        }],
                  "rotation":0,
-                 "type":"AUS",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":840,
@@ -167,19 +135,8 @@
                  "id":7,
                  "name":"NZL",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"NZL"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"NZL"
-                        }],
                  "rotation":0,
-                 "type":"NZL",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":680,
@@ -202,7 +159,7 @@
                  "name":"globe",
                  "opacity":1,
                  "rotation":0,
-                 "type":"globe",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":760,

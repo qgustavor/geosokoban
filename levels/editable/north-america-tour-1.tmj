@@ -80,14 +80,8 @@
                  "id":3,
                  "name":"USA",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"USA"
-                        }],
                  "rotation":0,
-                 "type":"USA",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":440,
@@ -98,14 +92,8 @@
                  "id":4,
                  "name":"CAN",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"CAN"
-                        }],
                  "rotation":0,
-                 "type":"CAN",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":160,
@@ -121,25 +109,15 @@
          "draworder":"topdown",
          "id":8,
          "name":"flags",
+         "color":"#ff0000",
          "objects":[
                 {
                  "height":40,
                  "id":6,
                  "name":"USA",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"USA"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"USA"
-                        }],
                  "rotation":0,
-                 "type":"USA",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":720,
@@ -150,19 +128,8 @@
                  "id":7,
                  "name":"CAN",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"CAN"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"CAN"
-                        }],
                  "rotation":0,
-                 "type":"CAN",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":600,
@@ -185,7 +152,7 @@
                  "name":"globe",
                  "opacity":1,
                  "rotation":0,
-                 "type":"globe",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":800,

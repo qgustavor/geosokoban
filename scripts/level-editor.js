@@ -5,7 +5,8 @@ import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 import { gunzipSync } from 'node:zlib'
 import { setGeography } from '../src/geo/world.js'
-import { rasterize, countryAt } from '../src/geo/rasterize.js'
+import { rasterize } from '../src/geo/rasterize.js'
+import { geographyReference } from './lib/tiled-reference.js'
 import { normalizeCode } from '../src/core/seed.js'
 import { generate } from '../src/core/generate.js'
 import { storyIndex } from '../src/content/regions.js'
@@ -39,23 +40,6 @@ async function writeJsonAtomic (filePath, content) {
 function validateAndSolve (rawTmj) {
   const level = fromTiled(JSON.parse(rawTmj))
   if (!normalizeCode(level.id)) throw new Error('Invalid puzzle code in map properties')
-
-  const map = rasterize(level.region, level.threshold)
-  if (level.width !== map.width || level.height !== map.height) throw new Error('Preserve the region dimensions')
-
-  // Tiled uses cell positions; country containment is tested at each cell's center.
-  for (const goal of level.goals) {
-    const x = goal.position % level.width + 0.5
-    const y = Math.floor(goal.position / level.width) + 0.5
-    if (!level.sea && countryAt(map, x, y) !== goal.country) throw new Error(`Target is outside ${goal.country}`)
-    if (level.sea) {
-      // Offshore goals need a nearby country anchor, but must themselves remain on water.
-      const invalidDock = countryAt(map, x, y) || !goal.anchor ||
-        Math.hypot(x - goal.anchor[0], y - goal.anchor[1]) > 2.8
-
-      if (invalidDock) throw new Error(`Invalid offshore dock for ${goal.country}`)
-    }
-  }
 
   const result = solve(level, initialState(level), 50000)
   if (result.status !== 'solved') {
@@ -249,6 +233,11 @@ try {
     const level = stories[code] ?? generate(code)
     const output = resolve(option ?? `levels/editable/${code}.tmj`)
     await mkdir(dirname(output), { recursive: true })
+    if (level.sea) {
+      const map = rasterize(level.region, level.threshold)
+      const image = resolve(dirname(output), `geography-${level.region}.svg`)
+      await writeFile(image, geographyReference(map))
+    }
     await writeFile(output, JSON.stringify(toTiled(level), null, 2) + '\n')
     await writeFile(resolve(dirname(output), 'terrain.svg'), '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="40"><rect width="40" height="40" rx="4" fill="#e4e8bb"/><rect x="40" width="40" height="40" rx="4" fill="#e4e8bb"/><path d="m43 33 16-27 18 27z" fill="#809787"/><path d="m59 6-6 11 6-2 5 2z" fill="#fff7df"/></svg>\n')
     console.log(output)

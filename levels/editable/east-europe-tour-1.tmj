@@ -78,14 +78,8 @@
                  "id":3,
                  "name":"POL",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"POL"
-                        }],
                  "rotation":0,
-                 "type":"POL",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":240,
@@ -96,14 +90,8 @@
                  "id":4,
                  "name":"ROU",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"ROU"
-                        }],
                  "rotation":0,
-                 "type":"ROU",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":360,
@@ -114,14 +102,8 @@
                  "id":101,
                  "name":"RUS",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"RUS"
-                        }],
                  "rotation":0,
-                 "type":"RUS",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":680,
@@ -137,25 +119,15 @@
          "draworder":"topdown",
          "id":8,
          "name":"flags",
+         "color":"#ff0000",
          "objects":[
                 {
                  "height":40,
                  "id":6,
                  "name":"POL",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"POL"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"POL"
-                        }],
                  "rotation":0,
-                 "type":"POL",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":440,
@@ -166,19 +138,8 @@
                  "id":7,
                  "name":"ROU",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"ROU"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"ROU"
-                        }],
                  "rotation":0,
-                 "type":"ROU",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":680,
@@ -189,19 +150,8 @@
                  "id":100,
                  "name":"RUS",
                  "opacity":1,
-                 "properties":[
-                        {
-                         "name":"boxId",
-                         "type":"string",
-                         "value":"RUS"
-                        }, 
-                        {
-                         "name":"country",
-                         "type":"string",
-                         "value":"RUS"
-                        }],
                  "rotation":0,
-                 "type":"RUS",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":280,
@@ -224,7 +174,7 @@
                  "name":"globe",
                  "opacity":1,
                  "rotation":0,
-                 "type":"globe",
+                 "type":"",
                  "visible":true,
                  "width":40,
                  "x":560,

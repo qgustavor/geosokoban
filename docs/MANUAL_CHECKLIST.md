@@ -35,6 +35,10 @@ Review every screen in English, Portuguese and Spanish. Try reduced motion and t
 
 Inspect country names, flags, goal positions, island dock anchors, map outlines and scenery at representative stops. A solver cannot establish educational accuracy. Review story progression, difficulty, writing and accessibility through actual play with the intended audience.
 
+## Tiled authoring
+
+Export a land chapter and a sea chapter into a temporary directory. Confirm that flag and target names are the only country fields, flags are red, and the sea geography layer is locked, aligned to the grid, and can be hidden. Move a sea target to another valid water tile and import it; inspect the new anchor and replay the solution. Check that a target on land, a distant dock, an unknown country name, and mismatched flag/target names are rejected without replacing the previous successful import. Repeat a valid and invalid edit in watch mode.
+
 A completed checklist is a record of what was observed, not a guarantee about every seed, browser or device.
 
 ## Presentation changes
