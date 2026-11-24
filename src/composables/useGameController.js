@@ -46,7 +46,7 @@ export function useGameController () {
   const dialogue = useStoryDialogue(locale)
   const reduced = ref(saved.reduced)
   const panel = ref('')
-  const pageActive = ref(!document.hidden && document.hasFocus())
+  const pageActive = ref(import.meta.env.DEV || (!document.hidden && document.hasFocus()))
   const awayPause = ref(false)
   const pressedKeys = new Set()
   // Menu preferences are independent of a story's teaching rules or a shared link's difficulty.
@@ -95,7 +95,11 @@ export function useGameController () {
   }
 
   function pageActivityChanged () {
-    if (import.meta.env.DEV) return false
+    if (import.meta.env.DEV) {
+      pageActive.value = true
+      return
+    }
+
     pageActive.value = !document.hidden && document.hasFocus()
     if (!pageActive.value) pressedKeys.clear()
   }

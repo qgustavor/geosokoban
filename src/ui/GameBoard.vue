@@ -99,8 +99,12 @@ const input = createBoardInput(direction => emit('step', direction), change => {
 })
 
 function point (event) {
-  const rect = stage.value.getBoundingClientRect()
-  return { x: event.clientX - rect.left, y: event.clientY - rect.top }
+  const rect = event.currentTarget.getBoundingClientRect()
+
+  return {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  }
 }
 
 function capturePointers () {
@@ -137,7 +141,9 @@ function pointerEnd (event) {
 }
 
 function pointerLeave (event) {
-  if (!board.value.hasPointerCapture(event.pointerId)) {
+  const element = event.currentTarget
+
+  if (!element.hasPointerCapture(event.pointerId)) {
     const { x, y } = point(event)
     input.up(event.pointerId, x, y, true)
   }
