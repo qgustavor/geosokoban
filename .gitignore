@@ -8,3 +8,6 @@ data-sources/*.geojson
 data-sources/*.gz
 src/content/*.tmp
 data-sources/*-source.json
+
+# Generated story authoring candidates are not active story content.
+levels/drafts/

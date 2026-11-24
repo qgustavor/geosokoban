@@ -39,6 +39,8 @@ Inspect country names, flags, goal positions, island dock anchors, map outlines 
 
 Export a land chapter and a sea chapter into a temporary directory. Confirm that flag and target names are the only country fields, flags are red, and the sea geography layer is locked, aligned to the grid, and can be hidden. Move a sea target to another valid water tile and import it; inspect the new anchor and replay the solution. Check that a target on land, a distant dock, an unknown country name, and mismatched flag/target names are rejected without replacing the previous successful import. Repeat a valid and invalid edit in watch mode.
 
+Regenerate a story draft with two seeds and confirm the chapter ID and region are unchanged. Confirm the default output is outside the watcher and an existing draft needs `--force`. Add an invalid sea floor cell to a copy of a map, confirm import rejects it, then repair the terrain and replay the imported solution. Confirm a failed repair leaves the source unchanged.
+
 A completed checklist is a record of what was observed, not a guarantee about every seed, browser or device.
 
 ## Presentation changes

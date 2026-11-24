@@ -8,13 +8,17 @@ import { setGeography } from '../src/geo/world.js'
 import { rasterize } from '../src/geo/rasterize.js'
 import { geographyReference } from './lib/tiled-reference.js'
 import { normalizeCode } from '../src/core/seed.js'
-import { generate } from '../src/core/generate.js'
+import { generate, generateStoryDraft } from '../src/core/generate.js'
 import { storyIndex } from '../src/content/regions.js'
 import { initialState } from '../src/core/engine.js'
 import { solve } from '../src/core/solver.js'
 import { toTiled, fromTiled } from '../src/core/tiled.js'
 
-const USAGE = 'Usage: node scripts/level-editor.js export CODE [output.tmj] | import <input.tmj | dir> [output.json | outputDir | --story] [--watch]'
+const USAGE = `Usage: node scripts/level-editor.js
+  export CODE [output.tmj]
+  import <input.tmj | dir> [output.json | outputDir | --story] [--watch]
+  regenerate CHAPTER [output.tmj] [--seed SEED] [--force]
+  repair-terrain input.tmj [output.tmj]`
 
 const storyPath = fileURLToPath(new URL('../src/content/story-levels.json', import.meta.url))
 const worldBytes = await readFile(new URL('../src/data/world.geojson.gz', import.meta.url))
@@ -207,18 +211,76 @@ async function watchLevels (target, { story }) {
   console.log(`Watching ${resolvedInput} for changes (Ctrl+C to stop)...`)
 }
 
+async function exportLevel (level, output) {
+  await mkdir(dirname(output), { recursive: true })
+  if (level.sea) {
+    const map = rasterize(level.region, level.threshold)
+    const image = resolve(dirname(output), `geography-${level.region}.svg`)
+    await writeFile(image, geographyReference(map))
+  }
+  await writeFile(resolve(dirname(output), 'terrain.svg'), '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="40"><rect width="40" height="40" rx="4" fill="#e4e8bb"/><rect x="40" width="40" height="40" rx="4" fill="#e4e8bb"/><path d="m43 33 16-27 18 27z" fill="#809787"/><path d="m59 6-6 11 6-2 5 2z" fill="#fff7df"/></svg>\n')
+  await writeJsonAtomic(output, JSON.stringify(toTiled(level), null, 2) + '\n')
+}
+
+/** Only remove obsolete water cells; never fill deliberate gaps or move actors. */
+async function repairTerrain (input, output) {
+  const map = JSON.parse(await readFile(input, 'utf8'))
+  const metadata = Object.fromEntries((map.properties ?? []).map(item => [item.name, item.value]))
+  const geography = rasterize(metadata.region, metadata.threshold)
+  if (!geography.sea || metadata.sea !== true) throw new Error('Terrain repair requires a sea map')
+  if (map.width !== geography.width || map.height !== geography.height) {
+    throw new Error('Preserve the region dimensions')
+  }
+
+  const tileData = name => {
+    const layers = map.layers.filter(layer => layer.name === name)
+    if (layers.length !== 1 || !Array.isArray(layers[0].data) ||
+      layers[0].data.length !== map.width * map.height) {
+      throw new Error(`Invalid ${name} tile layer`)
+    }
+
+    return layers[0].data
+  }
+
+  const floor = tileData('floor')
+  const obstacles = tileData('obstacles')
+  const allowed = new Set(geography.floors)
+  let removedFloor = 0
+  let removedObstacles = 0
+
+  for (let position = 0; position < floor.length; position++) {
+    if (allowed.has(position) || !floor[position]) continue
+
+    floor[position] = 0
+    removedFloor++
+    // Obstacles on removed floor cannot remain part of the puzzle terrain.
+    if (obstacles[position]) {
+      obstacles[position] = 0
+      removedObstacles++
+    }
+  }
+
+  // Certify before touching the file, so a stranded actor or failed search leaves the source intact.
+  const certified = validateAndSolve(JSON.stringify(map))
+  await writeJsonAtomic(output, JSON.stringify(map, null, 2) + '\n')
+  console.log(`${output}: removed ${removedFloor} floor cells and ${removedObstacles} obstacles (${certified.solution.length} moves)`)
+}
+
 try {
   const { values, positionals } = parseArgs({
     args: process.argv.slice(2),
     options: {
       watch: { type: 'boolean', short: 'w', default: false },
-      story: { type: 'boolean', default: false }
+      story: { type: 'boolean', default: false },
+      seed: { type: 'string' },
+      force: { type: 'boolean', default: false }
     },
     allowPositionals: true
   })
 
   const [operation, input, option, ...extra] = positionals
   if (extra.length > 0) throw new Error(USAGE)
+  if (operation !== 'regenerate' && (values.seed !== undefined || values.force)) throw new Error(USAGE)
 
   if (operation === 'export') {
     if (values.watch || values.story) throw new Error(USAGE)
@@ -232,15 +294,37 @@ try {
 
     const level = stories[code] ?? generate(code)
     const output = resolve(option ?? `levels/editable/${code}.tmj`)
-    await mkdir(dirname(output), { recursive: true })
-    if (level.sea) {
-      const map = rasterize(level.region, level.threshold)
-      const image = resolve(dirname(output), `geography-${level.region}.svg`)
-      await writeFile(image, geographyReference(map))
-    }
-    await writeFile(output, JSON.stringify(toTiled(level), null, 2) + '\n')
-    await writeFile(resolve(dirname(output), 'terrain.svg'), '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="40"><rect width="40" height="40" rx="4" fill="#e4e8bb"/><rect x="40" width="40" height="40" rx="4" fill="#e4e8bb"/><path d="m43 33 16-27 18 27z" fill="#809787"/><path d="m59 6-6 11 6-2 5 2z" fill="#fff7df"/></svg>\n')
+    await exportLevel(level, output)
     console.log(output)
+  } else if (operation === 'regenerate') {
+    if (!input || values.watch || values.story) throw new Error(USAGE)
+    if (!storyIndex(input)) throw new Error('Supply a story chapter ID')
+
+    // Drafts live outside the story watcher unless the author explicitly selects another path.
+    const output = resolve(option ?? `levels/drafts/${input}.tmj`)
+    if (!output.endsWith('.tmj')) throw new Error('Use a .tmj output filename')
+    if (!values.force) {
+      const exists = await stat(output).then(() => true, error => {
+        if (error.code === 'ENOENT') return false
+        throw error
+      })
+      if (exists) throw new Error('Output already exists; choose another path or pass --force')
+    }
+
+    const seed = values.seed ?? input
+    const level = generateStoryDraft(input, seed)
+    // The editor must also accept and solve the generated draft before publishing it.
+    validateAndSolve(JSON.stringify(toTiled(level)))
+    await exportLevel(level, output)
+    console.log(`${output} (seed: ${seed})`)
+  } else if (operation === 'repair-terrain') {
+    if (!input || values.watch || values.story) throw new Error(USAGE)
+    const source = resolve(input)
+    const output = resolve(option ?? source)
+    if (!source.endsWith('.tmj') || !output.endsWith('.tmj')) throw new Error('Use .tmj filenames')
+    // Keep relative Tiled assets usable when writing a separate repaired file.
+    if (dirname(output) !== dirname(source)) throw new Error('Write the repaired map in the same directory as its source')
+    await repairTerrain(source, output)
   } else if (operation === 'import') {
     if (!input || (values.story && option)) throw new Error(USAGE)
 

@@ -231,6 +231,14 @@ export function fromTiled (map) {
   }
   if (Boolean(level.sea) !== geography.sea) throw new Error('Preserve the region sea mode')
 
+  if (geography.sea) {
+    const allowed = new Set(geography.floors)
+    const invalid = level.floors.filter(position => !allowed.has(position))
+    if (invalid.length) {
+      throw new Error(`Sea floor contains ${invalid.length} invalid cells; use repair-terrain`)
+    }
+  }
+
   // Country containment and anchors use physical geometry, independent of authored terrain.
   for (const goal of level.goals) {
     const x = goal.position % level.width + 0.5

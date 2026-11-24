@@ -18,6 +18,8 @@
     "check": "bun run lint:fix && bun run build",
     "flags": "bun scripts/build-flag-manifest.js",
     "levels:export": "bun scripts/level-editor.js export",
+    "levels:regenerate": "bun scripts/level-editor.js regenerate",
+    "levels:repair-terrain": "bun scripts/level-editor.js repair-terrain",
     "levels:import": "bun scripts/level-editor.js import",
     "levels:watch": "bun scripts/level-editor.js import levels/editable --story --watch",
     "story": "bun run --parallel dev levels:watch",

@@ -246,18 +246,29 @@ function verifyCandidate (level, design, planning, budget) {
   return { work, level: { ...level, solution: checked.moves }, quality }
 }
 
-export function generate (inputCode, {
+export function generate (inputCode, options = {}) {
+  const parsed = parseCode(inputCode)
+  if (!parsed) throw new Error('Invalid puzzle code')
+  if (parsed.story) throw new Error('Story chapters must use authored boards')
+
+  return generateBoard({ ...parsed, seed: parsed.date, id: parsed.date }, options)
+}
+
+/** Author a candidate without changing how the game loads curated story boards. */
+export function generateStoryDraft (chapterCode, seed = chapterCode, options = {}) {
+  const parsed = parseCode(chapterCode)
+  if (!parsed?.story) throw new Error('Supply a story chapter ID')
+  if (typeof seed !== 'string' || !seed.trim()) throw new Error('Supply a nonempty seed')
+
+  return generateBoard({ ...parsed, seed, id: chapterCode }, options)
+}
+
+function generateBoard ({ code, seed, id, region: regionId, planning }, {
   onProgress = () => {},
   attemptLimit,
   solverBudget
-} = {}) {
-  const parsed = parseCode(inputCode)
-  if (!parsed) throw new Error('Invalid puzzle code')
-
-  if (parsed.story) throw new Error('Story chapters must use authored boards')
-
-  const { code, date, region: regionId, planning } = parsed
-  const rng = randomFrom(date)
+}) {
+  const rng = randomFrom(seed)
   const definition = regionById(regionId)
 
   const design = chooseDesign(rng)
@@ -294,7 +305,7 @@ export function generate (inputCode, {
     const result = scramble(base, rng, design)
     if (!result) continue
 
-    const level = { ...base, ...result, planning: false, id: date }
+    const level = { ...base, ...result, planning: false, id }
     if (validateLevel(level).length) continue
 
     const certificate = replay(level, level.solution)
@@ -308,7 +319,7 @@ export function generate (inputCode, {
     // are handled separately; they need not increase solution length at all.
     const before = challengeDistances(verified.level)
     const turns = verified.level.boxes.map(box => minimumRouteTurns(verified.level, box))
-    for (const candidate of routingTerrain(verified.level, randomFrom(`${date}:easy:${attempt}`), { limit: 24 })) {
+    for (const candidate of routingTerrain(verified.level, randomFrom(`${seed}:easy:${attempt}`), { limit: 24 })) {
       if (work >= workLimit) break
       const after = challengeDistances(candidate)
       const extra = candidate.boxes.reduce((sum, box) => {
@@ -328,7 +339,7 @@ export function generate (inputCode, {
     // so request order and device speed cannot change the pairing.
     let hard = null
     const hardDesign = { ...design, maximumPushes: 42 }
-    const candidates = hardCandidates(verified.level, randomFrom(`${date}:hard:${attempt}`), verified.quality)
+    const candidates = hardCandidates(verified.level, randomFrom(`${seed}:hard:${attempt}`), verified.quality)
     for (const candidate of candidates) {
       if (work >= workLimit) break
       const checked = verifyCandidate(candidate, hardDesign, true, workLimit - work)
@@ -346,7 +357,7 @@ export function generate (inputCode, {
     // Landscape is useful even outside the solution. Protect both exact plans
     // plus a one-tile margin, and keep the shared scenery in both variants.
     const sceneryCount = Math.min(18, Math.max(6, Math.round(base.floors.length * 0.035)))
-    const standard = decorateTerrain(verified.level, randomFrom(`${date}:scenery:${attempt}`), sceneryCount,
+    const standard = decorateTerrain(verified.level, randomFrom(`${seed}:scenery:${attempt}`), sceneryCount,
       [verified.level, hard])
     const common = standard.layout.decoration
     hard = {
@@ -354,7 +365,7 @@ export function generate (inputCode, {
       obstacles: [...hard.obstacles, ...common].sort((a, b) => a - b),
       layout: { ...hard.layout, decoration: common }
     }
-    hard = decorateTerrain(hard, randomFrom(`${date}:hard-scenery:${attempt}`), Math.ceil(sceneryCount / 2))
+    hard = decorateTerrain(hard, randomFrom(`${seed}:hard-scenery:${attempt}`), Math.ceil(sceneryCount / 2))
     // Scenery has ordinary collision. Recheck the final boards, not just the
     // undecorated plans; a decorative intention is no guarantee of harmlessness.
     const finalBoards = [standard, hard]
