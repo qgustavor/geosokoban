@@ -81,9 +81,9 @@ export const regionById = id => REGIONS.find(region => region.id === id) ?? null
 
 // The itinerary names the map actually used by each authored chapter.
 export const STORY_ITINERARY = [
-  ['SA', 'NA', 'CAR', 'EE', 'WE', 'AF', 'AS', 'OC'],
-  ['SA', 'NA', 'CAR', 'EE', 'WE', 'AF', 'AS', 'OC'],
-  ['SA', 'NA', 'CAR', 'EE', 'WE', 'AF', 'AS', 'OC']
+  ['SA', 'CAR', 'NA', 'WE', 'EE', 'AF', 'AS', 'OC'],
+  ['SA', 'CAR', 'NA', 'WE', 'EE', 'AF', 'AS', 'OC'],
+  ['SA', 'CAR', 'NA', 'WE', 'EE', 'AF', 'AS', 'OC']
 ]
 export const STORY_TOURS = STORY_ITINERARY.length
 const chapters = STORY_ITINERARY.flatMap((stops, tour) => stops.map((id, stop) => ({
