@@ -4,7 +4,7 @@ const destination = new URL('../public/licenses/', import.meta.url)
 await mkdir(destination, { recursive: true })
 
 // Ship attribution with the static site, where node_modules is not available at runtime.
-for (const name of ['vue', 'vue-router', 'flag-icons']) {
+for (const name of ['vue', 'vue-router', 'vue-i18n', 'flag-icons']) {
   await copyFile(new URL(`../node_modules/${name}/LICENSE`, import.meta.url), new URL(`${name}.txt`, destination))
 }
 

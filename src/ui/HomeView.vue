@@ -99,7 +99,7 @@ function play () {
             </span>
             <div>
               <strong>{{ t('tourLabel', { n: tour.number }) }}</strong>
-              <span>{{ t('tourStops', { n: tour.completed, total: tour.total }) }}</span>
+              <span>{{ t('tourStops', { completed: tour.completed }, tour.total) }}</span>
             </div>
           </li>
         </ol>

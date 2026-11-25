@@ -381,14 +381,14 @@ onBeforeUnmount(() => {
         {{ t(resultTitle) }}
       </h2>
       <p class="result-moves">
-        {{ resultMoves }} <small>{{ t('moves').toLowerCase() }}</small>
+        {{ resultMoves }} <small>{{ t('moveUnit', resultMoves) }}</small>
       </p>
       <p class="result-message">
         {{ game.chapter ? t('journeyCompleteDesc') : resultDate === utcDay()
           ? t('dailyCompleteDesc') : t('archiveCompleteDesc') }}
       </p>
       <p v-if="game.chapter" class="result-progress">
-        {{ t(totals.levels === STORY_COUNT ? 'journeyTotals' : 'journeyPartialTotals', { levels: totals.levels }) }}
+        {{ t(totals.levels === STORY_COUNT ? 'journeyTotals' : 'journeyPartialTotals', totals.levels) }}
       </p>
       <p v-if="timerText && (!game.chapter || totals.levels === STORY_COUNT)" class="result-time">
         {{ t('speedrun') }} <strong>{{ timerText }}</strong>

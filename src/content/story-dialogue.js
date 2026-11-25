@@ -1,7 +1,7 @@
 import { storyIndex, storyStop, STORY_TOURS } from './regions.js'
 import { storyLevel } from './story.js'
 import facts from './story-facts.json' with { type: 'json' }
-import { translate } from '../data/i18n.js'
+import { i18n } from '../data/i18n.js'
 
 const text = (en, pt, es) => ({ en, 'pt-BR': pt, es })
 const globe = (en, pt, es, stage) => ({ speaker: 'globe', text: text(en, pt, es), stage })
@@ -195,16 +195,6 @@ const STORY_SCENES = {
   }
 }
 
-function localizedStoryText (value, locale, params = {}) {
-  let result = typeof value === 'string' ? value : value?.[locale] ?? value?.en ?? ''
-
-  for (const [key, replacement] of Object.entries(params)) {
-    result = result.replaceAll(`{${key}}`, String(replacement))
-  }
-
-  return result
-}
-
 function countryCuriosity (code, tour) {
   // Only discuss a flag actually on this authored board. A new country without a fact is simply silent.
   const countries = [...new Set(storyLevel(code)?.goals.map(goal => goal.country) ?? [])]
@@ -225,40 +215,41 @@ export function getStoryScene (code, phase, locale) {
   // An explicitly empty scene stays silent, including its country curiosity.
   if (authored && !authored.lines.length) return null
 
-  const briefing = phase === 'before'
-    ? [{ speaker: 'globe', text: translate(locale, `story${chapter.region.id}`) }]
-    : []
-  const content = [...(authored?.lines ?? briefing)]
+  const { t } = i18n.global
+  const content = [...(authored?.lines ?? [])]
   const curiosity = phase === 'after' ? countryCuriosity(code, chapter.tour) : null
   if (curiosity) content.unshift(curiosity)
-  if (!content.length) return null
 
-  const params = {
-    region: translate(locale, chapter.region.name),
-    tour: chapter.tour,
-    stop: chapter.stop
-  }
   let stage = alone
   const lines = content.map(line => {
     stage = line.stage ?? stage
     if (!(line.speaker in stage)) throw new Error(`Story speaker is not on stage: ${line.speaker}`)
 
-    return { ...line, stage: { ...stage }, text: localizedStoryText(line.text, locale, params) }
+    return { ...line, stage: { ...stage }, text: line.text[locale] }
   })
+  if (!authored && phase === 'before') {
+    lines.push({
+      speaker: 'globe',
+      stage: { ...alone },
+      text: t(`story${chapter.region.id}`, {}, { locale })
+    })
+  }
+  if (!lines.length) return null
+
   const cast = [...new Set(lines.flatMap(line => Object.keys(line.stage)))]
   const characters = Object.fromEntries(cast.map(id => {
     const character = STORY_CHARACTERS[id]
     if (!character) throw new Error(`Unknown story character: ${id}`)
 
-    return [id, { ...character, name: localizedStoryText(character.name, locale) }]
+    return [id, { ...character, name: character.name?.[locale] ?? '' }]
   }))
 
   return {
     id: `${slot}:${phase}`,
     code,
     phase,
-    title: translate(locale, 'worldTour', { n: chapter.tour, total: STORY_TOURS }),
-    region: params.region,
+    title: t('worldTour', { n: chapter.tour, total: STORY_TOURS }, { locale }),
+    region: t(chapter.region.name, {}, { locale }),
     characters,
     lines
   }

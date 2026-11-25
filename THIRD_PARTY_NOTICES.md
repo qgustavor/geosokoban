@@ -12,6 +12,10 @@ Vue is an MIT-licensed dependency obtained through npm. Its source and license a
 
 Vue Router is an MIT-licensed dependency obtained through npm. Source and license: https://github.com/vuejs/router . The pinned version is recorded in `package.json`. Its license is copied into the published notices alongside Vue's license.
 
+## Vue I18n
+
+Vue I18n is an MIT-licensed dependency obtained through npm. Source and license: https://github.com/intlify/vue-i18n . The pinned version is recorded in `package.json`. Its license is copied into the published notices.
+
 ## flag-icons
 
 SVG flag artwork comes from the MIT-licensed `flag-icons` package: https://github.com/lipis/flag-icons . `src/assets/flags.js` imports packaged 4:3 SVG files as build assets. The flag images are not original drawings by this prototype. Review the chosen flag variants before educational publication. Software/artwork licensing does not decide legal or political questions about national symbols.
@@ -45,4 +49,4 @@ notices identify this derived data and its license.
 
 ## Distributed notices
 
-`npm run build` first copies the installed Vue, Vue Router and flag-icons license files, the project license and this notice into `public/licenses/`; Vite includes them in the production site. Build tooling dependencies retain their upstream licenses. No third-party font files, audio, music or game sprites are distributed by this project.
+`npm run build` first copies the installed Vue, Vue Router, Vue I18n and flag-icons license files, the project license and this notice into `public/licenses/`; Vite includes them in the production site. Build tooling dependencies retain their upstream licenses. No third-party font files, audio, music or game sprites are distributed by this project.

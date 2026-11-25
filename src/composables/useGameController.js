@@ -1,5 +1,6 @@
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { puzzleLocation, guardedPuzzleLocation } from '../router/locations.js'
 import { shareResult } from '../core/share.js'
 import { useStoryDialogue } from './useStoryDialogue.js'
@@ -11,7 +12,7 @@ import { movementSound } from '../audio/score.js'
 import { normalizeCode, puzzleDate, isPlanningCode } from '../core/seed.js'
 import { CHALLENGES, challengeSettings, challengeName } from '../core/challenge.js'
 import { storyCode, storyIndex, storyGuidance, STORY_COUNT } from '../content/regions.js'
-import { translate, countryName } from '../data/i18n.js'
+import countries from '../data/countries.json' with { type: 'json' }
 import { readPreferences, savePreferences } from '../ui/storage.js'
 import { createRun, finishRunLevel, reopenRunLevel, elapsedRun, formatElapsed, runTotals } from '../core/run.js'
 import { utcDay } from '../core/dates.js'
@@ -26,7 +27,8 @@ export function useGameController () {
     ? 'pt-BR'
     : navigator.language.startsWith('es') ? 'es' : 'en'
 
-  const locale = ref(saved.locale ?? detected)
+  const { t, locale } = useI18n({ useScope: 'global' })
+  locale.value = saved.locale ?? detected
   const completed = ref(saved.completed)
   const pendingStory = ref(saved.pendingStory)
   const speedrun = ref(saved.speedrun)
@@ -82,8 +84,8 @@ export function useGameController () {
     audio.play('hint')
   }))
 
-  const t = (key, params) => translate(locale.value, key, params)
-  const name = country => countryName(country, locale.value)
+  // Keep the country code visible when neither a localized nor an English name is available.
+  const name = country => countries[country]?.names[locale.value] ?? countries[country]?.names.en ?? country
   const resumeCode = computed(() => resumeStory(completed.value, pendingStory.value))
 
   const canAutoPause = computed(() => view.value === 'puzzle' && activeCode.value === route.params.code &&
@@ -473,8 +475,8 @@ ${error.name}: ${error.message}`
 
   function getStatsLine ({ moves, isAssisted, stops }) {
     const parts = [
-      stops ? t('stopsCount', { n: stops }) : null,
-      t('movesCount', { n: moves }),
+      stops ? t('stopsCount', stops) : null,
+      t('movesCount', moves),
       timerText.value ? `⏱️ ${timerText.value}` : null,
       isAssisted ? `💡 ${t('assisted')}` : `✨ ${t('unassisted')}`
     ]
