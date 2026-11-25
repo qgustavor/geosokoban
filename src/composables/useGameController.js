@@ -461,28 +461,66 @@ ${error.name}: ${error.message}`
       // A delayed platform response must not put old sharing feedback on another page or puzzle.
       if (view.value !== 'puzzle' || activeCode.value !== sharedCode) return
 
-      if (result.status === 'copied') notice.value = t('copied')
-      else if (result.status === 'fallback') fallbackText.value = result.text
+      if (result.status === 'copied') {
+        notice.value = t('copied')
+      } else if (result.status === 'fallback') {
+        fallbackText.value = result.text
+      }
     } finally {
       sharing = false
     }
   }
 
+  function getStatsLine ({ moves, isAssisted, stops }) {
+    const parts = [
+      stops ? t('stopsCount', { n: stops }) : null,
+      t('movesCount', { n: moves }),
+      timerText.value ? `⏱️ ${timerText.value}` : null,
+      isAssisted ? `💡 ${t('assisted')}` : `✨ ${t('unassisted')}`
+    ]
+
+    return parts.filter(Boolean).join(' · ')
+  }
+
+  function getShareText () {
+    const result = totals.value
+    const isAssisted = Boolean(chapter.value ? result.assisted : assisted.value)
+
+    // Story Mode
+    if (chapter.value) {
+      const stats = getStatsLine({
+        stops: result.levels,
+        moves: result.moves,
+        isAssisted
+      })
+      return t('shareStoryResult', { stats })
+    }
+
+    // Daily vs Archive / Past Puzzles
+    const isDaily = puzzleDate(level.value.id) === utcDay()
+    const key = isDaily ? 'shareDailyResult' : 'shareDatedResult'
+    const challenge = t('challenge' + challengeName(guidance.value, level.value.planning === true))
+
+    const stats = getStatsLine({
+      moves: state.value.moves,
+      isAssisted
+    })
+
+    return t(key, {
+      date: puzzleDate(level.value.id) ?? '',
+      challenge,
+      stats
+    })
+  }
+
   async function share () {
     if (chapter.value && !storyFinished.value) return
-    const result = totals.value
-    const helpLabel = t((chapter.value ? result.assisted : assisted.value) ? 'assisted' : 'unassisted')
-    const challengeLabel = t('challenge' + challengeName(guidance.value, level.value.planning === true))
-    const completeJourney = result.levels === STORY_COUNT
-    let text = chapter.value
-      ? t(completeJourney ? 'shareStoryResult' : 'shareStoryPartial', {
-        moves: result.moves, levels: result.levels, help: helpLabel
-      })
-      : t('shareDatedResult', {
-        date: puzzleDate(level.value.id) ?? '', moves: state.value.moves, challenge: challengeLabel, help: helpLabel
-      })
-    if (timerText.value && (!chapter.value || completeJourney)) text += `\n${t('speedrun')}: ${timerText.value}`
-    return sendShare({ title: 'GeoSokoban', text, url: puzzleURL() })
+
+    return sendShare({
+      title: 'GeoSokoban',
+      text: getShareText(),
+      url: puzzleURL()
+    })
   }
 
   function clearUndoneCheckpoint () {
